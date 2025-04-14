@@ -11,6 +11,9 @@ const appConfig = useAppConfig()
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
+// const auth = useAuth()
+// const user = computed(() => auth.user)
+
 const user = ref({
   name: 'Benjamin Canac',
   avatar: {
