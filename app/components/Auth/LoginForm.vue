@@ -13,14 +13,6 @@ const authError = ref('')
 const user = useSupabaseUser()
 const client = useSupabaseClient()
 
-watchEffect(async () => {
-  if (user.value) {
-    console.log('user', user.value)
-    toast.add({ title: `Welcome  back ${user.value.name}` })
-    auth.modal = false
-    await navigateTo('/dashboard')
-  }
-})
 const validate = () => {
   const errors: Record<string, string> = {}
   if (!email.value) errors.email = 'Email is required'
@@ -46,6 +38,13 @@ const login = async () => {
   if (error) {
     authError.value = 'Invalid login credentials'
     setTimeout(() => (authError.value = ''), 5000)
+  } else {
+    toast.add({ title: `Welcome back ${user.value?.user_metadata.email}`,
+      description: 'Your action was completed successfully.',
+      color: 'success' })
+    auth.modal = false
+    await navigateTo('/dashboard')
+    auth.modal = false
   }
 }
 </script>

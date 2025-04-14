@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/stores/auth'
+import type { ToasterProps } from '#ui/types'
 
 const colorMode = useColorMode()
 
@@ -33,10 +34,15 @@ useSeoMeta({
   twitterImage: 'https://dashboard-template.nuxt.dev/social-card.png',
   twitterCard: 'summary_large_image'
 })
+
+const toasterProps: ToasterProps = {
+  position: 'bottom-left',
+  duration: 5000
+}
 </script>
 
 <template>
-  <UApp>
+  <UApp :toaster="toasterProps">
     <NuxtLoadingIndicator />
 
     <NuxtLayout>

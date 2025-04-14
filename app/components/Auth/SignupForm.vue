@@ -4,6 +4,7 @@ const toast = useToast()
 const client = useSupabaseClient()
 
 const auth = useAuth()
+const user = useSupabaseUser()
 
 const form = ref({
   name: '',
@@ -19,14 +20,16 @@ const isFormValid = computed(() => {
   )
 })
 
-watchEffect(async () => {
-  if (user.value) {
-    console.log('user', user.value)
-    toast.add({ title: `Welcome ${user.value.name}` })
-    auth.modal = false
-    await navigateTo('/dashboard')
-  }
-})
+// watchEffect(async () => {
+//   if (user.value) {
+//     console.log('UUUUUUUUUUUUUUUser', user)
+//     toast.add({ title: `Welcome ${user.value.name}`,
+//       description: 'Your action was completed successfully.',
+//       color: 'success' })
+//     auth.modal = false
+//     // await navigateTo('/dashboard')
+//   }
+// })
 
 const errorMsg = ref('')
 const successMsg = ref('')
@@ -65,13 +68,16 @@ const register = async () => {
 
       throw insertError
     } else {
-      // await navigateTo("/dash");
-      // toast.add("Registered Succesfully!");
+      toast.add({ title: `Welcome ${form.value.name}`,
+        description: 'Your action was completed successfully.',
+        color: 'success' })
+      auth.modal = false
+      await navigateTo('/dashboard')
       auth.modal = false
 
       // If successful, set a success message
-      successMsg.value = 'User information successfully added to the database!'
-      console.log(successMsg.value) // Optional: Log the success message
+      // successMsg.value = 'User information successfully added to the database!'
+      // console.log(successMsg.value) // Optional: Log the success message
     }
   } catch (error) {
     console.log(error)
