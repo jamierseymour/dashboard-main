@@ -4,12 +4,12 @@ const toast = useToast()
 
 const open = ref(false)
 
-const newlinks = [
+const links = [
   [
     {
       label: 'today',
       icon: 'i-lucide-sun',
-      to: '/today',
+      to: '/dashboard',
       onSelect: () => {
         open.value = false
       }
@@ -57,9 +57,9 @@ const newlinks = [
   ],
   [
     {
-      label: 'profile',
+      label: 'Profile',
       icon: 'i-lucide-user',
-      to: '/profile',
+      to: '/customers',
       onSelect: () => {
         open.value = false
       }
@@ -68,60 +68,7 @@ const newlinks = [
       label: 'inbox',
       icon: 'i-lucide-inbox',
       to: '/inbox',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: 'settings',
-      icon: 'i-lucide-settings',
-      to: '/settings',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: 'notifications',
-      icon: 'i-lucide-bell',
-      to: '/notifications',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: 'create a new listing',
-      icon: 'i-lucide-plus',
-      to: '/create-listing',
-      onSelect: () => {
-        open.value = false
-      }
-    }
-  ]
-]
-
-const links = [
-  [
-    {
-      label: 'Home',
-      icon: 'i-lucide-house',
-      to: '/',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: 'Inbox',
-      icon: 'i-lucide-inbox',
-      to: '/inbox',
       badge: '4',
-      onSelect: () => {
-        open.value = false
-      }
-    },
-    {
-      label: 'Customers',
-      icon: 'i-lucide-users',
-      to: '/customers',
       onSelect: () => {
         open.value = false
       }
@@ -166,19 +113,65 @@ const links = [
   ],
   [
     {
-      label: 'Feedback',
-      icon: 'i-lucide-message-circle',
-      to: 'https://github.com/nuxt-ui-pro/dashboard',
-      target: '_blank'
+      label: 'create a new listing',
+      icon: 'i-lucide-plus',
+      to: '/new-venue'
+      // target: '_blank'
     },
     {
-      label: 'Help & Support',
+      label: 'help & support',
       icon: 'i-lucide-info',
       to: 'https://github.com/nuxt/ui-pro',
       target: '_blank'
     }
   ]
 ]
+
+// const newlinks = [
+
+// [
+//   {
+//     label: 'profile',
+//     icon: 'i-lucide-user',
+//     to: '/profile',
+//     onSelect: () => {
+//       open.value = false
+//     }
+//   },
+//   {
+//     label: 'inbox',
+//     icon: 'i-lucide-inbox',
+//     to: '/inbox',
+//     onSelect: () => {
+//       open.value = false
+//     }
+//   },
+//   {
+//     label: 'settings',
+//     icon: 'i-lucide-settings',
+//     to: '/settings',
+//     onSelect: () => {
+//       open.value = false
+//     }
+//   },
+//   {
+//     label: 'notifications',
+//     icon: 'i-lucide-bell',
+//     to: '/notifications',
+//     onSelect: () => {
+//       open.value = false
+//     }
+//   },
+//   {
+//     label: 'create a new listing',
+//     icon: 'i-lucide-plus',
+//     to: '/create-listing',
+//     onSelect: () => {
+//       open.value = false
+//     }
+//   }
+// ]
+// ]
 
 const groups = computed(() => [
   {
@@ -255,20 +248,33 @@ onMounted(async () => {
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="newlinks"
+          :items="links[0]"
+          orientation="vertical"
+        />
+
+        <div>
+          <div class="text-sm">
+            account
+          </div>
+          <!-- <divider class="my-2" /> -->
+        </div>
+
+        <UNavigationMenu
+          :collapsed="collapsed"
+          :items="links[1]"
+          orientation="vertical"
+        />
+
+        <UNavigationMenu
+          :collapsed="collapsed"
+          :items="links[2]"
           orientation="vertical"
           class="mt-auto"
         />
 
         <!-- <UNavigationMenu
           :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
+          :items="newlinks"
           orientation="vertical"
           class="mt-auto"
         /> -->
