@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: 'dashboard' // This will use layouts/admin.vue
+})
+
 const state = reactive<{ [key: string]: boolean }>({
   email: true,
   desktop: false,

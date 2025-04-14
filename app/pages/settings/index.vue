@@ -2,6 +2,10 @@
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
+definePageMeta({
+  layout: 'dashboard' // This will use layouts/admin.vue
+})
+
 const fileRef = ref<HTMLInputElement>()
 
 const profileSchema = z.object({

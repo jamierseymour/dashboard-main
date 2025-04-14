@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Member } from '~/types'
 
+definePageMeta({
+  layout: 'dashboard' // This will use layouts/admin.vue
+})
+
 const { data: members } = await useFetch<Member[]>('/api/members', { default: () => [] })
 
 const q = ref('')

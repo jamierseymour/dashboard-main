@@ -2,6 +2,10 @@
 import { sub } from 'date-fns'
 import type { Period, Range } from '~/types'
 
+definePageMeta({
+  layout: 'dashboard' // This will use layouts/admin.vue
+})
+
 const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
