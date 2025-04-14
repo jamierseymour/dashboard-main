@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { useAuth } from "~/stores/auth";
+import Login from './LoginForm.vue'
+import Register from './SignupForm.vue'
+import { useAuth } from '~/stores/auth'
 
-import Login from "./LoginForm.vue";
-import Register from "./SignupForm.vue";
+const auth = useAuth()
 
-const auth = useAuth();
-
-const activeTab = ref<"login" | "register">("login");
+const activeTab = ref<'login' | 'register'>('login')
 </script>
 
 <template>
@@ -47,30 +46,30 @@ const activeTab = ref<"login" | "register">("login");
     v-model:open="auth.modal"
     :ui="{
       content:
-        'bg-gradient-to-b from-[#032334] via-[#063B57] to-[#094F74] rounded-3xl shadow-xl z-10',
+        'bg-gradient-to-b from-[#032334] via-[#063B57] to-[#094F74] rounded-3xl shadow-xl z-10'
     }"
   >
     <template #content>
       <div class="flex">
         <button
-          @click="activeTab = 'login'"
           class="w-1/2 py-4 cursor-pointer text-center text-2xl font-bold transition border-b-2 mx-4"
           :class="
             activeTab === 'login'
               ? 'border-[#FFBE61] text-[#FFBE61]'
               : 'border-transparent text-light-200 hover:text-gray-100'
           "
+          @click="activeTab = 'login'"
         >
           login
         </button>
         <button
-          @click="activeTab = 'register'"
           class="w-1/2 py-4 cursor-pointer text-center text-2xl font-bold transition border-b-2 mx-4"
           :class="
             activeTab === 'register'
               ? 'border-[#FFBE61] text-[#FFBE61]'
               : 'border-transparent text-light-200 hover:text-gray-100'
           "
+          @click="activeTab = 'register'"
         >
           register
         </button>

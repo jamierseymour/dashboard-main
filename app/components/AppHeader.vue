@@ -114,8 +114,7 @@ const handleItemClick = (item) => {
 console.log('auth', auth)
 
 const handleSignUp = () => {
-  console.log('Sign up clicked')
-  console.log('auth', auth)
+  auth.modal = true
 }
 </script>
 

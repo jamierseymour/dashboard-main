@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAuth } from '~/stores/auth'
+
 const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#1b1718' : 'white')
@@ -16,6 +18,8 @@ useHead({
     lang: 'en'
   }
 })
+
+const auth = useAuth()
 
 const title = 'Nuxt UI Pro - Dashboard template'
 const description = 'Nuxt UI Pro is a collection of premium Vue components built on top of Nuxt UI to create beautiful & responsive Nuxt applications in minutes.'
@@ -36,6 +40,8 @@ useSeoMeta({
     <NuxtLoadingIndicator />
 
     <NuxtLayout>
+      <AuthModal v-if="auth.modal" />
+
       <NuxtPage />
     </NuxtLayout>
   </UApp>

@@ -1,76 +1,85 @@
 <script setup>
-const toast = useToast();
+const toast = useToast()
 
-const client = useSupabaseClient();
+const client = useSupabaseClient()
 
-const auth = useAuth();
+const auth = useAuth()
 
 const form = ref({
-  name: "",
-  email: "",
-  password: "",
+  name: '',
+  email: '',
+  password: '',
   tnc: false,
-  eventUpdates: false,
-});
+  eventUpdates: false
+})
 
 const isFormValid = computed(() => {
   return (
     form.value.name && form.value.email && form.value.password && form.value.tnc
-  );
-});
+  )
+})
 
-const errorMsg = ref("");
-const successMsg = ref("");
-const loading = ref(false);
+watchEffect(async () => {
+  if (user.value) {
+    console.log('user', user.value)
+    toast.add({ title: `Welcome ${user.value.name}` })
+    auth.modal = false
+    await navigateTo('/dashboard')
+  }
+})
+
+const errorMsg = ref('')
+const successMsg = ref('')
+const loading = ref(false)
 
 const register = async () => {
-  loading.value = true;
-  console.log(form.value);
+  loading.value = true
+  console.log(form.value)
 
   try {
     // Sign up the user
     const { data: AuthData, error: signUpError } = await client.auth.signUp({
       email: form.value.email,
-      password: form.value.password,
-    });
+      password: form.value.password
+    })
 
-    console.log("AuthData", AuthData);
+    console.log('AuthData', AuthData)
 
-    if (signUpError) throw signUpError;
+    if (signUpError) throw signUpError
 
     // If sign-up is successful, insert user info into the auth table
-    const { error: insertError } = await client.from("users").insert([
+    const { error: insertError } = await client.from('users').insert([
       {
         user_id: AuthData.user.id,
         email: form.value.email,
         name: form.value.name,
         picUrl: null,
         tnc: form.value.tnc,
-        eventUpdates: form.value.eventUpdates,
-      }, // Adjust the fields as per your table schema
-    ]);
+        eventUpdates: form.value.eventUpdates
+      } // Adjust the fields as per your table schema
+    ])
 
     if (insertError) {
-      console.log("insert error", insertError);
-      errorMsg.value = insertError.message;
+      console.log('insert error', insertError)
+      errorMsg.value = insertError.message
 
-      throw insertError;
+      throw insertError
     } else {
       // await navigateTo("/dash");
       // toast.add("Registered Succesfully!");
-      auth.modal = false;
+      auth.modal = false
 
       // If successful, set a success message
-      successMsg.value = "User information successfully added to the database!";
-      console.log(successMsg.value); // Optional: Log the success message
+      successMsg.value = 'User information successfully added to the database!'
+      console.log(successMsg.value) // Optional: Log the success message
     }
   } catch (error) {
-    console.log(error);
-    errorMsg.value = error;
+    console.log(error)
+    errorMsg.value = error
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 </script>
 
 <template>
@@ -78,12 +87,13 @@ const register = async () => {
     <div v-if="errorMsg" class="text-center justify-center text-error-200 mb-3">
       {{ errorMsg }}
     </div>
-    <form @submit.prevent="register" class="space-y-4 w-full">
+    <form class="space-y-4 w-full" @submit.prevent="register">
       <!-- Name Field with Label -->
       <div class="space-y-1">
-        <label for="name" class="block text-white text-sm font-medium"
-          >Full Name</label
-        >
+        <label
+          for="name"
+          class="block text-white text-sm font-medium"
+        >Full Name</label>
         <input
           id="name"
           v-model="form.name"
@@ -91,14 +101,15 @@ const register = async () => {
           placeholder="Enter your full name"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        />
+        >
       </div>
 
       <!-- Email Field with Label -->
       <div class="space-y-1">
-        <label for="email" class="block text-white text-sm font-medium"
-          >Email Address</label
-        >
+        <label
+          for="email"
+          class="block text-white text-sm font-medium"
+        >Email Address</label>
         <input
           id="email"
           v-model="form.email"
@@ -106,14 +117,15 @@ const register = async () => {
           placeholder="Enter your email address"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        />
+        >
       </div>
 
       <!-- Password Field with Label -->
       <div class="space-y-1">
-        <label for="password" class="block text-white text-sm font-medium"
-          >Password</label
-        >
+        <label
+          for="password"
+          class="block text-white text-sm font-medium"
+        >Password</label>
         <input
           id="password"
           v-model="form.password"
@@ -121,7 +133,7 @@ const register = async () => {
           placeholder="Create a password"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        />
+        >
       </div>
 
       <!-- Checkboxes -->
@@ -146,9 +158,7 @@ const register = async () => {
           class="cursor-pointer"
         >
           <template #label>
-            <span class="text-white"
-              >Count me in for event updates and perks</span
-            >
+            <span class="text-white">Count me in for event updates and perks</span>
           </template>
         </UCheckbox>
       </div>
@@ -177,12 +187,12 @@ const register = async () => {
                 r="10"
                 stroke="currentColor"
                 stroke-width="4"
-              ></circle>
+              />
               <path
                 class="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
+              />
             </svg>
           </span>
           <span v-else>Register</span>
