@@ -23,7 +23,7 @@ useHead({
 const auth = useAuth()
 
 const title = 'Own Your Events - Events at your finger tips'
-const description = 'plan less, party more - Evnts without the stress'
+const description = 'plan less, party more - events without the stress'
 
 useSeoMeta({
   title,
