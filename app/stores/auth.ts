@@ -1,15 +1,15 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia'
 
 interface IAuth {
-  modal: boolean;
-  hydrated: boolean;
+  modal: boolean
+  hydrated: boolean
 }
 
-export const useAuth = defineStore("auth", () => {
+export const useAuth = defineStore('auth', () => {
   const state = reactive<IAuth>({
-    modal: true,
-    hydrated: false,
-  });
+    modal: false,
+    hydrated: false
+  })
 
   // Define actions as functions
   function someAction() {
@@ -18,6 +18,6 @@ export const useAuth = defineStore("auth", () => {
 
   return {
     ...toRefs(state),
-    someAction,
-  };
-});
+    someAction
+  }
+})
