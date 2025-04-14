@@ -22,16 +22,16 @@ useHead({
 
 const auth = useAuth()
 
-const title = 'Nuxt UI Pro - Dashboard template'
-const description = 'Nuxt UI Pro is a collection of premium Vue components built on top of Nuxt UI to create beautiful & responsive Nuxt applications in minutes.'
+const title = 'Own Your Events - Events at your finger tips'
+const description = 'plan less, party more - Evnts without the stress'
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://dashboard-template.nuxt.dev/social-card.png',
-  twitterImage: 'https://dashboard-template.nuxt.dev/social-card.png',
+  ogImage: '/public/logos/logo.png',
+  twitterImage: '/public/logos/logo.png',
   twitterCard: 'summary_large_image'
 })
 
