@@ -11,6 +11,6 @@ import AppFooter from '~/components/AppFooter.vue'
       <slot />
     </UMain>
 
-    <AppFooter />
+    <!-- <AppFooter /> -->
   </div>
 </template>
