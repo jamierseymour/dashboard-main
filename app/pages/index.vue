@@ -103,7 +103,7 @@ console.log('Venues:', venues.value)
           plan less, party more
         </h1>
         <p class="text-2xl font-medium text-center mb-12 text-shadow">
-          book now, don't stress - we've got you covered
+          book now, don't stress — we've got you covered
         </p>
 
         <!-- Search Bar - Reduced Transparency -->
