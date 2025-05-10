@@ -1,105 +1,105 @@
 <script setup lang="ts">
-import { useAuth } from '~/stores/auth'
-import AuthModal from '~/components/Auth/AuthModal.vue'
+import { useAuth } from "~/stores/auth";
+import AuthModal from "~/components/Auth/AuthModal.vue";
 
-const { activeHeadings, updateHeadings } = useScrollspy()
+const { activeHeadings, updateHeadings } = useScrollspy();
 
-const auth = useAuth()
-const user = useSupabaseUser()
+const auth = useAuth();
+const user = useSupabaseUser();
 
 const items = computed(() => [
   {
-    label: 'Features',
-    to: '#features',
+    label: "Features",
+    to: "#features",
     active:
-      activeHeadings.value.includes('features')
-      && !activeHeadings.value.includes('templates')
+      activeHeadings.value.includes("features") &&
+      !activeHeadings.value.includes("templates"),
   },
   {
-    label: 'Templates',
-    to: '#templates',
+    label: "Templates",
+    to: "#templates",
     active:
-      activeHeadings.value.includes('templates')
-      && !activeHeadings.value.includes('pricing')
+      activeHeadings.value.includes("templates") &&
+      !activeHeadings.value.includes("pricing"),
   },
   {
-    label: 'Pricing',
-    to: '#pricing',
+    label: "Pricing",
+    to: "#pricing",
     active:
-      activeHeadings.value.includes('pricing')
-      && !activeHeadings.value.includes('testimonials')
+      activeHeadings.value.includes("pricing") &&
+      !activeHeadings.value.includes("testimonials"),
   },
   {
-    label: 'Testimonials',
-    to: '#testimonials',
+    label: "Testimonials",
+    to: "#testimonials",
     active:
-      activeHeadings.value.includes('testimonials')
-      && !activeHeadings.value.includes('faq')
+      activeHeadings.value.includes("testimonials") &&
+      !activeHeadings.value.includes("faq"),
   },
   {
-    label: 'FAQ',
-    to: '#faq',
-    active: activeHeadings.value.includes('faq')
-  }
-])
+    label: "FAQ",
+    to: "#faq",
+    active: activeHeadings.value.includes("faq"),
+  },
+]);
 
 const dropdownItems = computed(() => [
   [
     {
-      label: user.value?.email || 'No email',
-      slot: 'account',
-      disabled: true
-    }
+      label: user.value?.email || "No email",
+      slot: "account",
+      disabled: true,
+    },
   ],
   [
     {
-      label: 'Settings',
-      icon: 'i-heroicons-cog-8-tooth',
-      click: () => console.log('Settings clicked')
-    }
+      label: "Settings",
+      icon: "i-heroicons-cog-8-tooth",
+      click: () => console.log("Settings clicked"),
+    },
   ],
   [
     {
-      label: 'Documentation',
-      icon: 'i-heroicons-book-open',
-      click: () => console.log('Documentation clicked')
+      label: "Documentation",
+      icon: "i-heroicons-book-open",
+      click: () => console.log("Documentation clicked"),
     },
     {
-      label: 'Changelog',
-      icon: 'i-heroicons-megaphone',
-      click: () => console.log('Changelog clicked')
+      label: "Changelog",
+      icon: "i-heroicons-megaphone",
+      click: () => console.log("Changelog clicked"),
     },
     {
-      label: 'Status',
-      icon: 'i-heroicons-signal',
-      click: () => console.log('Status clicked')
-    }
+      label: "Status",
+      icon: "i-heroicons-signal",
+      click: () => console.log("Status clicked"),
+    },
   ],
   [
     {
-      label: 'Sign out',
-      icon: 'i-heroicons-arrow-left-on-rectangle',
-      click: () => logout()
-    }
-  ]
-])
+      label: "Sign out",
+      icon: "i-heroicons-arrow-left-on-rectangle",
+      click: () => logout(),
+    },
+  ],
+]);
 
 const logout = async () => {
-  console.log('Logging out...')
-  const { error } = await useSupabaseClient().auth.signOut()
+  console.log("Logging out...");
+  const { error } = await useSupabaseClient().auth.signOut();
   if (error) {
-    console.error('Error logging out:', error)
+    console.error("Error logging out:", error);
   } else {
-    navigateTo('/')
+    navigateTo("/");
   }
-}
+};
 
 // Handle click on dropdown item
 const handleItemClick = (item) => {
   if (item.click && !item.disabled) {
-    item.click()
+    item.click();
   }
-}
+};
 
 // nuxtApp.hooks.hookOnce("page:finish", () => {
 //   updateHeadings([
@@ -111,34 +111,30 @@ const handleItemClick = (item) => {
 //   ]);
 // });
 
-console.log('auth', auth)
+console.log("auth", auth);
 
 const handleSignUp = () => {
-  auth.modal = true
-}
+  auth.modal = true;
+};
 </script>
 
 <template>
   <UHeader class="py-10">
     <template #left>
       <NuxtLink to="/">
-        <NuxtImg
-          src="logos/logo.svg"
-          class="py-2"
-          height="150"
-          width="150"
-        />
+        <NuxtImg src="logos/logo.svg" class="py-2" height="150" width="150" />
       </NuxtLink>
     </template>
 
     <!-- <UNavigationMenu :items="items" variant="link" /> -->
 
     <template #right>
-      <div v-if="!user" class="flex flex-row jusitfy-center items-center gap-2">
+      <div class="flex flex-row jusitfy-center items-center gap-2">
         <p class="px-4 font-bold cursor-pointer">
           <NuxtLink to="/new-venue"> List your business </NuxtLink>
         </p>
         <UButton
+          v-if="!user"
           label="Sign up"
           icon="i-heroicons-arrow-right-20-solid"
           trailing
@@ -146,12 +142,12 @@ const handleSignUp = () => {
           @click="handleSignUp()"
         />
       </div>
-      <div v-else-if="user">
+      <div v-if="user">
         <UDropdownMenu
           :items="dropdownItems"
           :ui="{
             content: 'cursor-pointer',
-            item: 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'
+            item: 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800',
           }"
           :popper="{ placement: 'bottom-start' }"
         >

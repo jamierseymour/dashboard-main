@@ -1,131 +1,133 @@
 <script setup lang="ts">
-const route = useRoute()
-const toast = useToast()
+import AppHeader from "~/components/AppHeader.vue";
 
-const open = ref(false)
+const route = useRoute();
+const toast = useToast();
+
+const open = ref(false);
 
 const links = [
   [
     {
-      label: 'today',
-      icon: 'i-lucide-sun',
-      to: '/dashboard',
+      label: "today",
+      icon: "i-lucide-sun",
+      to: "/dashboard",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'calendar',
-      icon: 'i-lucide-calendar',
-      to: '/calendar',
+      label: "calendar",
+      icon: "i-lucide-calendar",
+      to: "/calendar",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'listings',
-      icon: 'i-lucide-home',
-      to: '/listings',
+      label: "listings",
+      icon: "i-lucide-home",
+      to: "/listings",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'bookings',
-      icon: 'i-lucide-bookmark',
-      to: '/bookings',
+      label: "bookings",
+      icon: "i-lucide-bookmark",
+      to: "/bookings",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'insights',
-      icon: 'i-lucide-bar-chart-2',
-      to: '/insights',
+      label: "insights",
+      icon: "i-lucide-bar-chart-2",
+      to: "/insights",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'guidebooks',
-      icon: 'i-lucide-file',
-      to: '/guidebooks',
+      label: "guidebooks",
+      icon: "i-lucide-file",
+      to: "/guidebooks",
       onSelect: () => {
-        open.value = false
-      }
-    }
+        open.value = false;
+      },
+    },
   ],
   [
     {
-      label: 'Profile',
-      icon: 'i-lucide-user',
-      to: '/customers',
+      label: "Profile",
+      icon: "i-lucide-user",
+      to: "/customers",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'inbox',
-      icon: 'i-lucide-inbox',
-      to: '/inbox',
-      badge: '4',
+      label: "inbox",
+      icon: "i-lucide-inbox",
+      to: "/inbox",
+      badge: "4",
       onSelect: () => {
-        open.value = false
-      }
+        open.value = false;
+      },
     },
     {
-      label: 'Settings',
-      to: '/settings',
-      icon: 'i-lucide-settings',
+      label: "Settings",
+      to: "/settings",
+      icon: "i-lucide-settings",
       defaultOpen: true,
       children: [
         {
-          label: 'General',
-          to: '/settings',
+          label: "General",
+          to: "/settings",
           exact: true,
           onSelect: () => {
-            open.value = false
-          }
+            open.value = false;
+          },
         },
         {
-          label: 'Members',
-          to: '/settings/members',
+          label: "Members",
+          to: "/settings/members",
           onSelect: () => {
-            open.value = false
-          }
+            open.value = false;
+          },
         },
         {
-          label: 'Notifications',
-          to: '/settings/notifications',
+          label: "Notifications",
+          to: "/settings/notifications",
           onSelect: () => {
-            open.value = false
-          }
+            open.value = false;
+          },
         },
         {
-          label: 'Security',
-          to: '/settings/security',
+          label: "Security",
+          to: "/settings/security",
           onSelect: () => {
-            open.value = false
-          }
-        }
-      ]
-    }
+            open.value = false;
+          },
+        },
+      ],
+    },
   ],
   [
     {
-      label: 'create a new listing',
-      icon: 'i-lucide-plus',
-      to: '/new-venue'
+      label: "create a new listing",
+      icon: "i-lucide-plus",
+      to: "/new-venue",
       // target: '_blank'
     },
     {
-      label: 'help & support',
-      icon: 'i-lucide-info',
-      to: 'https://github.com/nuxt/ui-pro',
-      target: '_blank'
-    }
-  ]
-]
+      label: "help & support",
+      icon: "i-lucide-info",
+      to: "https://github.com/nuxt/ui-pro",
+      target: "_blank",
+    },
+  ],
+];
 
 // const newlinks = [
 
@@ -175,59 +177,61 @@ const links = [
 
 const groups = computed(() => [
   {
-    id: 'links',
-    label: 'Go to',
-    items: links.flat()
+    id: "links",
+    label: "Go to",
+    items: links.flat(),
   },
   {
-    id: 'code',
-    label: 'Code',
+    id: "code",
+    label: "Code",
     items: [
       {
-        id: 'source',
-        label: 'View page source',
-        icon: 'i-simple-icons-github',
+        id: "source",
+        label: "View page source",
+        icon: "i-simple-icons-github",
         to: `https://github.com/nuxt-ui-pro/dashboard/blob/main/app/pages${
-          route.path === '/' ? '/index' : route.path
+          route.path === "/" ? "/index" : route.path
         }.vue`,
-        target: '_blank'
-      }
-    ]
-  }
-])
+        target: "_blank",
+      },
+    ],
+  },
+]);
 
 onMounted(async () => {
-  const cookie = useCookie('cookie-consent')
-  if (cookie.value === 'accepted') {
-    return
+  const cookie = useCookie("cookie-consent");
+  if (cookie.value === "accepted") {
+    return;
   }
 
   toast.add({
     title:
-      'We use first-party cookies to enhance your experience on our website.',
+      "We use first-party cookies to enhance your experience on our website.",
     duration: 0,
     close: false,
     actions: [
       {
-        label: 'Accept',
-        color: 'neutral',
-        variant: 'outline',
+        label: "Accept",
+        color: "neutral",
+        variant: "outline",
         onClick: () => {
-          cookie.value = 'accepted'
-        }
+          cookie.value = "accepted";
+        },
       },
       {
-        label: 'Opt out',
-        color: 'neutral',
-        variant: 'ghost'
-      }
-    ]
-  })
-})
+        label: "Opt out",
+        color: "neutral",
+        variant: "ghost",
+      },
+    ],
+  });
+});
 </script>
 
 <template>
-  <UDashboardGroup unit="rem">
+  <!-- <AppHeader /> -->
+
+  <UDashboardGroup unit="rem" >
     <UDashboardSidebar
       id="default"
       v-model:open="open"
@@ -253,9 +257,7 @@ onMounted(async () => {
         />
 
         <div>
-          <div class="text-sm">
-            account
-          </div>
+          <div class="text-sm">account</div>
           <!-- <divider class="my-2" /> -->
         </div>
 
