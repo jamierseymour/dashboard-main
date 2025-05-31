@@ -5,6 +5,13 @@ definePageMeta({
   layout: "dashboard", // This will use layouts/admin.vue
 });
 
+interface IVenue {
+  id: number;
+  venue_name: string;
+  photos: string[];
+  [key: string]: any;
+}
+
 const venues = computed(() => data.value || []);
 
 const { data, error } = await useAsyncData<IVenue[] | null>(
@@ -64,9 +71,8 @@ const pagination = ref({
                     variant="solid"
                     size="sm"
                     square
-                    :ui="{ rounded: 'rounded-full' }"
-                    class="shadow-md hover:shadow-lg"
-                    :to="`/venues/${venue.id.toString()}/edit`"
+                    class="shadow-md hover:shadow-lg rounded-full"
+                    :to="`/venues/edit/${venue.id.toString()}`"
                   />
                 </div>
 

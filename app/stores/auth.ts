@@ -3,18 +3,21 @@ import { defineStore } from "pinia";
 import { useSupabaseClient } from "#imports";
 import type { User } from "@supabase/supabase-js";
 
+type ProfileData = {
+  id?: string;
+  name?: string;
+  email?: string;
+  username?: string;
+  avatar_url?: string;
+  bio?: string;
+};
+
 interface IAuth {
   modal: boolean;
   hydrated: boolean;
+  loggedIn: boolean;
   user: User | null;
-  profile: {
-    id?: string;
-    name?: string;
-    email?: string;
-    username?: string;
-    avatar_url?: string;
-    bio?: string;
-  } | null;
+  profile: ProfileData | null;
   loading: boolean;
 }
 
@@ -24,6 +27,7 @@ export const useAuth = defineStore("auth", () => {
   const state = reactive<IAuth>({
     modal: false,
     hydrated: false,
+    loggedIn: false,
     user: null,
     profile: null,
     loading: false,
@@ -41,11 +45,31 @@ export const useAuth = defineStore("auth", () => {
 
       if (session) {
         state.user = session.user;
+        state.loggedIn = true;
         // Load user profile once authenticated
         await fetchUserProfile();
+      } else {
+        state.user = null;
+        state.loggedIn = false;
+        state.profile = null;
       }
 
       state.hydrated = true;
+
+      // Set up auth state listener for real-time updates
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          state.user = session.user;
+          state.loggedIn = true;
+          await fetchUserProfile();
+          // Close auth modal on successful login
+          state.modal = false;
+        } else if (event === "SIGNED_OUT") {
+          state.user = null;
+          state.loggedIn = false;
+          state.profile = null;
+        }
+      });
     } catch (error) {
       console.error("Auth initialization error:", error);
     } finally {
@@ -64,20 +88,31 @@ export const useAuth = defineStore("auth", () => {
         .eq("id", state.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a "table doesn't exist" error
+        if (error.code === "42P01") {
+          console.warn(
+            "Profiles table doesn't exist yet. Create it in Supabase to enable profile features."
+          );
+          return;
+        }
+        throw error;
+      }
       state.profile = data;
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      // Don't throw here - user can still be authenticated without profile data
     }
   }
 
   // Update user profile in Supabase
-  async function updateProfile(profileData: Partial<IAuth["profile"]>) {
+  async function updateProfile(profileData: any) {
     if (!state.user?.id) return { error: "Not authenticated" };
 
     try {
       const { error } = await supabase
         .from("profiles")
+        // @ts-ignore - Supabase type configuration issue
         .update(profileData)
         .eq("id", state.user.id);
 
@@ -127,6 +162,7 @@ export const useAuth = defineStore("auth", () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       state.user = null;
+      state.loggedIn = false;
       state.profile = null;
     } catch (error) {
       console.error("Error signing out:", error);

@@ -46,19 +46,25 @@ const register = async () => {
       throw new Error("User registration failed");
     }
 
-    // Step 2: Update the profile in the profiles table
-    // Note: This might be automatically handled by the trigger we set up,
-    // but we'll update with additional fields
-    const { error: profileError } = await client.from("profiles").upsert({
-      id: authData.user.id,
-      name: form.value.name,
-      email: form.value.email,
-      username: form.value.email.split("@")[0], // Default username from email
-      event_updates: form.value.eventUpdates,
-      terms_accepted: form.value.tnc,
-    });
+    // Step 2: Try to update the profile in the profiles table (optional)
+    // Note: This might fail if the profiles table doesn't exist yet
+    try {
+      const { error: profileError } = await client.from("users").upsert({
+        id: authData.user.id,
+        name: form.value.name,
+        email: form.value.email,
+        event_updates: form.value.eventUpdates,
+        terms_accepted: form.value.tnc,
+      });
 
-    if (profileError) throw profileError;
+      if (profileError) {
+        console.warn("Profile creation failed:", profileError);
+        // Don't throw here - user registration was successful even if profile creation failed
+      }
+    } catch (profileError) {
+      console.warn("Profiles table might not exist:", profileError);
+      // Continue with registration even if profile creation fails
+    }
 
     // Step 3: Initialize the auth store with new user data
     await auth.init();
@@ -73,19 +79,22 @@ const register = async () => {
     // Close modal if it's being used
     auth.toggleModal(false);
 
+    console.log("user", auth);
+
     // Navigate to dashboard
-    await router.push("/dashboard");
+    // await router.push("/dashboard");
   } catch (error) {
     console.error("Registration error:", error);
 
     // Handle specific error messages for better user feedback
-    if (error.message.includes("email") || error.message.includes("Email")) {
+    const errorMessage = error?.message || "";
+
+    if (errorMessage.includes("email") || errorMessage.includes("Email")) {
       errorMsg.value = "This email is already registered or invalid";
-    } else if (error.message.includes("password")) {
+    } else if (errorMessage.includes("password")) {
       errorMsg.value = "Password must be at least 6 characters";
     } else {
-      errorMsg.value =
-        error.message || "Registration failed. Please try again.";
+      errorMsg.value = errorMessage || "Registration failed. Please try again.";
     }
   } finally {
     loading.value = false;
@@ -98,7 +107,7 @@ const register = async () => {
     <!-- Error message display -->
     <UAlert
       v-if="errorMsg"
-      color="red"
+      color="error"
       variant="soft"
       icon="i-lucide-alert-triangle"
       class="mb-4"
@@ -109,45 +118,60 @@ const register = async () => {
     <form class="space-y-4 w-full" @submit.prevent="register">
       <!-- Name Field with Label -->
       <div class="space-y-1">
-        <label for="name" class="block text-white text-sm font-medium"
-          >Full Name</label
+        <label
+          for="name"
+          class="block text-gray-900 dark:text-white text-sm font-medium"
         >
-        <input
+          Full Name
+        </label>
+        <UInput
           id="name"
           v-model="form.name"
           type="text"
           placeholder="Enter your full name"
-          class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
+          color="primary"
+          variant="outline"
+          class="w-full"
           required
         />
       </div>
 
       <!-- Email Field with Label -->
       <div class="space-y-1">
-        <label for="email" class="block text-white text-sm font-medium"
-          >Email Address</label
+        <label
+          for="email"
+          class="block text-gray-900 dark:text-white text-sm font-medium"
         >
-        <input
+          Email Address
+        </label>
+        <UInput
           id="email"
           v-model="form.email"
           type="email"
           placeholder="Enter your email address"
-          class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
+          color="primary"
+          variant="outline"
+          class="w-full"
           required
         />
       </div>
 
       <!-- Password Field with Label -->
       <div class="space-y-1">
-        <label for="password" class="block text-white text-sm font-medium"
-          >Password</label
+        <label
+          for="password"
+          class="block text-gray-900 dark:text-white text-sm font-medium"
         >
-        <input
+          Password
+        </label>
+        <UInput
           id="password"
           v-model="form.password"
           type="password"
           placeholder="Create a password"
-          class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
+          color="primary"
+          variant="outline"
+          class="w-full"
           required
         />
       </div>
@@ -161,7 +185,9 @@ const register = async () => {
           class="cursor-pointer"
         >
           <template #label>
-            <span class="text-white">I agree to the Terms & Conditions</span>
+            <span class="text-gray-900 dark:text-white"
+              >I agree to the Terms & Conditions</span
+            >
           </template>
         </UCheckbox>
       </div>
@@ -174,26 +200,23 @@ const register = async () => {
           class="cursor-pointer"
         >
           <template #label>
-            <span class="text-white"
-              >Count me in for event updates and perks</span
-            >
+            <span class="text-gray-900 dark:text-white">
+              Count me in for event updates and perks
+            </span>
           </template>
         </UCheckbox>
       </div>
 
       <!-- Submit Button -->
       <div class="flex justify-center items-center mt-6">
-        <button
+        <UButton
           type="submit"
           :disabled="!isFormValid || loading"
-          class="py-2 w-1/2 text-center cursor-pointer text-black bg-[#FFBE61] rounded-full disabled:bg-gray-400 relative"
+          class="py-2 w-1/2 text-black bg-[#FFBE61] hover:bg-[#FFD700] rounded-full disabled:bg-gray-400 transition-colors flex items-center justify-center"
         >
-          <span
-            v-if="loading"
-            class="absolute inset-0 flex items-center justify-center"
-          >
+          <span v-if="loading" class="flex items-center justify-center">
             <svg
-              class="animate-spin h-5 w-5 text-black"
+              class="animate-spin h-5 w-5 text-black mr-2"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -212,9 +235,10 @@ const register = async () => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
+            Registering...
           </span>
           <span v-else>Register</span>
-        </button>
+        </UButton>
       </div>
     </form>
   </div>

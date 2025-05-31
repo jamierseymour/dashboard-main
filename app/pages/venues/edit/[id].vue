@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { VenueFormData, Province, EventType } from "~/types/venue";
+import GoogleAutocomplete from "~/components/Form/GoogleAutocomplete.vue";
 
 const client = useSupabaseClient();
 const route = useRoute();
@@ -84,25 +85,6 @@ const provinceOptions = [
   { label: "Western Cape", value: "Western Cape" },
 ];
 
-// Tabs for organization
-const tabs = [
-  {
-    name: "Basic Info",
-    icon: "i-heroicons-information-circle",
-    id: "basic-info",
-  },
-  { name: "Media", icon: "i-heroicons-photo", id: "media" },
-  {
-    name: "Capacity & Pricing",
-    icon: "i-heroicons-currency-dollar",
-    id: "pricing",
-  },
-  { name: "Amenities", icon: "i-heroicons-wifi", id: "amenities" },
-  { name: "Policies", icon: "i-heroicons-document-text", id: "policies" },
-];
-
-const activeTab = ref("basic-info");
-
 // Fetch venue data
 const fetchVenueData = async () => {
   loading.value = true;
@@ -147,8 +129,12 @@ const fetchVenueData = async () => {
     form.maxCapacity = data.max_capacity?.toString() || "";
     form.companyName = data.company_name || "";
     form.price = data.price?.toString() || "";
-    form.selectedProvince = parsedProvince?.value || parsedProvince;
-    form.provinces = parsedProvince?.value || parsedProvince;
+
+    // Set selected province - ensure it matches the options format
+    const provinceValue = parsedProvince?.value || parsedProvince;
+    form.selectedProvince = provinceValue;
+    form.provinces = provinceValue;
+
     form.eventTypes = parsedEventTypes.map((t: any) => t.value || t);
     form.address = data.address || "";
     form.minimumHours = data.minimum_hours || 4;
@@ -181,7 +167,7 @@ const fetchVenueData = async () => {
         nonRefundableDays: data.cancellation_policy.nonRefundableDays || 7,
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching venue:", error);
     toast.add({
       title: "Error",
@@ -318,6 +304,16 @@ const removePhoto = (index: number) => {
 onMounted(() => {
   fetchVenueData();
 });
+
+// Address selection handler
+const onAddressSelected = (place: any) => {
+  form.address = place.formatted_address;
+};
+
+// Address input changed handler
+const onAddressInputChanged = (input: string) => {
+  form.address = input;
+};
 </script>
 
 <template>
@@ -351,345 +347,353 @@ onMounted(() => {
       </div>
 
       <!-- Main content -->
-      <div v-else>
-        <!-- Tabs -->
-        <UTabs v-model="activeTab" :items="tabs" />
+      <div v-else class="space-y-8">
+        <!-- Basic Information Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-information-circle" class="h-5 w-5" />
+              <span class="font-medium">Basic Information</span>
+            </div>
+          </template>
 
-        <div class="mt-6">
-          <!-- Basic Info Tab -->
-          <div v-if="activeTab === 'basic-info'" class="space-y-6">
-            <UCard>
-              <template #header>
-                <div class="font-medium">Basic Information</div>
-              </template>
+          <div class="space-y-4">
+            <!-- Venue Name and Company Name Row -->
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Venue Name" required>
+                  <UInput
+                    v-model="form.venueName"
+                    placeholder="Enter venue name"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Company Name">
+                  <UInput
+                    v-model="form.companyName"
+                    placeholder="Enter company name"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+            </div>
 
-              <UFormGroup label="Venue Name" required>
-                <UInput
-                  v-model="form.venueName"
-                  placeholder="Enter venue name"
-                />
-              </UFormGroup>
+            <!-- Address and Province Row -->
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Address" required>
+                  <GoogleAutocomplete
+                    placeholder="Search for venue address..."
+                    :options="{
+                      componentRestrictions: { country: 'za' },
+                      types: ['address'],
+                    }"
+                    @place-selected="onAddressSelected"
+                    @input-changed="onAddressInputChanged"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Province" required>
+                  <USelect
+                    v-model="form.selectedProvince"
+                    :options="provinceOptions"
+                    placeholder="Select province"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+            </div>
 
-              <UFormGroup label="Company Name" class="mt-4">
-                <UInput
-                  v-model="form.companyName"
-                  placeholder="Enter company name"
-                />
-              </UFormGroup>
-
-              <UFormGroup label="Description" class="mt-4" required>
+            <!-- Description Row -->
+            <div class="w-full">
+              <UFormGroup label="Description" required>
                 <UTextarea
                   v-model="form.description"
                   placeholder="Describe your venue"
-                  rows="6"
+                  :rows="6"
+                  class="w-full"
                 />
               </UFormGroup>
+            </div>
 
-              <UFormGroup label="Address" class="mt-4" required>
-                <UInput
-                  v-model="form.address"
-                  placeholder="Enter venue address"
-                />
-              </UFormGroup>
-
-              <UFormGroup label="Province" class="mt-4" required>
-                <USelect
-                  v-model="form.selectedProvince"
-                  :options="provinceOptions"
-                  placeholder="Select province"
-                />
-              </UFormGroup>
-
-              <UFormGroup label="Event Types" class="mt-4" required>
+            <!-- Event Types Row -->
+            <div class="w-full">
+              <UFormGroup label="Event Types" required>
                 <USelectMenu
                   v-model="form.eventTypes"
                   :options="eventTypeOptions"
                   placeholder="Select event types"
                   multiple
+                  class="w-full"
                 />
               </UFormGroup>
-            </UCard>
+            </div>
           </div>
+        </UCard>
 
-          <!-- Media Tab -->
-          <div v-if="activeTab === 'media'" class="space-y-6">
-            <UCard>
-              <template #header>
-                <div class="font-medium">Venue Photos</div>
-              </template>
+        <!-- Media Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-photo" class="h-5 w-5" />
+              <span class="font-medium">Venue Photos</span>
+            </div>
+          </template>
 
-              <div class="space-y-4">
-                <UFormGroup label="Photos" required>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    @change="handlePhotoUpload"
-                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                  />
-                </UFormGroup>
+          <div class="space-y-4">
+            <UFormGroup label="Photos" required>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                @change="handlePhotoUpload"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+              />
+            </UFormGroup>
 
-                <!-- Photo gallery -->
-                <div
-                  v-if="form.photos.length"
-                  class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"
+            <!-- Photo gallery -->
+            <div
+              v-if="form.photos.length"
+              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"
+            >
+              <div
+                v-for="(photo, index) in form.photos"
+                :key="index"
+                class="relative group"
+              >
+                <img
+                  :src="photo"
+                  alt="Venue photo"
+                  class="h-40 w-full object-cover rounded-lg"
+                />
+                <button
+                  @click="removePhoto(index)"
+                  class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <div
-                    v-for="(photo, index) in form.photos"
-                    :key="index"
-                    class="relative group"
-                  >
-                    <img
-                      :src="photo"
-                      alt="Venue photo"
-                      class="h-40 w-full object-cover rounded-lg"
-                    />
-                    <button
-                      @click="removePhoto(index)"
-                      class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <UIcon name="i-heroicons-trash" class="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div v-else class="text-gray-500 text-center py-8">
-                  No photos uploaded yet
-                </div>
+                  <UIcon name="i-heroicons-trash" class="h-4 w-4" />
+                </button>
               </div>
-            </UCard>
+            </div>
+
+            <div v-else class="text-gray-500 text-center py-8">
+              No photos uploaded yet
+            </div>
           </div>
+        </UCard>
 
-          <!-- Capacity & Pricing Tab -->
-          <div v-if="activeTab === 'pricing'" class="space-y-6">
-            <UCard>
-              <template #header>
-                <div class="font-medium">Capacity & Pricing</div>
-              </template>
+        <!-- Capacity & Pricing Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-currency-dollar" class="h-5 w-5" />
+              <span class="font-medium">Capacity & Pricing</span>
+            </div>
+          </template>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <UFormGroup label="Minimum Capacity" required>
-                  <UInput
-                    v-model="form.minCapacity"
-                    type="number"
-                    placeholder="Minimum capacity"
-                  />
-                </UFormGroup>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <UFormGroup label="Minimum Capacity" required>
+              <UInput
+                v-model="form.minCapacity"
+                type="number"
+                placeholder="Minimum capacity"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="Maximum Capacity" required>
-                  <UInput
-                    v-model="form.maxCapacity"
-                    type="number"
-                    placeholder="Maximum capacity"
-                  />
-                </UFormGroup>
+            <UFormGroup label="Maximum Capacity" required>
+              <UInput
+                v-model="form.maxCapacity"
+                type="number"
+                placeholder="Maximum capacity"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="Base Price (per hour)" required>
-                  <UInputAddon>R</UInputAddon>
-                  <UInput
-                    v-model="form.price"
-                    type="number"
-                    placeholder="Price per hour"
-                  />
-                </UFormGroup>
+            <UFormGroup label="Base Price (per hour)" required>
+              <UInput
+                v-model="form.price"
+                type="number"
+                placeholder="Price per hour"
+              >
+                <template #leading>
+                  <span class="text-gray-500 text-sm">R</span>
+                </template>
+              </UInput>
+            </UFormGroup>
 
-                <UFormGroup label="Minimum Booking Hours" required>
-                  <UInput
-                    v-model="form.minimumHours"
-                    type="number"
-                    placeholder="Minimum hours"
-                  />
-                </UFormGroup>
+            <UFormGroup label="Minimum Booking Hours" required>
+              <UInput
+                v-model="form.minimumHours"
+                type="number"
+                placeholder="Minimum hours"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="Notice Required (days)" required>
-                  <UInput
-                    v-model="form.noticeRequired"
-                    type="number"
-                    placeholder="Notice required"
-                  />
-                </UFormGroup>
-              </div>
-
-              <div class="mt-6">
-                <h3 class="font-medium text-lg mb-4">Seasonal Pricing</h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <UFormGroup label="Peak Season Price (per hour)">
-                    <UInputAddon>R</UInputAddon>
-                    <UInput
-                      v-model="form.seasonalPricing.peak"
-                      type="number"
-                      placeholder="Peak season price"
-                    />
-                  </UFormGroup>
-
-                  <UFormGroup label="Off-Peak Season Price (per hour)">
-                    <UInputAddon>R</UInputAddon>
-                    <UInput
-                      v-model="form.seasonalPricing.offPeak"
-                      type="number"
-                      placeholder="Off-peak season price"
-                    />
-                  </UFormGroup>
-                </div>
-              </div>
-            </UCard>
+            <UFormGroup label="Notice Required (days)" required>
+              <UInput
+                v-model="form.noticeRequired"
+                type="number"
+                placeholder="Notice required"
+              />
+            </UFormGroup>
           </div>
+        </UCard>
 
-          <!-- Amenities Tab -->
-          <div v-if="activeTab === 'amenities'" class="space-y-6">
-            <UCard>
-              <template #header>
-                <div class="font-medium">Venue Amenities</div>
-              </template>
+        <!-- Amenities Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-wifi" class="h-5 w-5" />
+              <span class="font-medium">Venue Amenities</span>
+            </div>
+          </template>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.wifi"
-                    label="WiFi Available"
-                  />
-                </UFormGroup>
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.wifi"
+                  label="WiFi Available"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox v-model="form.amenities.kitchen" label="Kitchen" />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox v-model="form.amenities.kitchen" label="Kitchen" />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox v-model="form.amenities.stage" label="Stage" />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox v-model="form.amenities.stage" label="Stage" />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox v-model="form.amenities.bar" label="Bar" />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox v-model="form.amenities.bar" label="Bar" />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.soundSystem"
-                    label="Sound System"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.soundSystem"
+                  label="Sound System"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.lighting"
-                    label="Lighting"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox v-model="form.amenities.lighting" label="Lighting" />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.projector"
-                    label="Projector"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.projector"
+                  label="Projector"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.microphone"
-                    label="Microphone"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.microphone"
+                  label="Microphone"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.airConditioning"
-                    label="Air Conditioning"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.airConditioning"
+                  label="Air Conditioning"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox v-model="form.amenities.heating" label="Heating" />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox v-model="form.amenities.heating" label="Heating" />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.danceFloor"
-                    label="Dance Floor"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.danceFloor"
+                  label="Dance Floor"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.outdoorSpace"
-                    label="Outdoor Space"
-                  />
-                </UFormGroup>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.outdoorSpace"
+                  label="Outdoor Space"
+                />
+              </UFormGroup>
 
-                <UFormGroup>
-                  <UCheckbox
-                    v-model="form.amenities.indoorSpace"
-                    label="Indoor Space"
-                  />
-                </UFormGroup>
-              </div>
+              <UFormGroup>
+                <UCheckbox
+                  v-model="form.amenities.indoorSpace"
+                  label="Indoor Space"
+                />
+              </UFormGroup>
+            </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <UFormGroup label="Tables Available">
-                  <UInput
-                    v-model="form.amenities.tables"
-                    type="number"
-                    placeholder="Number of tables"
-                  />
-                </UFormGroup>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <UFormGroup label="Tables Available">
+                <UInput
+                  v-model="form.amenities.tables"
+                  type="number"
+                  placeholder="Number of tables"
+                />
+              </UFormGroup>
 
-                <UFormGroup label="Chairs Available">
-                  <UInput
-                    v-model="form.amenities.chairs"
-                    type="number"
-                    placeholder="Number of chairs"
-                  />
-                </UFormGroup>
-              </div>
-            </UCard>
+              <UFormGroup label="Chairs Available">
+                <UInput
+                  v-model="form.amenities.chairs"
+                  type="number"
+                  placeholder="Number of chairs"
+                />
+              </UFormGroup>
+            </div>
           </div>
+        </UCard>
 
-          <!-- Policies Tab -->
-          <div v-if="activeTab === 'policies'" class="space-y-6">
-            <UCard>
-              <template #header>
-                <div class="font-medium">Cancellation Policy</div>
-              </template>
+        <!-- Policies Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-document-text" class="h-5 w-5" />
+              <span class="font-medium">Cancellation Policy</span>
+            </div>
+          </template>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <UFormGroup label="Full Refund (days before event)" required>
-                  <UInput
-                    v-model="form.cancellationPolicy.refundableDays"
-                    type="number"
-                    placeholder="Days for full refund"
-                  />
-                </UFormGroup>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <UFormGroup label="Full Refund (days before event)" required>
+              <UInput
+                v-model="form.cancellationPolicy.refundableDays"
+                type="number"
+                placeholder="Days for full refund"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="Partial Refund (days before event)" required>
-                  <UInput
-                    v-model="form.cancellationPolicy.partialRefundDays"
-                    type="number"
-                    placeholder="Days for partial refund"
-                  />
-                </UFormGroup>
+            <UFormGroup label="Partial Refund (days before event)" required>
+              <UInput
+                v-model="form.cancellationPolicy.partialRefundDays"
+                type="number"
+                placeholder="Days for partial refund"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="Partial Refund Percentage (%)" required>
-                  <UInput
-                    v-model="form.cancellationPolicy.partialRefundPercentage"
-                    type="number"
-                    placeholder="Percentage refunded"
-                  />
-                </UFormGroup>
+            <UFormGroup label="Partial Refund Percentage (%)" required>
+              <UInput
+                v-model="form.cancellationPolicy.partialRefundPercentage"
+                type="number"
+                placeholder="Percentage refunded"
+              />
+            </UFormGroup>
 
-                <UFormGroup label="No Refund (days before event)" required>
-                  <UInput
-                    v-model="form.cancellationPolicy.nonRefundableDays"
-                    type="number"
-                    placeholder="Days for no refund"
-                  />
-                </UFormGroup>
-              </div>
-            </UCard>
+            <UFormGroup label="No Refund (days before event)" required>
+              <UInput
+                v-model="form.cancellationPolicy.nonRefundableDays"
+                type="number"
+                placeholder="Days for no refund"
+              />
+            </UFormGroup>
           </div>
-        </div>
+        </UCard>
 
         <!-- Bottom actions -->
-        <div class="mt-8 flex justify-end space-x-3">
+        <div class="flex justify-end space-x-3 pt-6 border-t">
           <UButton color="gray" to="/venues" variant="ghost">Cancel</UButton>
           <UButton color="primary" @click="saveVenue" :loading="saving"
             >Save Changes</UButton

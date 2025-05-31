@@ -1,83 +1,57 @@
 <script setup lang="ts">
-import Login from './LoginForm.vue'
-import Register from './SignupForm.vue'
-import { useAuth } from '~/stores/auth'
+import Login from "./LoginForm.vue";
+import Register from "./SignupForm.vue";
+import { useAuth } from "~/stores/auth";
 
-const auth = useAuth()
+const auth = useAuth();
 
-const activeTab = ref<'login' | 'register'>('login')
+const activeTab = ref<"login" | "register">("login");
 </script>
 
 <template>
-  <!-- <div
-      class="bg-gradient-to-b from-[#032334] via-[#063B57] to-[#094F74] rounded-xl shadow-xl"
-    >
-      <div class="flex">
-        <button
-          @click="activeTab = 'login'"
-          class="w-1/2 py-4 text-center text-2xl font-bold transition border-b-2 mx-4"
-          :class="
-            activeTab === 'login'
-              ? 'border-[#FFBE61] text-[#FFBE61]'
-              : 'border-transparent text-light-200 hover:text-gray-100'
-          "
-        >
-          login
-        </button>
-        <button
-          @click="activeTab = 'register'"
-          class="w-1/2 py-4 text-center text-2xl font-bold transition border-b-2 mx-4"
-          :class="
-            activeTab === 'register'
-              ? 'border-[#FFBE61] text-[#FFBE61]'
-              : 'border-transparent text-light-200 hover:text-gray-100'
-          "
-        >
-          register
-        </button>
-      </div>
-
-      <div class="mt-6 flex justify-center items-center">
-        <Login v-if="activeTab === 'login'" />
-        <Register v-else />
-      </div>
-    </div> -->
   <UModal
     v-model:open="auth.modal"
     :ui="{
+      wrapper: 'z-50',
       content:
-        'bg-gradient-to-b from-[#032334] via-[#063B57] to-[#094F74] rounded-3xl shadow-xl z-10'
+        'bg-white dark:bg-gray-900 rounded-3xl shadow-2xl mb-3 z-10 max-w-lg mx-auto',
     }"
   >
     <template #content>
-      <div class="flex">
-        <button
-          class="w-1/2 py-4 cursor-pointer text-center text-2xl font-bold transition border-b-2 mx-4"
-          :class="
-            activeTab === 'login'
-              ? 'border-[#FFBE61] text-[#FFBE61]'
-              : 'border-transparent text-light-200 hover:text-gray-100'
-          "
-          @click="activeTab = 'login'"
-        >
-          login
-        </button>
-        <button
-          class="w-1/2 py-4 cursor-pointer text-center text-2xl font-bold transition border-b-2 mx-4"
-          :class="
-            activeTab === 'register'
-              ? 'border-[#FFBE61] text-[#FFBE61]'
-              : 'border-transparent text-light-200 hover:text-gray-100'
-          "
-          @click="activeTab = 'register'"
-        >
-          register
-        </button>
-      </div>
+      <div>
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-gray-200 dark:border-gray-700">
+          <button
+            class="w-1/2 py-4 cursor-pointer text-center text-xl font-bold transition-all duration-200 border-b-2"
+            :class="
+              activeTab === 'login'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary'
+            "
+            @click="activeTab = 'login'"
+          >
+            Login
+          </button>
+          <button
+            class="w-1/2 py-4 cursor-pointer text-center text-xl font-bold transition-all duration-200 border-b-2"
+            :class="
+              activeTab === 'register'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary'
+            "
+            @click="activeTab = 'register'"
+          >
+            Register
+          </button>
+        </div>
 
-      <div class="mt-6 flex justify-center items-center">
-        <Login v-if="activeTab === 'login'" />
-        <Register v-else />
+        <!-- Form Content -->
+        <div class="flex justify-center items-start">
+          <div class="w-full">
+            <Login v-if="activeTab === 'login'" />
+            <Register v-else />
+          </div>
+        </div>
       </div>
     </template>
   </UModal>

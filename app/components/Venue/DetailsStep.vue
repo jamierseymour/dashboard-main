@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { VenueFormData } from "~/types/venue";
 import type { Province, EventType } from "~/types/venue";
-import GoogleAutocompleteVue from "../Form/GoogleAutocomplete.vue";
+import GoogleAutocompleteVue from "~/components/Form/GoogleAutocomplete.vue";
 
 const props = defineProps<{
   formData: VenueFormData;
@@ -12,9 +12,9 @@ const emit = defineEmits<{
   "update:formData": [data: VenueFormData];
 }>();
 
-const selectedAddress = ref(null);
+const selectedAddress = ref<any>(null);
 
-const onPlaceSelected = (place) => {
+const onPlaceSelected = (place: any) => {
   selectedAddress.value = {
     formatted_address: place.formattedAddress || place.formatted_address,
     coordinates: {
@@ -25,10 +25,24 @@ const onPlaceSelected = (place) => {
       place.addressComponents || place.address_components || [],
   };
 
+  // Update the form data with the selected address
+  const updatedForm = {
+    ...props.formData,
+    address: place.formatted_address || place.formattedAddress || "",
+  };
+  emit("update:formData", updatedForm);
+
   console.log("Place selected:", place);
 };
 
-const onInputChanged = (value) => {
+const onInputChanged = (value: string) => {
+  // Update the form data with the input value
+  const updatedForm = {
+    ...props.formData,
+    address: value,
+  };
+  emit("update:formData", updatedForm);
+
   console.log("Input changed:", value);
 };
 
@@ -99,16 +113,16 @@ const form = computed({
       />
 
       <!-- Updated GoogleAutocomplete with new PlaceAutocompleteElement -->
-      <!-- <GoogleAutocompleteVue
+      <GoogleAutocompleteVue
         placeholder="Search for an address..."
-        :show-details="true"
+        :show-details="false"
         :options="{
           componentRestrictions: { country: 'za' },
           types: ['address'],
         }"
         @place-selected="onPlaceSelected"
         @input-changed="onInputChanged"
-      /> -->
+      />
 
       <div v-if="selectedAddress" class="mt-6">
         <h2 class="text-lg font-semibold mb-2">Selected Address:</h2>

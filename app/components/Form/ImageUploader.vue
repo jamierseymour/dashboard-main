@@ -119,6 +119,7 @@
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import { useSupabaseClient } from "#imports";
+import { useAuth } from "#imports";
 
 const props = defineProps({
   initialImages: {
@@ -137,8 +138,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:images"]);
 
-const user = useSupabaseUser();
-
+const auth = useAuth();
 const supabase = useSupabaseClient();
 const images = ref([]);
 const isDragging = ref(false);
@@ -205,8 +205,8 @@ const processUploadQueue = async () => {
     // Generate a unique filename to avoid collisions
     const fileExt = file.name.split(".").pop();
     let filePath;
-    if (user.value?.id) {
-      filePath = `${user.value.id}/${
+    if (auth.user?.id) {
+      filePath = `${auth.user.id}/${
         props.folderPath ? props.folderPath + "/" : ""
       }${Date.now()}-${file.name}`;
     } else {

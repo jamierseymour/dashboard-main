@@ -91,28 +91,14 @@ const items = [
 
 // Check authentication status
 const checkAuthAndSubmit = async () => {
-  // Check if user is logged in
-  if (!auth.user) {
+  // Check if user is logged in using the new loggedIn state
+  if (!auth.loggedIn) {
     // Open auth modal for login/signup
-    auth.modal = true;
+    auth.toggleModal(true);
     return;
   }
 
-  // Check if user has host role/permissions (adjust this based on your user structure)
-  if (
-    !auth.user.user_metadata?.role ||
-    auth.user.user_metadata.role !== "host"
-  ) {
-    // You might want to show a different modal or message here
-    // for users who need to upgrade to host status
-    console.log("User needs to become a host");
-    // You could redirect to a host signup page or show a different modal
-    // For now, we'll still open the auth modal but you might want different logic
-    auth.modal = true;
-    return;
-  }
-
-  // User is authenticated and is a host, proceed with submission
+  // User is authenticated, proceed with submission
   await SubmitVenue();
 };
 
@@ -124,6 +110,7 @@ const SubmitVenue = async () => {
 
   try {
     // Prepare the data for Supabase
+    // @ts-ignore - Supabase type configuration issue
     const { data, error } = await supabase.from("venues").insert([
       {
         venue_name: formData.value.venueName,
@@ -185,12 +172,12 @@ const SubmitVenue = async () => {
 
 const stepper = useTemplateRef("stepper");
 
-// Watch for authentication changes
+// Watch for authentication changes - auto-submit when user logs in on final step
 watchEffect(() => {
-  // If user logs in successfully and modal closes, check if we should submit
-  if (auth.user && !auth.modal && currentStep.value === items.length - 1) {
-    // User just logged in and we're on the last step, they probably want to submit
-    // You could add additional logic here if needed
+  // If user just logged in (modal closed + logged in + on last step), auto-submit
+  if (auth.loggedIn && !auth.modal && currentStep.value === items.length - 1) {
+    // User just logged in and we're on the last step, auto-submit the venue
+    SubmitVenue();
   }
 });
 
