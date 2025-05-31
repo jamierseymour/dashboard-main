@@ -1,7 +1,8 @@
+<!-- Updated Main Component -->
 <script setup lang="ts">
 import type { VenueFormData } from "~/types/venue";
 import type { Province, EventType } from "~/types/venue";
-import AddressInput from "~/components/Form/AddressInput.vue";
+import GoogleAutocompleteVue from "../Form/GoogleAutocomplete.vue";
 
 const props = defineProps<{
   formData: VenueFormData;
@@ -11,7 +12,25 @@ const emit = defineEmits<{
   "update:formData": [data: VenueFormData];
 }>();
 
-const selectedAddress = ref("");
+const selectedAddress = ref(null);
+
+const onPlaceSelected = (place) => {
+  selectedAddress.value = {
+    formatted_address: place.formattedAddress || place.formatted_address,
+    coordinates: {
+      lat: place.location?.lat || place.geometry?.location?.lat() || 0,
+      lng: place.location?.lng || place.geometry?.location?.lng() || 0,
+    },
+    address_components:
+      place.addressComponents || place.address_components || [],
+  };
+
+  console.log("Place selected:", place);
+};
+
+const onInputChanged = (value) => {
+  console.log("Input changed:", value);
+};
 
 const provinces: { label: string; value: Province }[] = [
   { label: "Eastern Cape", value: "Eastern Cape" },
@@ -41,8 +60,7 @@ const availableEventTypes: { label: string; value: EventType }[] = [
 ];
 
 const handlePlaceSelected = (place) => {
-  selectedAddress.value = place.formatted_address;
-  // Do something with the selected place
+  selectedAddress.value = place.formattedAddress || place.formatted_address;
   console.log("Selected place:", place);
 };
 
@@ -80,14 +98,23 @@ const form = computed({
         class="w-full"
       />
 
-      <div class="flex flex-row gap-3">
-        <AddressInput @place-selected="handlePlaceSelected" />
-        <!-- <USelectMenu
-          v-model="form.selectedProvince"
-          class="h-full w-full"
-          placeholder="Province"
-          :items="provinces"
-        /> -->
+      <!-- Updated GoogleAutocomplete with new PlaceAutocompleteElement -->
+      <!-- <GoogleAutocompleteVue
+        placeholder="Search for an address..."
+        :show-details="true"
+        :options="{
+          componentRestrictions: { country: 'za' },
+          types: ['address'],
+        }"
+        @place-selected="onPlaceSelected"
+        @input-changed="onInputChanged"
+      /> -->
+
+      <div v-if="selectedAddress" class="mt-6">
+        <h2 class="text-lg font-semibold mb-2">Selected Address:</h2>
+        <pre class="bg-gray-100 p-4 rounded-lg text-sm">{{
+          JSON.stringify(selectedAddress, null, 2)
+        }}</pre>
       </div>
 
       <div class="flex flex-row gap-3">

@@ -9,6 +9,22 @@ const emit = defineEmits<{
   "update:formData": [data: VenueFormData];
 }>();
 
+// Available months for selection
+const availableMonths = [
+  { label: "January", value: 1 },
+  { label: "February", value: 2 },
+  { label: "March", value: 3 },
+  { label: "April", value: 4 },
+  { label: "May", value: 5 },
+  { label: "June", value: 6 },
+  { label: "July", value: 7 },
+  { label: "August", value: 8 },
+  { label: "September", value: 9 },
+  { label: "October", value: 10 },
+  { label: "November", value: 11 },
+  { label: "December", value: 12 },
+];
+
 // Create computed properties for two-way binding
 const form = computed({
   get: () => props.formData,
@@ -29,22 +45,29 @@ const updateCancellationPolicy = (field: string, value: string | number) => {
 };
 
 // Helper function for seasonal pricing updates
-const updateSeasonalPricing = (field: string, value: string | number) => {
+const updateSeasonalPricing = (
+  field: string,
+  value: string | number | number[]
+) => {
   form.value = {
     ...form.value,
     seasonalPricing: {
       ...form.value.seasonalPricing,
       [field]:
         field === "peakMonths"
-          ? typeof value === "string"
-            ? value.split(",").map((v) => parseInt(v.trim()) || 0)
-            : [value]
+          ? value // Value will already be an array of numbers from USelectMenu
           : typeof value === "string"
           ? parseFloat(value) || 0
           : value,
     },
   };
 };
+
+// Computed property for peak months to handle the multi-select
+const selectedPeakMonths = computed({
+  get: () => form.value.seasonalPricing?.peakMonths || [],
+  set: (value: number[]) => updateSeasonalPricing("peakMonths", value),
+});
 </script>
 
 <template>
@@ -72,6 +95,7 @@ const updateSeasonalPricing = (field: string, value: string | number) => {
           </div>
         </div>
       </div>
+
       <!-- Cancellation Policy Section -->
       <div class="flex flex-col gap-3">
         <h3 class="text-lg font-semibold">Cancellation Policy</h3>
@@ -128,12 +152,14 @@ const updateSeasonalPricing = (field: string, value: string | number) => {
         </div>
 
         <div class="flex flex-col w-full">
-          <label class="text-sm mb-1">Peak Months (comma separated)</label>
-          <UInput
-            :model-value="form.seasonalPricing?.peakMonths?.join(', ')"
-            @update:model-value="(v) => updateSeasonalPricing('peakMonths', v)"
-            color="primary"
-            variant="outline"
+          <label class="text-sm mb-1">Peak Months</label>
+          <USelectMenu
+            v-model="selectedPeakMonths"
+            multiple
+            selected-icon="i-heroicons-calendar-days"
+            class="h-full w-full"
+            placeholder="Select Peak Months"
+            :items="availableMonths"
           />
         </div>
       </div>

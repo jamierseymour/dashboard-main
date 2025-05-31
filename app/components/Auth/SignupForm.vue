@@ -1,105 +1,117 @@
 <script setup>
-const toast = useToast()
+import { useAuth } from "~/stores/auth";
 
-const client = useSupabaseClient()
-
-const auth = useAuth()
-const user = useSupabaseUser()
+const toast = useToast();
+const client = useSupabaseClient();
+const auth = useAuth();
+const router = useRouter();
 
 const form = ref({
-  name: '',
-  email: '',
-  password: '',
+  name: "",
+  email: "",
+  password: "",
   tnc: false,
-  eventUpdates: false
-})
+  eventUpdates: false,
+});
 
 const isFormValid = computed(() => {
   return (
     form.value.name && form.value.email && form.value.password && form.value.tnc
-  )
-})
+  );
+});
 
-// watchEffect(async () => {
-//   if (user.value) {
-//     console.log('UUUUUUUUUUUUUUUser', user)
-//     toast.add({ title: `Welcome ${user.value.name}`,
-//       description: 'Your action was completed successfully.',
-//       color: 'success' })
-//     auth.modal = false
-//     // await navigateTo('/dashboard')
-//   }
-// })
-
-const errorMsg = ref('')
-const successMsg = ref('')
-const loading = ref(false)
+const errorMsg = ref("");
+const loading = ref(false);
 
 const register = async () => {
-  loading.value = true
-  console.log(form.value)
+  loading.value = true;
+  errorMsg.value = "";
 
   try {
-    // Sign up the user
-    const { data: AuthData, error: signUpError } = await client.auth.signUp({
+    // Step 1: Sign up the user with Supabase Auth
+    const { data: authData, error: signUpError } = await client.auth.signUp({
       email: form.value.email,
-      password: form.value.password
-    })
+      password: form.value.password,
+      options: {
+        data: {
+          name: form.value.name,
+          event_updates: form.value.eventUpdates,
+        },
+      },
+    });
 
-    console.log('AuthData', AuthData)
+    if (signUpError) throw signUpError;
 
-    if (signUpError) throw signUpError
-
-    // If sign-up is successful, insert user info into the auth table
-    const { error: insertError } = await client.from('users').insert([
-      {
-        user_id: AuthData.user.id,
-        email: form.value.email,
-        name: form.value.name,
-        picUrl: null,
-        tnc: form.value.tnc,
-        eventUpdates: form.value.eventUpdates
-      } // Adjust the fields as per your table schema
-    ])
-
-    if (insertError) {
-      console.log('insert error', insertError)
-      errorMsg.value = insertError.message
-
-      throw insertError
-    } else {
-      toast.add({ title: `Welcome ${form.value.name}`,
-        description: 'Your action was completed successfully.',
-        color: 'success' })
-      auth.modal = false
-      await navigateTo('/dashboard')
-      auth.modal = false
-
-      // If successful, set a success message
-      // successMsg.value = 'User information successfully added to the database!'
-      // console.log(successMsg.value) // Optional: Log the success message
+    if (!authData.user) {
+      throw new Error("User registration failed");
     }
+
+    // Step 2: Update the profile in the profiles table
+    // Note: This might be automatically handled by the trigger we set up,
+    // but we'll update with additional fields
+    const { error: profileError } = await client.from("profiles").upsert({
+      id: authData.user.id,
+      name: form.value.name,
+      email: form.value.email,
+      username: form.value.email.split("@")[0], // Default username from email
+      event_updates: form.value.eventUpdates,
+      terms_accepted: form.value.tnc,
+    });
+
+    if (profileError) throw profileError;
+
+    // Step 3: Initialize the auth store with new user data
+    await auth.init();
+
+    // Step 4: Show success message and redirect
+    toast.add({
+      title: `Welcome ${form.value.name}`,
+      description: "Your account has been created successfully.",
+      color: "success",
+    });
+
+    // Close modal if it's being used
+    auth.toggleModal(false);
+
+    // Navigate to dashboard
+    await router.push("/dashboard");
   } catch (error) {
-    console.log(error)
-    errorMsg.value = error
+    console.error("Registration error:", error);
+
+    // Handle specific error messages for better user feedback
+    if (error.message.includes("email") || error.message.includes("Email")) {
+      errorMsg.value = "This email is already registered or invalid";
+    } else if (error.message.includes("password")) {
+      errorMsg.value = "Password must be at least 6 characters";
+    } else {
+      errorMsg.value =
+        error.message || "Registration failed. Please try again.";
+    }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <template>
   <div class="w-full mx-auto p-8 shadow-lg rounded-lg">
-    <div v-if="errorMsg" class="text-center justify-center text-error-200 mb-3">
-      {{ errorMsg }}
-    </div>
+    <!-- Error message display -->
+    <UAlert
+      v-if="errorMsg"
+      color="red"
+      variant="soft"
+      icon="i-lucide-alert-triangle"
+      class="mb-4"
+    >
+      <p>{{ errorMsg }}</p>
+    </UAlert>
+
     <form class="space-y-4 w-full" @submit.prevent="register">
       <!-- Name Field with Label -->
       <div class="space-y-1">
-        <label
-          for="name"
-          class="block text-white text-sm font-medium"
-        >Full Name</label>
+        <label for="name" class="block text-white text-sm font-medium"
+          >Full Name</label
+        >
         <input
           id="name"
           v-model="form.name"
@@ -107,15 +119,14 @@ const register = async () => {
           placeholder="Enter your full name"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        >
+        />
       </div>
 
       <!-- Email Field with Label -->
       <div class="space-y-1">
-        <label
-          for="email"
-          class="block text-white text-sm font-medium"
-        >Email Address</label>
+        <label for="email" class="block text-white text-sm font-medium"
+          >Email Address</label
+        >
         <input
           id="email"
           v-model="form.email"
@@ -123,15 +134,14 @@ const register = async () => {
           placeholder="Enter your email address"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        >
+        />
       </div>
 
       <!-- Password Field with Label -->
       <div class="space-y-1">
-        <label
-          for="password"
-          class="block text-white text-sm font-medium"
-        >Password</label>
+        <label for="password" class="block text-white text-sm font-medium"
+          >Password</label
+        >
         <input
           id="password"
           v-model="form.password"
@@ -139,7 +149,7 @@ const register = async () => {
           placeholder="Create a password"
           class="w-full px-3 py-2 text-sm border rounded-lg bg-white text-black placeholder-gray-500 focus:ring focus:ring-indigo-300"
           required
-        >
+        />
       </div>
 
       <!-- Checkboxes -->
@@ -164,7 +174,9 @@ const register = async () => {
           class="cursor-pointer"
         >
           <template #label>
-            <span class="text-white">Count me in for event updates and perks</span>
+            <span class="text-white"
+              >Count me in for event updates and perks</span
+            >
           </template>
         </UCheckbox>
       </div>
