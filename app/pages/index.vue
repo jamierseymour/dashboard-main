@@ -12,7 +12,7 @@ const client = useSupabaseClient();
 // Define the IVenue interface
 interface IVenue {
   id: bigint;
-  type: string;
+  event_types: string[]; // This is an array of event types
   photos: string[];
   minCapacity: number | null;
   venue_name: string;
@@ -50,18 +50,31 @@ const venueType = ref("");
 const guestCount = ref("");
 const eventDate = ref("");
 
-const filterVenues = (eventType: string | null) => {
-  if (!eventType) {
-    // Reset to show all venues
-    // If you're using a computed property for filtered venues:
-    // filteredVenues.value = venues.value;
-    console.log("Showing all venues");
-  } else {
-    // Filter venues by event type
-    // If you're using a computed property:
-    // filteredVenues.value = venues.value.filter(venue => venue.type === eventType);
-    console.log("Filtering venues by event type:", eventType);
+// Active filter for venue types
+const activeEventTypeFilter = ref<string | null>(null);
+
+// Computed property for filtered venues
+const filteredVenues = computed(() => {
+  if (!activeEventTypeFilter.value) {
+    return venues.value;
   }
+
+  // Filter venues by the selected event type
+  // Check if the venue's event_types array includes the selected filter
+  return venues.value.filter(
+    (venue) =>
+      venue.event_types &&
+      venue.event_types.some(
+        (eventType) =>
+          eventType.toLowerCase() === activeEventTypeFilter.value!.toLowerCase()
+      )
+  );
+});
+
+const filterVenues = (eventType: string | null) => {
+  activeEventTypeFilter.value = eventType;
+  console.log("Filtering venues by event type:", eventType);
+  console.log("Filtered venues count:", filteredVenues.value.length);
 };
 
 // Venue type options
@@ -113,7 +126,7 @@ console.log("Venues:", venues.value);
       <div
         class="relative z-10 flex flex-col items-center justify-center h-full px-4 text-white"
       >
-        <h1 class="text-5xl font-bold text-center mb-8 text-shadow">
+        <h1 class="text-5xl font-bold text-center mt-12 mb-8 text-shadow">
           plan less, party more
         </h1>
         <p class="text-2xl font-medium text-center mb-12 text-shadow">
@@ -191,12 +204,21 @@ console.log("Venues:", venues.value);
 
     <!-- Venues Grid (Existing Content) -->
     <div class="container mx-auto p-4 max-w-[1228px] mt-8">
+      <!-- Display filtered venues count -->
+      <div v-if="activeEventTypeFilter" class="mb-4">
+        <p class="text-gray-600">
+          Showing {{ filteredVenues.length }} venues for "{{
+            activeEventTypeFilter
+          }}"
+        </p>
+      </div>
+
       <div
-        v-if="venues && venues.length > 0"
+        v-if="filteredVenues && filteredVenues.length > 0"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 -mt-24 gap-8"
       >
         <div
-          v-for="venue in venues"
+          v-for="venue in filteredVenues"
           :key="venue.id.toString()"
           class="bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]"
         >
@@ -222,6 +244,17 @@ console.log("Venues:", venues.value);
             </div>
           </NuxtLink>
         </div>
+      </div>
+      <div v-else-if="activeEventTypeFilter" class="text-center py-12">
+        <p class="text-gray-600 text-lg">
+          No venues found for "{{ activeEventTypeFilter }}"
+        </p>
+        <button
+          @click="filterVenues(null)"
+          class="mt-4 text-mulberry hover:underline"
+        >
+          Show all venues
+        </button>
       </div>
       <div v-else class="text-center">
         Loading venues or no venues available...

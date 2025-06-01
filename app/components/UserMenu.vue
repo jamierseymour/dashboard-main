@@ -213,26 +213,26 @@ const items = computed<DropdownMenuItem[][]>(() => [
       ],
     },
   ],
-  [
-    {
-      label: "Documentation",
-      icon: "i-lucide-book-open",
-      to: "https://ui.nuxt.com/getting-started/installation/pro/nuxt",
-      target: "_blank",
-    },
-    {
-      label: "GitHub repository",
-      icon: "i-simple-icons-github",
-      to: "https://github.com/nuxt-ui-pro/dashboard",
-      target: "_blank",
-    },
-    {
-      label: "Upgrade to Pro",
-      icon: "i-lucide-rocket",
-      to: "https://ui.nuxt.com/pro/purchase",
-      target: "_blank",
-    },
-  ],
+  // [
+  //   {
+  //     label: "Documentation",
+  //     icon: "i-lucide-book-open",
+  //     to: "https://ui.nuxt.com/getting-started/installation/pro/nuxt",
+  //     target: "_blank",
+  //   },
+  //   {
+  //     label: "GitHub repository",
+  //     icon: "i-simple-icons-github",
+  //     to: "https://github.com/nuxt-ui-pro/dashboard",
+  //     target: "_blank",
+  //   },
+  //   {
+  //     label: "Upgrade to Pro",
+  //     icon: "i-lucide-rocket",
+  //     to: "https://ui.nuxt.com/pro/purchase",
+  //     target: "_blank",
+  //   },
+  // ],
   [
     {
       label: "Log out",

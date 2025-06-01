@@ -52,6 +52,66 @@ const getIconForEventType = (type: EventType): string => {
 // Active filter state
 const activeFilter = ref<EventType | null>(null);
 
+// Carousel state
+const currentIndex = ref(0);
+const isLargeScreen = ref(true);
+
+// Responsive breakpoint check
+const checkScreenSize = () => {
+  if (typeof window !== "undefined") {
+    isLargeScreen.value = window.innerWidth >= 1024;
+    if (isLargeScreen.value) {
+      currentIndex.value = 0; // Reset carousel on large screens
+    }
+  }
+};
+
+// Items per page based on screen size
+const itemsPerPage = computed(() => {
+  if (isLargeScreen.value) {
+    return availableEventTypes.length; // Show all items on large screens
+  }
+  // On smaller screens, show 4 items at a time
+  return 4;
+});
+
+// Computed properties for carousel
+const totalPages = computed(() =>
+  Math.ceil(availableEventTypes.length / itemsPerPage.value)
+);
+
+const visibleItems = computed(() => {
+  if (isLargeScreen.value) {
+    return availableEventTypes; // Show all items on large screens
+  }
+  const start = currentIndex.value * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return availableEventTypes.slice(start, end);
+});
+
+const canGoPrevious = computed(
+  () => !isLargeScreen.value && currentIndex.value > 0
+);
+const canGoNext = computed(
+  () => !isLargeScreen.value && currentIndex.value < totalPages.value - 1
+);
+const showCarouselControls = computed(
+  () => !isLargeScreen.value && totalPages.value > 1
+);
+
+// Navigation functions
+const goToPrevious = () => {
+  if (canGoPrevious.value) {
+    currentIndex.value--;
+  }
+};
+
+const goToNext = () => {
+  if (canGoNext.value) {
+    currentIndex.value++;
+  }
+};
+
 // Toggle filter function
 const toggleFilter = (type: EventType) => {
   if (activeFilter.value === type) {
@@ -66,53 +126,120 @@ const toggleFilter = (type: EventType) => {
 
 // Define emits
 const emit = defineEmits(["filter-change"]);
+
+// Handle screen size changes
+onMounted(() => {
+  checkScreenSize();
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", checkScreenSize);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", checkScreenSize);
+  }
+});
 </script>
 
 <template>
-  <div class="w-full py-4 px-2 mb-8 rounded-lg border-t">
+  <div class="w-full py-6 px-2 mb-8 rounded-lg">
     <div class="container mx-auto">
       <!-- Filter title -->
-      <div class="flex items-center justify-between mb-4 px-4">
+      <div class="flex items-center justify-between mb-6 px-4">
         <button
           v-if="activeFilter"
-          class="text-sm text-mulberry hover:underline"
+          class="text-sm text-mulberry hover:text-mulberry-dark transition-colors duration-200 hover:underline"
           @click="toggleFilter(activeFilter)"
         >
           Clear Filter
         </button>
       </div>
 
-      <!-- Scrollable filter bar -->
-      <div class="overflow-x-auto pb-2">
-        <div class="flex space-x-4 px-2 min-w-max">
-          <button
-            v-for="eventType in availableEventTypes"
-            :key="eventType.value"
+      <!-- Carousel container -->
+      <div class="relative">
+        <!-- Left Arrow -->
+        <button
+          v-if="canGoPrevious"
+          @click="goToPrevious"
+          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200"
+        >
+          <UIcon
+            name="i-heroicons-chevron-left"
+            class="h-5 w-5 text-gray-700"
+          />
+        </button>
+
+        <!-- Right Arrow -->
+        <button
+          v-if="canGoNext"
+          @click="goToNext"
+          class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200"
+        >
+          <UIcon
+            name="i-heroicons-chevron-right"
+            class="h-5 w-5 text-gray-700"
+          />
+        </button>
+
+        <!-- Items container -->
+        <div :class="showCarouselControls ? 'px-12' : 'px-2'">
+          <div
+            class="transition-all duration-300"
             :class="[
-              'flex flex-col items-center justify-center p-3  transition-all duration-200',
-              activeFilter === eventType.value
-                ? 'bg-mulberry text-white shadow-lg border-b'
-                : ' text-gray-700 ',
+              isLargeScreen
+                ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-4 lg:gap-2'
+                : 'grid grid-cols-4 gap-4',
             ]"
-            @click="toggleFilter(eventType.value)"
           >
-            <div
-              class="w-10 h-10 flex items-center justify-center mb-2 cursor-pointer"
+            <button
+              v-for="eventType in visibleItems"
+              :key="eventType.value"
+              :class="[
+                'flex flex-col items-center justify-center p-4 transition-all duration-300 transform',
+                activeFilter === eventType.value
+                  ? 'text-mulberry scale-105'
+                  : 'text-gray-600 hover:text-gray-400 hover:scale-102',
+              ]"
+              @click="toggleFilter(eventType.value)"
             >
-              <UIcon
-                :name="getIconForEventType(eventType.value)"
-                size="24px"
-                :class="
-                  activeFilter === eventType.value
-                    ? 'text-white'
-                    : 'text-gray-700'
-                "
-              />
-            </div>
-            <span class="text-xs font-medium whitespace-nowrap">{{
-              eventType.label
-            }}</span>
-          </button>
+              <div
+                class="w-12 h-12 flex items-center justify-center mb-3 transition-all duration-300"
+              >
+                <UIcon
+                  :name="getIconForEventType(eventType.value)"
+                  size="28px"
+                  :class="[
+                    'transition-all duration-300',
+                    activeFilter === eventType.value
+                      ? 'text-mulberry'
+                      : 'text-gray-600 group-hover:text-gray-400',
+                  ]"
+                />
+              </div>
+              <span class="text-sm font-medium whitespace-nowrap text-center">{{
+                eventType.label
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pagination dots -->
+        <div
+          v-if="showCarouselControls"
+          class="flex justify-center mt-4 space-x-2"
+        >
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            @click="currentIndex = page - 1"
+            :class="[
+              'w-2 h-2 rounded-full transition-all duration-200',
+              currentIndex === page - 1
+                ? 'bg-mulberry'
+                : 'bg-gray-300 hover:bg-gray-400',
+            ]"
+          />
         </div>
       </div>
     </div>
@@ -124,22 +251,15 @@ const emit = defineEmits(["filter-change"]);
   color: #c0397a;
 }
 
-/* Custom scrollbar for the filter bar */
-.overflow-x-auto::-webkit-scrollbar {
-  height: 4px;
+.bg-mulberry {
+  background-color: #c0397a;
 }
 
-.overflow-x-auto::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+.text-mulberry-dark {
+  color: #a02e65;
 }
 
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background: #c0397a;
-  border-radius: 10px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: #a02e65;
+.hover\:scale-102:hover {
+  transform: scale(1.02);
 }
 </style>

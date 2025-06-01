@@ -1,35 +1,43 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'dashboard' // This will use layouts/admin.vue
-})
-const links = [[{
-  label: 'General',
-  icon: 'i-lucide-user',
-  to: '/settings',
-  exact: true
-}, {
-  label: 'Members',
-  icon: 'i-lucide-users',
-  to: '/settings/members'
-}, {
-  label: 'Notifications',
-  icon: 'i-lucide-bell',
-  to: '/settings/notifications'
-}, {
-  label: 'Security',
-  icon: 'i-lucide-shield',
-  to: '/settings/security'
-}], [{
-  label: 'Documentation',
-  icon: 'i-lucide-book-open',
-  to: 'https://ui.nuxt.com/getting-started/installation/pro/nuxt',
-  target: '_blank'
-}, {
-  label: 'Buy now',
-  icon: 'i-lucide-shopping-cart',
-  to: 'https://ui.nuxt.com/pro/purchase',
-  target: '_blank'
-}]]
+  layout: "dashboard", // This will use layouts/admin.vue
+});
+const links = [
+  [
+    {
+      label: "General",
+      icon: "i-lucide-user",
+      to: "/settings",
+      exact: true,
+    },
+    {
+      label: "Members",
+      icon: "i-lucide-users",
+      to: "/settings/members",
+    },
+    {
+      label: "Notifications",
+      icon: "i-lucide-bell",
+      to: "/settings/notifications",
+    },
+    {
+      label: "Security",
+      icon: "i-lucide-shield",
+      to: "/settings/security",
+    },
+  ],
+  // [{
+  //   label: 'Documentation',
+  //   icon: 'i-lucide-book-open',
+  //   to: 'https://ui.nuxt.com/getting-started/installation/pro/nuxt',
+  //   target: '_blank'
+  // }, {
+  //   label: 'Buy now',
+  //   icon: 'i-lucide-shopping-cart',
+  //   to: 'https://ui.nuxt.com/pro/purchase',
+  //   target: '_blank'
+  // }]
+];
 </script>
 
 <template>
@@ -48,7 +56,9 @@ const links = [[{
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-2xl mx-auto">
+      <div
+        class="flex flex-col gap-4 sm:gap-6 lg:gap-12 w-full lg:max-w-2xl mx-auto"
+      >
         <NuxtPage />
       </div>
     </template>

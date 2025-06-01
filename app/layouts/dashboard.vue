@@ -49,6 +49,7 @@ const links = [
       label: "insights",
       icon: "i-lucide-bar-chart-2",
       to: "/insights",
+      disabled: true,
       onSelect: () => {
         open.value = false;
       },
@@ -57,20 +58,13 @@ const links = [
       label: "guidebooks",
       icon: "i-lucide-file",
       to: "/guidebooks",
+      disabled: true,
       onSelect: () => {
         open.value = false;
       },
     },
   ],
   [
-    {
-      label: "Profile",
-      icon: "i-lucide-user",
-      to: "/customers",
-      onSelect: () => {
-        open.value = false;
-      },
-    },
     {
       label: "inbox",
       icon: "i-lucide-inbox",
@@ -87,7 +81,7 @@ const links = [
       defaultOpen: true,
       children: [
         {
-          label: "General",
+          label: "Profile",
           to: "/settings",
           exact: true,
           onSelect: () => {
@@ -251,8 +245,11 @@ onMounted(async () => {
           :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
         >
           <template #header="{ collapsed }">
-            <TeamsMenu :collapsed="collapsed" />
+            <UserMenu :collapsed="collapsed" />
           </template>
+          <!-- <template #header="{ collapsed }">
+            <TeamsMenu :collapsed="collapsed" />
+          </template> -->
 
           <template #default="{ collapsed }">
             <UDashboardSearchButton
