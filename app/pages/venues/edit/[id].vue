@@ -10,6 +10,7 @@ const router = useRouter();
 const venueId = route.params.id as string;
 const loading = ref(false);
 const saving = ref(false);
+const showSuccessModal = ref(false);
 
 // Initialize form with default values
 const form = reactive<VenueFormData>({
@@ -85,40 +86,55 @@ const provinceOptions = [
   { label: "Western Cape", value: "Western Cape" },
 ];
 
+// Add debug logging
+console.log("Province options:", provinceOptions);
+console.log("Current form selectedProvince:", form.selectedProvince);
+
 // Fetch venue data
 const fetchVenueData = async () => {
   loading.value = true;
   try {
     const { data, error } = await client
       .from("venues")
-      .select()
+      .select("*")
       .eq("id", venueId)
       .single();
 
     if (error) throw error;
     if (!data) throw new Error("Venue not found");
 
+    console.log("Fetched venue data:", data);
+
     // Parse event types
     const parsedEventTypes =
       data.event_types?.map((type: any) => {
         if (typeof type === "string") {
           try {
-            return JSON.parse(type);
+            const parsed = JSON.parse(type);
+            return parsed.value || parsed;
           } catch {
             return type;
           }
         }
-        return type;
+        return type?.value || type;
       }) || [];
 
-    // Parse selected province
-    let parsedProvince = data.selected_province;
-    try {
+    // Parse selected province - handle different formats
+    let selectedProvinceValue = null;
+    if (data.selected_province) {
       if (typeof data.selected_province === "string") {
-        parsedProvince = JSON.parse(data.selected_province);
+        try {
+          const parsed = JSON.parse(data.selected_province);
+          selectedProvinceValue = parsed.value || parsed.label || parsed;
+        } catch {
+          selectedProvinceValue = data.selected_province;
+        }
+      } else {
+        selectedProvinceValue =
+          data.selected_province.value ||
+          data.selected_province.label ||
+          data.selected_province;
       }
-    } catch {
-      // Keep as is if not JSON
     }
 
     // Map database values to form
@@ -131,20 +147,39 @@ const fetchVenueData = async () => {
     form.price = data.price?.toString() || "";
 
     // Set selected province - ensure it matches the options format
-    const provinceValue = parsedProvince?.value || parsedProvince;
-    form.selectedProvince = provinceValue;
-    form.provinces = provinceValue;
+    form.selectedProvince = selectedProvinceValue;
+    form.provinces = selectedProvinceValue;
 
-    form.eventTypes = parsedEventTypes.map((t: any) => t.value || t);
+    form.eventTypes = parsedEventTypes;
     form.address = data.address || "";
     form.minimumHours = data.minimum_hours || 4;
     form.noticeRequired = data.notice_required || 7;
 
-    // Parse amenities
+    // Parse amenities with proper defaults
     if (data.amenities) {
       form.amenities = {
-        ...form.amenities,
-        ...data.amenities,
+        wifi: data.amenities.wifi || false,
+        kitchen: data.amenities.kitchen || false,
+        stage: data.amenities.stage || false,
+        bar: data.amenities.bar || false,
+        soundSystem:
+          data.amenities.sound_system || data.amenities.soundSystem || false,
+        lighting: data.amenities.lighting || false,
+        projector: data.amenities.projector || false,
+        microphone: data.amenities.microphone || false,
+        airConditioning:
+          data.amenities.air_conditioning ||
+          data.amenities.airConditioning ||
+          false,
+        heating: data.amenities.heating || false,
+        tables: data.amenities.tables || 0,
+        chairs: data.amenities.chairs || 0,
+        danceFloor:
+          data.amenities.dance_floor || data.amenities.danceFloor || false,
+        outdoorSpace:
+          data.amenities.outdoor_space || data.amenities.outdoorSpace || false,
+        indoorSpace:
+          data.amenities.indoor_space || data.amenities.indoorSpace || false,
       };
     }
 
@@ -167,12 +202,18 @@ const fetchVenueData = async () => {
         nonRefundableDays: data.cancellation_policy.nonRefundableDays || 7,
       };
     }
+
+    console.log("Parsed form data:", {
+      selectedProvince: form.selectedProvince,
+      eventTypes: form.eventTypes,
+      amenities: form.amenities,
+    });
   } catch (error: any) {
     console.error("Error fetching venue:", error);
     toast.add({
       title: "Error",
       description: "Failed to load venue data",
-      color: "red",
+      color: "error",
     });
   } finally {
     loading.value = false;
@@ -215,31 +256,44 @@ const saveVenue = async () => {
       cancellation_policy: form.cancellationPolicy,
     };
 
+    console.log("Saving venue data:", venueData);
+
     const { error } = await client
       .from("venues")
       .update(venueData)
       .eq("id", venueId);
 
-    if (error) throw error;
-
-    toast.add({
-      title: "Success",
-      description: "Venue updated successfully",
-      color: "green",
-    });
-
-    // Navigate back to venue details
-    router.push(`/venues/${venueId}`);
+    if (error) console.log(error);
+    else {
+      // Show success modal instead of toast and redirect
+      showSuccessModal.value = true;
+    }
   } catch (error) {
     console.error("Error updating venue:", error);
     toast.add({
       title: "Error",
       description: "Failed to update venue",
-      color: "red",
+      color: "error",
     });
   } finally {
     saving.value = false;
   }
+};
+
+// Handle navigation from success modal
+const goToDashboard = () => {
+  showSuccessModal.value = false;
+  router.push("/venues");
+};
+
+const viewVenue = () => {
+  showSuccessModal.value = false;
+  router.push(`/venues/${venueId}`);
+};
+
+// Close modal without navigation
+const closeModal = () => {
+  showSuccessModal.value = false;
 };
 
 // Handle photo uploads
@@ -250,7 +304,7 @@ const handlePhotoUpload = async (event: any) => {
   const toastId = toast.add({
     title: "Uploading",
     description: "Uploading photos...",
-    color: "blue",
+    color: "secondary",
     icon: "i-heroicons-arrow-path",
     loading: true,
   });
@@ -264,14 +318,14 @@ const handlePhotoUpload = async (event: any) => {
 
       // Upload file to Supabase Storage
       const { data, error } = await client.storage
-        .from("venue-images")
+        .from("venue-photos")
         .upload(fileName, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: publicUrlData } = client.storage
-        .from("venue-images")
+        .from("venue-photos")
         .getPublicUrl(fileName);
 
       // Add to photos array
@@ -282,7 +336,7 @@ const handlePhotoUpload = async (event: any) => {
     toast.add({
       title: "Success",
       description: "Photos uploaded successfully",
-      color: "green",
+      color: "success",
     });
   } catch (error) {
     console.error("Error uploading photos:", error);
@@ -290,7 +344,7 @@ const handlePhotoUpload = async (event: any) => {
     toast.add({
       title: "Error",
       description: "Failed to upload photos",
-      color: "red",
+      color: "error",
     });
   }
 };
@@ -302,7 +356,23 @@ const removePhoto = (index: number) => {
 
 // Fetch venue data on page load
 onMounted(() => {
+  // Explicitly reset modal state on page load
+  showSuccessModal.value = false;
   fetchVenueData();
+});
+
+// Watch for route changes and reset modal state
+watch(
+  () => route.path,
+  () => {
+    showSuccessModal.value = false;
+  },
+  { immediate: true }
+);
+
+// Reset modal state when component unmounts
+onUnmounted(() => {
+  showSuccessModal.value = false;
 });
 
 // Address selection handler
@@ -330,7 +400,9 @@ const onAddressInputChanged = (input: string) => {
         <div class="flex items-center justify-between mt-4">
           <h1 class="text-2xl font-bold">Edit Venue: {{ form.venueName }}</h1>
           <div class="flex space-x-3">
-            <UButton color="gray" to="/venues" variant="ghost">Cancel</UButton>
+            <UButton color="neutral" to="/venues" variant="ghost"
+              >Cancel</UButton
+            >
             <UButton color="primary" @click="saveVenue" :loading="saving"
               >Save Changes</UButton
             >
@@ -400,6 +472,8 @@ const onAddressInputChanged = (input: string) => {
                   <USelect
                     v-model="form.selectedProvince"
                     :options="provinceOptions"
+                    option-attribute="label"
+                    value-attribute="value"
                     placeholder="Select province"
                     class="w-full"
                   />
@@ -694,12 +768,76 @@ const onAddressInputChanged = (input: string) => {
 
         <!-- Bottom actions -->
         <div class="flex justify-end space-x-3 pt-6 border-t">
-          <UButton color="gray" to="/venues" variant="ghost">Cancel</UButton>
+          <UButton color="neutral" to="/venues" variant="ghost">Cancel</UButton>
           <UButton color="primary" @click="saveVenue" :loading="saving"
             >Save Changes</UButton
           >
         </div>
       </div>
     </UContainer>
+
+    <!-- Success Modal -->
+    <UModal v-model="showSuccessModal" @close="closeModal">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center space-x-3">
+              <div class="flex-shrink-0">
+                <div
+                  class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-check"
+                    class="w-6 h-6 text-green-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Venue Updated Successfully!
+                </h3>
+                <p class="text-sm text-gray-600">
+                  Your changes have been saved.
+                </p>
+              </div>
+            </div>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark"
+              @click="closeModal"
+              class="flex-shrink-0"
+            />
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <p class="text-gray-700">
+            The venue "<strong>{{ form.venueName }}</strong
+            >" has been updated successfully. What would you like to do next?
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3 pt-4">
+            <UButton
+              color="primary"
+              @click="viewVenue"
+              class="flex-1 justify-center"
+              icon="i-heroicons-eye"
+            >
+              View Updated Venue
+            </UButton>
+            <UButton
+              color="neutral"
+              @click="goToDashboard"
+              class="flex-1 justify-center"
+              icon="i-heroicons-squares-2x2"
+              variant="solid"
+            >
+              Back to Dashboard
+            </UButton>
+          </div>
+        </div>
+      </UCard>
+    </UModal>
   </div>
 </template>

@@ -39,10 +39,26 @@
       v-if="selectedPlace && showDetails"
       class="mt-2 p-3 bg-gray-50 rounded-lg text-sm"
     >
-      <p class="font-medium">{{ selectedPlace.formatted_address }}</p>
-      <p class="text-gray-600">
-        Lat: {{ selectedPlace.geometry?.location?.lat()?.toFixed(6) }}, Lng:
-        {{ selectedPlace.geometry?.location?.lng()?.toFixed(6) }}
+      <p class="font-medium">
+        {{ selectedPlace.formatted_address || selectedPlace.formattedAddress }}
+      </p>
+      <p
+        class="text-gray-600"
+        v-if="selectedPlace.geometry || selectedPlace.location"
+      >
+        Lat:
+        {{
+          (
+            selectedPlace.geometry?.location?.lat() ||
+            selectedPlace.location?.lat
+          )?.toFixed(6)
+        }}, Lng:
+        {{
+          (
+            selectedPlace.geometry?.location?.lng() ||
+            selectedPlace.location?.lng
+          )?.toFixed(6)
+        }}
       </p>
     </div>
   </div>
@@ -76,15 +92,11 @@ const showPredictions = ref(false);
 const selectedPlace = ref(null);
 
 let autocompleteService = null;
-let placesService = null;
 
 const initializeServices = async () => {
   // Wait for Google Maps to be available
   if (typeof window !== "undefined" && window.google?.maps?.places) {
     autocompleteService = new window.google.maps.places.AutocompleteService();
-    placesService = new window.google.maps.places.PlacesService(
-      document.createElement("div")
-    );
   }
 };
 
@@ -129,30 +141,80 @@ const searchPredictions = (input) => {
   });
 };
 
-const selectPrediction = (prediction) => {
-  if (!placesService) return;
+const selectPrediction = async (prediction) => {
+  try {
+    // Use the new Place API
+    if (window.google?.maps?.places?.Place) {
+      const place = new window.google.maps.places.Place({
+        id: prediction.place_id,
+        requestedLanguage: "en",
+      });
 
-  const request = {
-    placeId: prediction.place_id,
-    fields: [
-      "place_id",
-      "formatted_address",
-      "geometry",
-      "name",
-      "address_components",
-    ],
-  };
+      // Fetch place details using the new API
+      const { place: placeResult } = await place.fetchFields({
+        fields: [
+          "id",
+          "displayName",
+          "formattedAddress",
+          "location",
+          "addressComponents",
+        ],
+      });
 
-  placesService.getDetails(request, (place, status) => {
-    if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-      inputValue.value = place.formatted_address;
-      selectedPlace.value = place;
+      inputValue.value = placeResult.formattedAddress;
+      selectedPlace.value = placeResult;
       predictions.value = [];
       showPredictions.value = false;
 
-      emit("place-selected", place);
+      emit("place-selected", placeResult);
+    } else {
+      // Fallback to legacy API if new one isn't available yet
+      const placesService = new window.google.maps.places.PlacesService(
+        document.createElement("div")
+      );
+
+      const request = {
+        placeId: prediction.place_id,
+        fields: [
+          "place_id",
+          "formatted_address",
+          "geometry",
+          "name",
+          "address_components",
+        ],
+      };
+
+      placesService.getDetails(request, (place, status) => {
+        if (
+          status === window.google.maps.places.PlacesServiceStatus.OK &&
+          place
+        ) {
+          inputValue.value = place.formatted_address;
+          selectedPlace.value = place;
+          predictions.value = [];
+          showPredictions.value = false;
+
+          emit("place-selected", place);
+        }
+      });
     }
-  });
+  } catch (error) {
+    console.error("Error fetching place details:", error);
+
+    // Fallback: just use the prediction data
+    inputValue.value = prediction.description;
+    selectedPlace.value = {
+      formatted_address: prediction.description,
+      place_id: prediction.place_id,
+    };
+    predictions.value = [];
+    showPredictions.value = false;
+
+    emit("place-selected", {
+      formatted_address: prediction.description,
+      place_id: prediction.place_id,
+    });
+  }
 };
 
 // Handle clicks outside to close dropdown

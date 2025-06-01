@@ -4,14 +4,13 @@ import { useAuth } from "~/stores/auth";
 const toast = useToast();
 const client = useSupabaseClient();
 const auth = useAuth();
-const router = useRouter();
 
 const form = ref({
   name: "",
   email: "",
   password: "",
-  tnc: false,
-  eventUpdates: false,
+  tnc: true,
+  eventUpdates: true,
 });
 
 const isFormValid = computed(() => {
@@ -28,61 +27,38 @@ const register = async () => {
   errorMsg.value = "";
 
   try {
-    // Step 1: Sign up the user with Supabase Auth
-    const { data: authData, error: signUpError } = await client.auth.signUp({
+    // Debug: Check what functions are available
+    console.log("Auth store functions:", Object.keys(auth));
+    console.log("signUp function:", typeof auth.signUp);
+
+    // Use the auth store's signUp function
+    const result = await auth.signUp({
       email: form.value.email,
       password: form.value.password,
-      options: {
-        data: {
-          name: form.value.name,
-          event_updates: form.value.eventUpdates,
-        },
-      },
+      name: form.value.name,
+      eventUpdates: form.value.eventUpdates,
+      termsAccepted: form.value.tnc,
     });
 
-    if (signUpError) throw signUpError;
-
-    if (!authData.user) {
-      throw new Error("User registration failed");
+    if (result.error) {
+      throw result.error;
     }
 
-    // Step 2: Try to update the profile in the profiles table (optional)
-    // Note: This might fail if the profiles table doesn't exist yet
-    try {
-      const { error: profileError } = await client.from("users").upsert({
-        id: authData.user.id,
-        name: form.value.name,
-        email: form.value.email,
-        event_updates: form.value.eventUpdates,
-        terms_accepted: form.value.tnc,
-      });
-
-      if (profileError) {
-        console.warn("Profile creation failed:", profileError);
-        // Don't throw here - user registration was successful even if profile creation failed
-      }
-    } catch (profileError) {
-      console.warn("Profiles table might not exist:", profileError);
-      // Continue with registration even if profile creation fails
-    }
-
-    // Step 3: Initialize the auth store with new user data
-    await auth.init();
-
-    // Step 4: Show success message and redirect
+    // Show success message
     toast.add({
-      title: `Welcome ${form.value.name}`,
+      title: `Welcome ${form.value.name}!`,
       description: "Your account has been created successfully.",
       color: "success",
     });
 
-    // Close modal if it's being used
-    auth.toggleModal(false);
-
-    console.log("user", auth);
-
-    // Navigate to dashboard
-    // await router.push("/dashboard");
+    // Reset form
+    form.value = {
+      name: "",
+      email: "",
+      password: "",
+      tnc: false,
+      eventUpdates: false,
+    };
   } catch (error) {
     console.error("Registration error:", error);
 
@@ -93,6 +69,8 @@ const register = async () => {
       errorMsg.value = "This email is already registered or invalid";
     } else if (errorMessage.includes("password")) {
       errorMsg.value = "Password must be at least 6 characters";
+    } else if (errorMessage.includes("User already registered")) {
+      errorMsg.value = "An account with this email already exists";
     } else {
       errorMsg.value = errorMessage || "Registration failed. Please try again.";
     }
@@ -108,12 +86,20 @@ const register = async () => {
     <UAlert
       v-if="errorMsg"
       color="error"
-      variant="soft"
-      icon="i-lucide-alert-triangle"
+      variant="subtle"
+      icon="i-heroicons-exclamation-triangle"
       class="mb-4"
+      :title="errorMsg"
+    />
+
+    <!-- Debug: Show error message value -->
+    <!-- <div
+      v-if="errorMsg"
+      class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
     >
-      <p>{{ errorMsg }}</p>
-    </UAlert>
+      <p class="text-sm text-red-800 font-medium">Error:</p>
+      <p class="text-sm text-red-700">{{ errorMsg }}</p>
+    </div> -->
 
     <form class="space-y-4 w-full" @submit.prevent="register">
       <!-- Name Field with Label -->
@@ -176,45 +162,30 @@ const register = async () => {
         />
       </div>
 
-      <!-- Checkboxes -->
-      <div class="flex items-center space-x-2 mt-4">
+      <!-- Checkboxes Section -->
+      <div class="space-y-4 mt-6">
         <UCheckbox
           v-model="form.tnc"
           name="tncs"
-          color="yellow"
-          class="cursor-pointer"
-        >
-          <template #label>
-            <span class="text-gray-900 dark:text-white"
-              >I agree to the Terms & Conditions</span
-            >
-          </template>
-        </UCheckbox>
-      </div>
+          label="I agree to the Terms & Conditions"
+        />
 
-      <div class="flex items-center space-x-2">
         <UCheckbox
           v-model="form.eventUpdates"
           name="eventUpdates"
-          color="yellow"
-          class="cursor-pointer"
-        >
-          <template #label>
-            <span class="text-gray-900 dark:text-white">
-              Count me in for event updates and perks
-            </span>
-          </template>
-        </UCheckbox>
+          label="Count me in for event updates and perks"
+        />
       </div>
 
       <!-- Submit Button -->
-      <div class="flex justify-center items-center mt-6">
+      <div class="flex justify-center items-center mt-8 pt-4">
         <UButton
           type="submit"
+          :loading="loading"
           :disabled="!isFormValid || loading"
-          class="py-2 w-1/2 text-black bg-[#FFBE61] hover:bg-[#FFD700] rounded-full disabled:bg-gray-400 transition-colors flex items-center justify-center"
+          class="py-3 px-8 text-black bg-[#FFBE61] hover:bg-[#FFD700] rounded-full disabled:bg-gray-400 transition-colors flex items-center justify-center min-w-[150px]"
         >
-          <span v-if="loading" class="flex items-center justify-center">
+          <!-- <span v-if="loading" class="flex items-center justify-center">
             <svg
               class="animate-spin h-5 w-5 text-black mr-2"
               xmlns="http://www.w3.org/2000/svg"
@@ -236,8 +207,8 @@ const register = async () => {
               />
             </svg>
             Registering...
-          </span>
-          <span v-else>Register</span>
+          </span> -->
+          <span>Register</span>
         </UButton>
       </div>
     </form>

@@ -9,6 +9,7 @@ type ProfileData = {
   email?: string;
   username?: string;
   avatar_url?: string;
+  picUrl?: string;
   bio?: string;
 };
 
@@ -35,6 +36,11 @@ export const useAuth = defineStore("auth", () => {
 
   // Initialize the auth state on app load
   async function init() {
+    // Prevent multiple initializations
+    if (state.hydrated) {
+      return;
+    }
+
     try {
       state.loading = true;
 
@@ -56,7 +62,7 @@ export const useAuth = defineStore("auth", () => {
 
       state.hydrated = true;
 
-      // Set up auth state listener for real-time updates
+      // Set up auth state listener for real-time updates (only once)
       supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === "SIGNED_IN" && session) {
           state.user = session.user;
@@ -77,22 +83,21 @@ export const useAuth = defineStore("auth", () => {
     }
   }
 
-  // Fetch user profile data from profiles table
+  // Fetch user profile data from users table
   async function fetchUserProfile() {
     if (!state.user?.id) return;
 
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, name, email, username, avatar_url, bio")
-        .eq("id", state.user.id)
+      const { data, error } = await (supabase.from("users") as any)
+        .select("user_id, name, email, created_at, picUrl, bio")
+        .eq("user_id", state.user.id)
         .single();
 
       if (error) {
         // Check if it's a "table doesn't exist" error
         if (error.code === "42P01") {
           console.warn(
-            "Profiles table doesn't exist yet. Create it in Supabase to enable profile features."
+            "Users table doesn't exist yet. Create it in Supabase to enable profile features."
           );
           return;
         }
@@ -110,11 +115,9 @@ export const useAuth = defineStore("auth", () => {
     if (!state.user?.id) return { error: "Not authenticated" };
 
     try {
-      const { error } = await supabase
-        .from("profiles")
-        // @ts-ignore - Supabase type configuration issue
+      const { error } = await (supabase.from("users") as any)
         .update(profileData)
-        .eq("id", state.user.id);
+        .eq("user_id", state.user.id);
 
       if (error) throw error;
 
@@ -132,27 +135,207 @@ export const useAuth = defineStore("auth", () => {
     if (!state.user?.id) return { error: "Not authenticated" };
 
     try {
+      console.log("Starting avatar upload for user:", state.user.id);
+
       // Create a unique file path
       const fileExt = file.name.split(".").pop();
       const fileName = `${state.user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload the file to Supabase storage
-      const { error: uploadError } = await supabase.storage
+      console.log("Uploading file to path:", filePath);
+
+      // Upload the file to Supabase storage with timeout
+      const uploadPromise = supabase.storage
         .from("avatars")
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Upload timeout - please check your storage configuration"
+              )
+            ),
+          30000
+        )
+      );
+
+      const { data: uploadData, error: uploadError } = (await Promise.race([
+        uploadPromise,
+        timeoutPromise,
+      ])) as any;
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+
+        // Check for common storage issues
+        if (
+          uploadError.message?.includes("bucket") ||
+          uploadError.message?.includes("not found")
+        ) {
+          throw new Error(
+            "Storage bucket not configured. Please create an 'avatars' bucket in Supabase Storage."
+          );
+        }
+
+        if (
+          uploadError.message?.includes("policy") ||
+          uploadError.message?.includes("permission")
+        ) {
+          throw new Error(
+            "Storage permissions not configured. Please check your RLS policies."
+          );
+        }
+
+        throw uploadError;
+      }
+
+      console.log("Upload successful, getting public URL...");
 
       // Get the public URL
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
+      if (!data?.publicUrl) {
+        throw new Error("Failed to get public URL for uploaded file");
+      }
+
+      console.log("Public URL generated:", data.publicUrl);
+
       // Update the profile with new avatar URL
-      await updateProfile({ avatar_url: data.publicUrl });
+      const updateResult = await updateProfile({ picUrl: data.publicUrl });
+
+      if (updateResult?.error) {
+        console.error(
+          "Failed to update profile with new avatar URL:",
+          updateResult.error
+        );
+        throw new Error("Avatar uploaded but failed to update profile");
+      }
+
+      console.log("Avatar upload and profile update completed successfully");
       return { publicUrl: data.publicUrl };
     } catch (error) {
       console.error("Error uploading avatar:", error);
+      return {
+        error: error instanceof Error ? error.message : "Unknown upload error",
+      };
+    }
+  }
+
+  // Sign in existing user
+  async function signIn(email: string, password: string) {
+    try {
+      state.loading = true;
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (!data.user) {
+        throw new Error("Login failed");
+      }
+
+      // Auth state will be updated automatically by the listener
+      // but we can also update it here for immediate feedback
+      state.user = data.user;
+      state.loggedIn = true;
+
+      // Fetch user profile
+      await fetchUserProfile();
+
+      // Close modal on successful login
+      state.modal = false;
+
+      return { success: true, user: data.user };
+    } catch (error) {
+      console.error("Login error:", error);
       return { error };
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  // Sign up new user
+  async function signUp(userData: {
+    email: string;
+    password: string;
+    name: string;
+    eventUpdates: boolean;
+    termsAccepted: boolean;
+  }) {
+    try {
+      state.loading = true;
+
+      // Step 1: Create auth user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp(
+        {
+          email: userData.email,
+          password: userData.password,
+          options: {
+            data: {
+              name: userData.name,
+              event_updates: userData.eventUpdates,
+            },
+          },
+        }
+      );
+
+      if (signUpError) throw signUpError;
+
+      if (!authData.user) {
+        throw new Error("User registration failed");
+      }
+
+      // Step 2: Create user profile in users table
+      try {
+        console.log(
+          "Creating user profile in users table...",
+          authData,
+          userData
+        );
+
+        const { error: profileError } = await (
+          supabase.from("users") as any
+        ).upsert({
+          // id: authData.user.id,
+          user_id: authData.user.id, // Use user_id for foreign key
+          name: userData.name,
+          email: userData.email,
+          event_updates: userData.eventUpdates,
+          terms_accepted: userData.termsAccepted,
+          bio: "",
+        });
+
+        if (profileError) {
+          console.warn("Profile creation failed:", profileError);
+          // Don't throw here - auth user was created successfully
+        }
+      } catch (profileError) {
+        console.warn("Users table might not exist:", profileError);
+        // Continue - the trigger should handle profile creation
+      }
+
+      // Step 3: Update auth state
+      state.user = authData.user;
+      state.loggedIn = true;
+
+      // Step 4: Fetch the created profile
+      await fetchUserProfile();
+
+      // Step 5: Close modal on successful signup
+      state.modal = false;
+
+      return { success: true, user: authData.user };
+    } catch (error) {
+      console.error("Signup error:", error);
+      return { error };
+    } finally {
+      state.loading = false;
     }
   }
 
@@ -177,10 +360,12 @@ export const useAuth = defineStore("auth", () => {
   return {
     ...toRefs(state),
     init,
+    signIn,
+    signUp,
+    signOut,
     fetchUserProfile,
     updateProfile,
     uploadAvatar,
-    signOut,
     toggleModal,
   };
 });

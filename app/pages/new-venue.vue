@@ -61,6 +61,7 @@ const formData = ref<VenueFormData>({
 // Track current step
 const currentStep = ref(0);
 const isSubmitting = ref(false);
+const pendingSubmission = ref(false);
 
 const items = [
   {
@@ -93,6 +94,8 @@ const items = [
 const checkAuthAndSubmit = async () => {
   // Check if user is logged in using the new loggedIn state
   if (!auth.loggedIn) {
+    // Set flag to indicate we want to submit after login
+    pendingSubmission.value = true;
     // Open auth modal for login/signup
     auth.toggleModal(true);
     return;
@@ -160,11 +163,30 @@ const SubmitVenue = async () => {
     if (error) throw error;
 
     console.log("Venue submitted successfully:", data);
-    // You might want to show a success message or redirect here
-    // For example: navigateTo('/host/venues') or show a success toast
+
+    // Clear the pending submission flag
+    pendingSubmission.value = false;
+
+    // Show success message and redirect
+    useToast().add({
+      title: "Success!",
+      description: "Your venue has been submitted successfully.",
+      color: "success",
+    });
+
+    // Redirect to dashboard or venue list
+    await navigateTo("/dashboard");
   } catch (error) {
     console.error("Error submitting venue:", error);
+    // Clear the pending submission flag on error too
+    pendingSubmission.value = false;
+
     // Show error message to user
+    useToast().add({
+      title: "Error",
+      description: "Failed to submit venue. Please try again.",
+      color: "error",
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -172,11 +194,11 @@ const SubmitVenue = async () => {
 
 const stepper = useTemplateRef("stepper");
 
-// Watch for authentication changes - auto-submit when user logs in on final step
-watchEffect(() => {
-  // If user just logged in (modal closed + logged in + on last step), auto-submit
-  if (auth.loggedIn && !auth.modal && currentStep.value === items.length - 1) {
-    // User just logged in and we're on the last step, auto-submit the venue
+// Watch for authentication changes - only auto-submit if we have a pending submission
+watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
+  // Only auto-submit if user just logged in, modal closed, and we have pending submission
+  if (loggedIn && !modalOpen && pendingSubmission.value) {
+    console.log("User authenticated, auto-submitting venue...");
     SubmitVenue();
   }
 });

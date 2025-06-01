@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import AppHeader from "~/components/AppHeader.vue";
 
+// Protect all dashboard pages with auth middleware
+definePageMeta({
+  middleware: "auth",
+});
+
 const route = useRoute();
 const toast = useToast();
 
@@ -229,68 +234,77 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- <AppHeader /> -->
+  <div class="min-h-screen flex flex-col">
+    <AppHeader
+      class="fixed top-0 mb-[120px] left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
+    />
 
-  <UDashboardGroup unit="rem" >
-    <UDashboardSidebar
-      id="default"
-      v-model:open="open"
-      collapsible
-      resizable
-      class="bg-(--ui-bg-elevated)/25"
-      :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
-    >
-      <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
-      </template>
+    <div class="flex-1">
+      <!-- Adjust this value based on your AppHeader height -->
+      <UDashboardGroup unit="rem" class="h-[calc(100vh-80px)] mt-[80px]">
+        <UDashboardSidebar
+          id="default"
+          v-model:open="open"
+          collapsible
+          resizable
+          class="bg-(--ui-bg-elevated)/25 h-[calc(100vh-80px)]"
+          :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
+        >
+          <template #header="{ collapsed }">
+            <TeamsMenu :collapsed="collapsed" />
+          </template>
 
-      <template #default="{ collapsed }">
-        <UDashboardSearchButton
-          :collapsed="collapsed"
-          class="bg-transparent ring-(--ui-border)"
-        />
+          <template #default="{ collapsed }">
+            <UDashboardSearchButton
+              :collapsed="collapsed"
+              class="bg-transparent ring-(--ui-border)"
+            />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-        />
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[0]"
+              orientation="vertical"
+            />
 
-        <div>
-          <div class="text-sm">account</div>
-          <!-- <divider class="my-2" /> -->
+            <div>
+              <div class="text-sm">account</div>
+              <!-- <divider class="my-2" /> -->
+            </div>
+
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[1]"
+              orientation="vertical"
+            />
+
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[2]"
+              orientation="vertical"
+              class="mt-auto mb-8"
+            />
+
+            <!-- <UNavigationMenu
+              :collapsed="collapsed"
+              :items="newlinks"
+              orientation="vertical"
+              class="mt-auto"
+            /> -->
+          </template>
+
+          <template #footer="{ collapsed }">
+            <UserMenu :collapsed="collapsed" />
+          </template>
+        </UDashboardSidebar>
+
+        <UDashboardSearch :groups="groups" />
+
+        <div class="flex-1 overflow-auto">
+          <slot />
         </div>
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[2]"
-          orientation="vertical"
-          class="mt-auto"
-        />
-
-        <!-- <UNavigationMenu
-          :collapsed="collapsed"
-          :items="newlinks"
-          orientation="vertical"
-          class="mt-auto"
-        /> -->
-      </template>
-
-      <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
-      </template>
-    </UDashboardSidebar>
-
-    <UDashboardSearch :groups="groups" />
-
-    <slot />
-
-    <NotificationsSlideover />
-  </UDashboardGroup>
+        <NotificationsSlideover />
+      </UDashboardGroup>
+    </div>
+  </div>
 </template>

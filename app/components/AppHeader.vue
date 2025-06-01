@@ -81,12 +81,15 @@ const dropdownItems = computed(() => [
 const logout = async () => {
   console.log("Logging out...");
   try {
-    // Use the auth store's signOut method instead of Supabase directly
+    // Use the auth store's signOut method
     await auth.signOut();
+    console.log("Logout successful, navigating to home...");
     // Navigate to home page after successful logout
     await navigateTo("/");
   } catch (error) {
     console.error("Error logging out:", error);
+    // Still try to navigate to home even if logout had issues
+    await navigateTo("/");
   }
 };
 
@@ -110,8 +113,38 @@ const handleItemClick = (item: any) => {
 console.log("auth", auth);
 
 const handleSignUp = () => {
-  auth.toggleModal(true);
+  console.log("🚀 Sign up button clicked!");
+  console.log("📊 Current auth state:", {
+    modal: auth.modal,
+    loggedIn: auth.loggedIn,
+    hydrated: auth.hydrated,
+  });
+
+  try {
+    auth.toggleModal(true);
+    console.log("✅ toggleModal called successfully");
+    console.log("📊 New auth.modal state:", auth.modal);
+  } catch (error) {
+    console.error("❌ Error calling toggleModal:", error);
+  }
 };
+
+// Get avatar URL with fallback
+const avatarUrl = computed(() => {
+  // Use picUrl from profile first, then fall back to avatar_url, then default
+  return (
+    auth.profile?.picUrl ||
+    auth.profile?.avatar_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      auth.profile?.name || auth.user?.email || "User"
+    )}&background=FFBE61&color=000000&bold=true`
+  );
+});
+
+// Get display name with fallback
+const displayName = computed(() => {
+  return auth.profile?.name || auth.user?.email || "User";
+});
 </script>
 
 <template>
@@ -127,12 +160,12 @@ const handleSignUp = () => {
     <template #right>
       <div class="flex flex-row jusitfy-center items-center gap-2">
         <p class="px-4 font-bold cursor-pointer">
-          <NuxtLink to="/new-venue"> List your business </NuxtLink>
+          <NuxtLink to="/new-venue"> List your venue </NuxtLink>
         </p>
         <UButton
           v-if="!auth.loggedIn"
           label="Sign up"
-          icon="i-heroicons-arrow-right-20-solid"
+          icon="i-heroicons-arrow-right"
           trailing
           class="hidden rounded-full cursor-pointer lg:flex"
           @click="handleSignUp()"
@@ -147,20 +180,13 @@ const handleSignUp = () => {
           }"
           :popper="{ placement: 'bottom-start' }"
         >
-          <UAvatar
-            class="cursor-pointer"
-            :src="
-              auth.profile?.avatar_url ||
-              'https://avatars.githubusercontent.com/u/739984?v=4'
-            "
-            :alt="auth.profile?.name || auth.user?.email"
-          />
+          <UAvatar class="cursor-pointer" :src="avatarUrl" :alt="displayName" />
 
           <template #account="{ item }">
             <div class="text-left">
               <p>Signed in as</p>
               <p class="truncate font-medium text-gray-900 dark:text-white">
-                {{ auth.profile?.name || item.label }}
+                {{ displayName }}
               </p>
             </div>
           </template>
@@ -172,10 +198,9 @@ const handleSignUp = () => {
               @click="handleItemClick(item)"
             >
               <span class="truncate">{{ item.label }}</span>
-              <!-- @ts-ignore - Complex union type from UDropdownMenu -->
               <UIcon
-                v-if="item.icon"
-                :name="item.icon"
+                v-if="(item as any).icon"
+                :name="(item as any).icon"
                 class="flex-shrink-0 h-4 w-4 text-gray-400 dark:text-gray-500 ms-auto"
               />
             </div>
@@ -190,4 +215,7 @@ const handleSignUp = () => {
       <!-- <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" /> -->
     </template>
   </UHeader>
+
+  <!-- Auth Modal -->
+  <AuthModal v-if="auth.modal" />
 </template>

@@ -1,7 +1,7 @@
 <!-- Updated Main Component -->
 <script setup lang="ts">
 import type { VenueFormData } from "~/types/venue";
-import type { Province, EventType } from "~/types/venue";
+import type { EventType } from "~/types/venue";
 import GoogleAutocompleteVue from "~/components/Form/GoogleAutocomplete.vue";
 
 const props = defineProps<{
@@ -45,18 +45,6 @@ const onInputChanged = (value: string) => {
 
   console.log("Input changed:", value);
 };
-
-const provinces: { label: string; value: Province }[] = [
-  { label: "Eastern Cape", value: "Eastern Cape" },
-  { label: "Free State", value: "Free State" },
-  { label: "Gauteng", value: "Gauteng" },
-  { label: "KwaZulu-Natal", value: "KwaZulu-Natal" },
-  { label: "Limpopo", value: "Limpopo" },
-  { label: "Mpumalanga", value: "Mpumalanga" },
-  { label: "Northern Cape", value: "Northern Cape" },
-  { label: "North West", value: "North West" },
-  { label: "Western Cape", value: "Western Cape" },
-];
 
 const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Wedding", value: "Wedding" },

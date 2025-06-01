@@ -1,75 +1,89 @@
 <script setup lang="ts">
-import VenueFilterBar from '~/components/Venue/VenueFilterBar.vue'
+import VenueFilterBar from "~/components/Venue/VenueFilterBar.vue";
 
-const client = useSupabaseClient()
+// Explicitly set layout for performance
+definePageMeta({
+  layout: "default",
+  keepalive: true, // Enable keep-alive for better performance
+});
+
+const client = useSupabaseClient();
 
 // Define the IVenue interface
 interface IVenue {
-  id: bigint
-  type: string
-  photos: string[]
-  minCapacity: number | null
-  venue_name: string
-  maxCapacity: number | null
+  id: bigint;
+  type: string;
+  photos: string[];
+  minCapacity: number | null;
+  venue_name: string;
+  maxCapacity: number | null;
 }
 
-// Use `useAsyncData` to fetch data, default `data` to `null` initially
+// Use `useAsyncData` to fetch data with optimization
 const { data, error } = await useAsyncData<IVenue[] | null>(
-  'venues',
+  "venues",
   async () => {
-    const { data, error } = await client.from('venues').select()
+    const { data, error } = await client
+      .from("venues")
+      .select()
+      .limit(12) // Limit initial load to 12 venues for performance
+      .order("id", { ascending: false }); // Show newest first
 
     if (error) {
-      console.error('Error fetching venues:', error)
-      return null // Return null in case of error
+      console.error("Error fetching venues:", error);
+      return null; // Return null in case of error
     }
 
-    return data || null // Ensure we return `null` if data is undefined
+    return data || null; // Ensure we return `null` if data is undefined
+  },
+  {
+    server: true, // Enable server-side rendering
+    default: () => [], // Provide default value to prevent hydration mismatch
   }
-)
+);
 
 // Create a `computed` property for safer access to `data`
-const venues = computed(() => data.value || [])
+const venues = computed(() => data.value || []);
 
 // Search form data
-const venueType = ref('')
-const guestCount = ref('')
-const eventDate = ref('')
+const venueType = ref("");
+const guestCount = ref("");
+const eventDate = ref("");
 
 const filterVenues = (eventType: string | null) => {
   if (!eventType) {
     // Reset to show all venues
     // If you're using a computed property for filtered venues:
     // filteredVenues.value = venues.value;
-    console.log('Showing all venues')
+    console.log("Showing all venues");
   } else {
     // Filter venues by event type
     // If you're using a computed property:
     // filteredVenues.value = venues.value.filter(venue => venue.type === eventType);
-    console.log('Filtering venues by event type:', eventType)
+    console.log("Filtering venues by event type:", eventType);
   }
-}
+};
 
 // Venue type options
 const venueTypes = [
-  { value: '', label: 'Any type' },
-  { value: 'restaurant', label: 'Restaurant' },
-  { value: 'bar', label: 'Bar' },
-  { value: 'club', label: 'Club' },
-  { value: 'event_space', label: 'Event Space' }
-]
+  { value: "", label: "Any type" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "bar", label: "Bar" },
+  { value: "club", label: "Club" },
+  { value: "event_space", label: "Event Space" },
+];
 
 // Handle search submission (placeholder for now)
 const handleSearch = () => {
-  console.log('Search params:', {
+  console.log("Search params:", {
     type: venueType.value,
     guests: guestCount.value,
-    date: eventDate.value
-  })
+    date: eventDate.value,
+  });
   // Will implement actual search functionality later
-}
+};
 
-console.log('Venues:', venues.value)
+console.log("Venues:", venues.value);
 </script>
 
 <template>
@@ -82,7 +96,7 @@ console.log('Venues:', venues.value)
           src="/images/find/hero.png"
           alt="Venue Search Hero"
           class="w-full h-full object-cover"
-        >
+        />
 
         <!-- Dark Blue Overlay with Gradient -->
         <div
@@ -116,7 +130,9 @@ console.log('Venues:', venues.value)
           >
             <!-- I'm looking for -->
             <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
-              <label class="block text-sm text-blue-200 mb-1">I'm looking for</label>
+              <label class="block text-sm text-blue-200 mb-1"
+                >I'm looking for</label
+              >
               <select
                 v-model="venueType"
                 class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
@@ -134,13 +150,15 @@ console.log('Venues:', venues.value)
 
             <!-- Number of guests -->
             <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
-              <label class="block text-sm text-blue-200 mb-1">Number of guests</label>
+              <label class="block text-sm text-blue-200 mb-1"
+                >Number of guests</label
+              >
               <input
                 v-model="guestCount"
                 type="number"
                 placeholder="How many people?"
                 class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
-              >
+              />
             </div>
 
             <!-- Date -->
@@ -150,7 +168,7 @@ console.log('Venues:', venues.value)
                 v-model="eventDate"
                 type="date"
                 class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
-              >
+              />
             </div>
 
             <!-- Search Button -->
