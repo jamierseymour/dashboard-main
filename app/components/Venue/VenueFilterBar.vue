@@ -196,7 +196,7 @@ onUnmounted(() => {
               v-for="eventType in visibleItems"
               :key="eventType.value"
               :class="[
-                'flex flex-col items-center justify-center p-4 transition-all duration-300 transform',
+                'flex flex-col items-center justify-center p-4 cursor-pointer transition-all duration-300 transform',
                 activeFilter === eventType.value
                   ? 'text-mulberry scale-105'
                   : 'text-gray-600 hover:text-gray-400 hover:scale-102',

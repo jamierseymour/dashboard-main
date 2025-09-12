@@ -22,19 +22,19 @@ const formData = ref<VenueFormData>({
   provinces: null,
   eventTypes: [],
   address: "",
-  minimumHours: 0,
-  noticeRequired: 0,
+  minimumHours: "",
+  noticeRequired: "",
   // Initialize cancellationPolicy with default values
   cancellationPolicy: {
-    refundableDays: 0,
-    partialRefundDays: 0,
-    partialRefundPercentage: 0,
-    nonRefundableDays: 0,
+    refundableDays: "",
+    partialRefundDays: "",
+    partialRefundPercentage: "",
+    nonRefundableDays: "",
   },
   // Initialize seasonalPricing with default values
   seasonalPricing: {
-    peak: 0,
-    offPeak: 0,
+    peak: "",
+    offPeak: "",
     peakMonths: [],
   },
   // Initialize amenities with default values
@@ -52,8 +52,8 @@ const formData = ref<VenueFormData>({
     danceFloor: false,
     outdoorSpace: false,
     indoorSpace: false,
-    tables: 0,
-    chairs: 0,
+    tables: "",
+    chairs: "",
     customAmenities: [],
   },
 });
@@ -109,7 +109,6 @@ const SubmitVenue = async () => {
   if (isSubmitting.value) return;
 
   isSubmitting.value = true;
-  console.log("Submitting venue:", formData.value);
 
   try {
     // Prepare the data for Supabase
@@ -124,8 +123,8 @@ const SubmitVenue = async () => {
         min_capacity: parseInt(formData.value.minCapacity),
         max_capacity: parseInt(formData.value.maxCapacity),
         price: parseFloat(formData.value.price),
-        minimum_hours: formData.value.minimumHours,
-        notice_required: formData.value.noticeRequired,
+        minimum_hours: parseInt(formData.value.minimumHours) || 0,
+        notice_required: parseInt(formData.value.noticeRequired) || 0,
         cancellation_policy: formData.value.cancellationPolicy,
         photos: formData.value.photos,
         provinces: formData.value.provinces,
@@ -133,8 +132,8 @@ const SubmitVenue = async () => {
         user_id: auth.user?.id, // Add the user ID to associate the venue with the user
         // Add seasonal pricing data
         seasonal_pricing: {
-          peak: formData.value.seasonalPricing?.peak ?? 0,
-          off_peak: formData.value.seasonalPricing?.offPeak ?? 0,
+          peak: parseFloat(formData.value.seasonalPricing?.peak) || 0,
+          off_peak: parseFloat(formData.value.seasonalPricing?.offPeak) || 0,
           peak_months: formData.value.seasonalPricing?.peakMonths ?? [],
         },
 
@@ -153,16 +152,14 @@ const SubmitVenue = async () => {
           dance_floor: formData.value.amenities?.danceFloor ?? false,
           outdoor_space: formData.value.amenities?.outdoorSpace ?? false,
           indoor_space: formData.value.amenities?.indoorSpace ?? false,
-          tables: parseInt(formData.value.amenities?.tables?.toString() ?? "0"),
-          chairs: parseInt(formData.value.amenities?.chairs?.toString() ?? "0"),
+          tables: parseInt(formData.value.amenities?.tables) || 0,
+          chairs: parseInt(formData.value.amenities?.chairs) || 0,
           custom_amenities: formData.value.amenities?.customAmenities ?? [],
         },
       },
     ]);
 
     if (error) throw error;
-
-    console.log("Venue submitted successfully:", data);
 
     // Clear the pending submission flag
     pendingSubmission.value = false;
@@ -198,12 +195,9 @@ const stepper = useTemplateRef("stepper");
 watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
   // Only auto-submit if user just logged in, modal closed, and we have pending submission
   if (loggedIn && !modalOpen && pendingSubmission.value) {
-    console.log("User authenticated, auto-submitting venue...");
     SubmitVenue();
   }
 });
-
-// console.log("stepper", stepper);
 </script>
 
 <template>

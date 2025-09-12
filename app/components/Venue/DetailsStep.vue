@@ -31,8 +31,6 @@ const onPlaceSelected = (place: any) => {
     address: place.formatted_address || place.formattedAddress || "",
   };
   emit("update:formData", updatedForm);
-
-  console.log("Place selected:", place);
 };
 
 const onInputChanged = (value: string) => {
@@ -42,8 +40,6 @@ const onInputChanged = (value: string) => {
     address: value,
   };
   emit("update:formData", updatedForm);
-
-  console.log("Input changed:", value);
 };
 
 const availableEventTypes: { label: string; value: EventType }[] = [
@@ -63,7 +59,6 @@ const availableEventTypes: { label: string; value: EventType }[] = [
 
 const handlePlaceSelected = (place) => {
   selectedAddress.value = place.formattedAddress || place.formatted_address;
-  console.log("Selected place:", place);
 };
 
 // Create computed properties for two-way binding
@@ -100,14 +95,12 @@ const form = computed({
         class="w-full"
       />
 
-      <!-- Updated GoogleAutocomplete with new PlaceAutocompleteElement -->
+      <!-- Updated GoogleAutocomplete with Places UI Kit -->
       <GoogleAutocompleteVue
         placeholder="Search for an address..."
         :show-details="false"
-        :options="{
-          componentRestrictions: { country: 'za' },
-          types: ['address'],
-        }"
+        :component-restrictions="{ country: 'za' }"
+        :location-bias="{ lat: -26.2041, lng: 28.0473 }"
         @place-selected="onPlaceSelected"
         @input-changed="onInputChanged"
       />

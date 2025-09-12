@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import type { Member } from '~/types'
+import type { Member } from "~/types";
 
 defineProps<{
-  members: Member[]
-}>()
+  members: Member[];
+}>();
 
-const items = [{
-  label: 'Edit member',
-  onSelect: () => console.log('Edit member')
-}, {
-  label: 'Remove member',
-  color: 'error' as const,
-  onSelect: () => console.log('Remove member')
-}]
+const items = [
+  {
+    label: "Edit member",
+    onSelect: () => {
+      // Handle edit member action
+    },
+  },
+  {
+    label: "Remove member",
+    color: "error" as const,
+    onSelect: () => {
+      // Handle remove member action
+    },
+  },
+];
 </script>
 
 <template>
@@ -23,10 +30,7 @@ const items = [{
       class="flex items-center justify-between gap-3 py-3 px-4 sm:px-6"
     >
       <div class="flex items-center gap-3 min-w-0">
-        <UAvatar
-          v-bind="member.avatar"
-          size="md"
-        />
+        <UAvatar v-bind="member.avatar" size="md" />
 
         <div class="text-sm min-w-0">
           <p class="text-(--ui-text-highlighted) font-medium truncate">

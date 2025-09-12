@@ -79,11 +79,10 @@ const dropdownItems = computed(() => [
 ]);
 
 const logout = async () => {
-  console.log("Logging out...");
   try {
     // Use the auth store's signOut method
     await auth.signOut();
-    console.log("Logout successful, navigating to home...");
+
     // Navigate to home page after successful logout
     await navigateTo("/");
   } catch (error) {
@@ -110,20 +109,9 @@ const handleItemClick = (item: any) => {
 //   ]);
 // });
 
-console.log("auth", auth);
-
 const handleSignUp = () => {
-  console.log("🚀 Sign up button clicked!");
-  console.log("📊 Current auth state:", {
-    modal: auth.modal,
-    loggedIn: auth.loggedIn,
-    hydrated: auth.hydrated,
-  });
-
   try {
     auth.toggleModal(true);
-    console.log("✅ toggleModal called successfully");
-    console.log("📊 New auth.modal state:", auth.modal);
   } catch (error) {
     console.error("❌ Error calling toggleModal:", error);
   }

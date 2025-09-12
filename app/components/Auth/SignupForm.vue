@@ -28,8 +28,6 @@ const register = async () => {
 
   try {
     // Debug: Check what functions are available
-    console.log("Auth store functions:", Object.keys(auth));
-    console.log("signUp function:", typeof auth.signUp);
 
     // Use the auth store's signUp function
     const result = await auth.signUp({

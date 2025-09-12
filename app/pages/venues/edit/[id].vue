@@ -43,6 +43,7 @@ const form = reactive<VenueFormData>({
     danceFloor: false,
     outdoorSpace: false,
     indoorSpace: false,
+    customAmenities: [],
   },
   cancellationPolicy: {
     refundableDays: 30,
@@ -87,8 +88,6 @@ const provinceOptions = [
 ];
 
 // Add debug logging
-console.log("Province options:", provinceOptions);
-console.log("Current form selectedProvince:", form.selectedProvince);
 
 // Fetch venue data
 const fetchVenueData = async () => {
@@ -102,8 +101,6 @@ const fetchVenueData = async () => {
 
     if (error) throw error;
     if (!data) throw new Error("Venue not found");
-
-    console.log("Fetched venue data:", data);
 
     // Parse event types
     const parsedEventTypes =
@@ -180,6 +177,10 @@ const fetchVenueData = async () => {
           data.amenities.outdoor_space || data.amenities.outdoorSpace || false,
         indoorSpace:
           data.amenities.indoor_space || data.amenities.indoorSpace || false,
+        customAmenities:
+          data.amenities.custom_amenities ||
+          data.amenities.customAmenities ||
+          [],
       };
     }
 
@@ -202,12 +203,6 @@ const fetchVenueData = async () => {
         nonRefundableDays: data.cancellation_policy.nonRefundableDays || 7,
       };
     }
-
-    console.log("Parsed form data:", {
-      selectedProvince: form.selectedProvince,
-      eventTypes: form.eventTypes,
-      amenities: form.amenities,
-    });
   } catch (error: any) {
     console.error("Error fetching venue:", error);
     toast.add({
@@ -256,15 +251,14 @@ const saveVenue = async () => {
       cancellation_policy: form.cancellationPolicy,
     };
 
-    console.log("Saving venue data:", venueData);
-
     const { error } = await client
       .from("venues")
       .update(venueData)
       .eq("id", venueId);
 
-    if (error) console.log(error);
-    else {
+    if (error) {
+      // Handle error silently or log to error tracking service
+    } else {
       // Show success modal instead of toast and redirect
       showSuccessModal.value = true;
     }
@@ -296,6 +290,11 @@ const closeModal = () => {
   showSuccessModal.value = false;
 };
 
+// Remove photo
+const removePhoto = (index: number) => {
+  form.photos.splice(index, 1);
+};
+
 // Handle photo uploads
 const handlePhotoUpload = async (event: any) => {
   const files = event.target.files;
@@ -318,14 +317,14 @@ const handlePhotoUpload = async (event: any) => {
 
       // Upload file to Supabase Storage
       const { data, error } = await client.storage
-        .from("venue-photos")
+        .from("avatars")
         .upload(fileName, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: publicUrlData } = client.storage
-        .from("venue-photos")
+        .from("avatars")
         .getPublicUrl(fileName);
 
       // Add to photos array
@@ -347,11 +346,6 @@ const handlePhotoUpload = async (event: any) => {
       color: "error",
     });
   }
-};
-
-// Remove photo
-const removePhoto = (index: number) => {
-  form.photos.splice(index, 1);
 };
 
 // Fetch venue data on page load
@@ -399,14 +393,6 @@ const onAddressInputChanged = (input: string) => {
         />
         <div class="flex items-center justify-between mt-4">
           <h1 class="text-2xl font-bold">Edit Venue: {{ form.venueName }}</h1>
-          <div class="flex space-x-3">
-            <UButton color="neutral" to="/venues" variant="ghost"
-              >Cancel</UButton
-            >
-            <UButton color="primary" @click="saveVenue" :loading="saving"
-              >Save Changes</UButton
-            >
-          </div>
         </div>
       </div>
 
@@ -434,6 +420,9 @@ const onAddressInputChanged = (input: string) => {
             <div class="flex flex-col lg:flex-row gap-4">
               <div class="flex-1">
                 <UFormGroup label="Venue Name" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Venue Name: {{ form.venueName || "Not set" }}
+                  </div>
                   <UInput
                     v-model="form.venueName"
                     placeholder="Enter venue name"
@@ -443,6 +432,9 @@ const onAddressInputChanged = (input: string) => {
               </div>
               <div class="flex-1">
                 <UFormGroup label="Company Name">
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Company Name: {{ form.companyName || "Not set" }}
+                  </div>
                   <UInput
                     v-model="form.companyName"
                     placeholder="Enter company name"
@@ -456,12 +448,13 @@ const onAddressInputChanged = (input: string) => {
             <div class="flex flex-col lg:flex-row gap-4">
               <div class="flex-1">
                 <UFormGroup label="Address" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Address: {{ form.address || "Not set" }}
+                  </div>
                   <GoogleAutocomplete
                     placeholder="Search for venue address..."
-                    :options="{
-                      componentRestrictions: { country: 'za' },
-                      types: ['address'],
-                    }"
+                    :component-restrictions="{ country: 'za' }"
+                    :location-bias="{ lat: -26.2041, lng: 28.0473 }"
                     @place-selected="onAddressSelected"
                     @input-changed="onAddressInputChanged"
                   />
@@ -469,11 +462,12 @@ const onAddressInputChanged = (input: string) => {
               </div>
               <div class="flex-1">
                 <UFormGroup label="Province" required>
-                  <USelect
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Province: {{ form.selectedProvince || "Not set" }}
+                  </div>
+                  <USelectMenu
                     v-model="form.selectedProvince"
                     :options="provinceOptions"
-                    option-attribute="label"
-                    value-attribute="value"
                     placeholder="Select province"
                     class="w-full"
                   />
@@ -481,30 +475,72 @@ const onAddressInputChanged = (input: string) => {
               </div>
             </div>
 
-            <!-- Description Row -->
-            <div class="w-full">
-              <UFormGroup label="Description" required>
-                <UTextarea
-                  v-model="form.description"
-                  placeholder="Describe your venue"
-                  :rows="6"
-                  class="w-full"
-                />
-              </UFormGroup>
+            <!-- Description -->
+            <UFormGroup label="Description" required>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Description: {{ form.description || "Not set" }}
+              </div>
+              <UTextarea
+                v-model="form.description"
+                placeholder="Describe your venue..."
+                rows="4"
+                class="w-full"
+              />
+            </UFormGroup>
+
+            <!-- Capacity and Pricing Row -->
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Minimum Capacity" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Minimum Capacity: {{ form.minCapacity || "Not set" }} people
+                  </div>
+                  <UInput
+                    v-model="form.minCapacity"
+                    type="number"
+                    placeholder="Min capacity"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Maximum Capacity" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Maximum Capacity: {{ form.maxCapacity || "Not set" }} people
+                  </div>
+                  <UInput
+                    v-model="form.maxCapacity"
+                    type="number"
+                    placeholder="Max capacity"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Price per Hour (R)" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Price per Hour: R{{ form.price || "Not set" }}
+                  </div>
+                  <UInput
+                    v-model="form.price"
+                    type="number"
+                    placeholder="0.00"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
             </div>
 
-            <!-- Event Types Row -->
-            <div class="w-full">
-              <UFormGroup label="Event Types" required>
-                <USelectMenu
-                  v-model="form.eventTypes"
-                  :options="eventTypeOptions"
-                  placeholder="Select event types"
-                  multiple
-                  class="w-full"
-                />
-              </UFormGroup>
-            </div>
+            <!-- Event Types -->
+            <UFormGroup label="Event Types" required>
+              <USelectMenu
+                v-model="form.eventTypes"
+                :options="eventTypeOptions"
+                placeholder="Select event types"
+                multiple
+                class="w-full"
+              />
+            </UFormGroup>
           </div>
         </UCard>
 
@@ -518,7 +554,7 @@ const onAddressInputChanged = (input: string) => {
           </template>
 
           <div class="space-y-4">
-            <UFormGroup label="Photos" required>
+            <UFormGroup label="Photos">
               <input
                 type="file"
                 accept="image/*"
@@ -558,59 +594,44 @@ const onAddressInputChanged = (input: string) => {
           </div>
         </UCard>
 
-        <!-- Capacity & Pricing Section -->
+        <!-- Booking Requirements Section -->
         <UCard>
           <template #header>
             <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-currency-dollar" class="h-5 w-5" />
-              <span class="font-medium">Capacity & Pricing</span>
+              <UIcon name="i-heroicons-clock" class="h-5 w-5" />
+              <span class="font-medium">Booking Requirements</span>
             </div>
           </template>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <UFormGroup label="Minimum Capacity" required>
-              <UInput
-                v-model="form.minCapacity"
-                type="number"
-                placeholder="Minimum capacity"
-              />
-            </UFormGroup>
-
-            <UFormGroup label="Maximum Capacity" required>
-              <UInput
-                v-model="form.maxCapacity"
-                type="number"
-                placeholder="Maximum capacity"
-              />
-            </UFormGroup>
-
-            <UFormGroup label="Base Price (per hour)" required>
-              <UInput
-                v-model="form.price"
-                type="number"
-                placeholder="Price per hour"
-              >
-                <template #leading>
-                  <span class="text-gray-500 text-sm">R</span>
-                </template>
-              </UInput>
-            </UFormGroup>
-
-            <UFormGroup label="Minimum Booking Hours" required>
-              <UInput
-                v-model="form.minimumHours"
-                type="number"
-                placeholder="Minimum hours"
-              />
-            </UFormGroup>
-
-            <UFormGroup label="Notice Required (days)" required>
-              <UInput
-                v-model="form.noticeRequired"
-                type="number"
-                placeholder="Notice required"
-              />
-            </UFormGroup>
+          <div class="space-y-4">
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Minimum Hours" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Minimum Hours: {{ form.minimumHours || "Not set" }} hours
+                  </div>
+                  <UInput
+                    v-model="form.minimumHours"
+                    type="number"
+                    placeholder="4"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Notice Required (days)" required>
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Notice Required: {{ form.noticeRequired || "Not set" }} days
+                  </div>
+                  <UInput
+                    v-model="form.noticeRequired"
+                    type="number"
+                    placeholder="7"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+            </div>
           </div>
         </UCard>
 
@@ -618,82 +639,68 @@ const onAddressInputChanged = (input: string) => {
         <UCard>
           <template #header>
             <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-wifi" class="h-5 w-5" />
-              <span class="font-medium">Venue Amenities</span>
+              <UIcon name="i-heroicons-sparkles" class="h-5 w-5" />
+              <span class="font-medium">Amenities</span>
             </div>
           </template>
 
-          <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="space-y-4">
+            <!-- Basic Amenities Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
               <UFormGroup>
-                <UCheckbox
-                  v-model="form.amenities.wifi"
-                  label="WiFi Available"
-                />
+                <UCheckbox v-model="form.amenities.wifi" label="WiFi" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox v-model="form.amenities.kitchen" label="Kitchen" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox v-model="form.amenities.stage" label="Stage" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox v-model="form.amenities.bar" label="Bar" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.soundSystem"
                   label="Sound System"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox v-model="form.amenities.lighting" label="Lighting" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.projector"
                   label="Projector"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.microphone"
                   label="Microphone"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.airConditioning"
                   label="Air Conditioning"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox v-model="form.amenities.heating" label="Heating" />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.danceFloor"
                   label="Dance Floor"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.outdoorSpace"
                   label="Outdoor Space"
                 />
               </UFormGroup>
-
               <UFormGroup>
                 <UCheckbox
                   v-model="form.amenities.indoorSpace"
@@ -702,67 +709,141 @@ const onAddressInputChanged = (input: string) => {
               </UFormGroup>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <UFormGroup label="Tables Available">
-                <UInput
-                  v-model="form.amenities.tables"
-                  type="number"
-                  placeholder="Number of tables"
-                />
-              </UFormGroup>
-
-              <UFormGroup label="Chairs Available">
-                <UInput
-                  v-model="form.amenities.chairs"
-                  type="number"
-                  placeholder="Number of chairs"
-                />
-              </UFormGroup>
+            <!-- Tables and Chairs -->
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Number of Tables">
+                  <UInput
+                    v-model="form.amenities.tables"
+                    type="number"
+                    placeholder="0"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Number of Chairs">
+                  <UInput
+                    v-model="form.amenities.chairs"
+                    type="number"
+                    placeholder="0"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
             </div>
           </div>
         </UCard>
 
-        <!-- Policies Section -->
+        <!-- Seasonal Pricing Section -->
         <UCard>
           <template #header>
             <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-document-text" class="h-5 w-5" />
+              <UIcon name="i-heroicons-currency-dollar" class="h-5 w-5" />
+              <span class="font-medium">Seasonal Pricing</span>
+            </div>
+          </template>
+
+          <div class="space-y-4">
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1">
+                <UFormGroup label="Peak Season Price (R/hour)">
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Peak Season Price: R{{
+                      form.seasonalPricing.peak || "Not set"
+                    }}
+                  </div>
+                  <UInput
+                    v-model="form.seasonalPricing.peak"
+                    type="number"
+                    placeholder="0.00"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+              <div class="flex-1">
+                <UFormGroup label="Off-Peak Season Price (R/hour)">
+                  <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Off-Peak Season Price: R{{
+                      form.seasonalPricing.offPeak || "Not set"
+                    }}
+                  </div>
+                  <UInput
+                    v-model="form.seasonalPricing.offPeak"
+                    type="number"
+                    placeholder="0.00"
+                    class="w-full"
+                  />
+                </UFormGroup>
+              </div>
+            </div>
+          </div>
+        </UCard>
+
+        <!-- Cancellation Policy Section -->
+        <UCard>
+          <template #header>
+            <div class="flex items-center space-x-2">
+              <UIcon name="i-heroicons-shield-check" class="h-5 w-5" />
               <span class="font-medium">Cancellation Policy</span>
             </div>
           </template>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <UFormGroup label="Full Refund (days before event)" required>
-              <UInput
-                v-model="form.cancellationPolicy.refundableDays"
-                type="number"
-                placeholder="Days for full refund"
-              />
-            </UFormGroup>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <UFormGroup label="Full Refund (days before event)" required>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Refundable Days:
+                  {{ form.cancellationPolicy.refundableDays || "Not set" }} days
+                </div>
+                <UInput
+                  v-model="form.cancellationPolicy.refundableDays"
+                  type="number"
+                  placeholder="Days for full refund"
+                />
+              </UFormGroup>
 
-            <UFormGroup label="Partial Refund (days before event)" required>
-              <UInput
-                v-model="form.cancellationPolicy.partialRefundDays"
-                type="number"
-                placeholder="Days for partial refund"
-              />
-            </UFormGroup>
+              <UFormGroup label="Partial Refund (days before event)" required>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Partial Refund Days:
+                  {{ form.cancellationPolicy.partialRefundDays || "Not set" }}
+                  days
+                </div>
+                <UInput
+                  v-model="form.cancellationPolicy.partialRefundDays"
+                  type="number"
+                  placeholder="Days for partial refund"
+                />
+              </UFormGroup>
 
-            <UFormGroup label="Partial Refund Percentage (%)" required>
-              <UInput
-                v-model="form.cancellationPolicy.partialRefundPercentage"
-                type="number"
-                placeholder="Percentage refunded"
-              />
-            </UFormGroup>
+              <UFormGroup label="Partial Refund Percentage (%)" required>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Partial Refund Percentage:
+                  {{
+                    form.cancellationPolicy.partialRefundPercentage ||
+                    "Not set"
+                  }}%
+                </div>
+                <UInput
+                  v-model="form.cancellationPolicy.partialRefundPercentage"
+                  type="number"
+                  placeholder="Percentage refunded"
+                />
+              </UFormGroup>
 
-            <UFormGroup label="No Refund (days before event)" required>
-              <UInput
-                v-model="form.cancellationPolicy.nonRefundableDays"
-                type="number"
-                placeholder="Days for no refund"
-              />
-            </UFormGroup>
+              <UFormGroup label="No Refund (days before event)" required>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Non Refundable Days:
+                  {{ form.cancellationPolicy.nonRefundableDays || "Not set" }}
+                  days
+                </div>
+                <UInput
+                  v-model="form.cancellationPolicy.nonRefundableDays"
+                  type="number"
+                  placeholder="Days for no refund"
+                />
+              </UFormGroup>
+            </div>
           </div>
         </UCard>
 
@@ -776,8 +857,16 @@ const onAddressInputChanged = (input: string) => {
       </div>
     </UContainer>
 
-    <!-- Success Modal -->
-    <UModal v-model="showSuccessModal" @close="closeModal">
+    <!-- Success Modal - Fixed positioning -->
+    <!-- <UModal
+      v-model="showSuccessModal"
+      @close="closeModal"
+      :ui="{
+        wrapper: 'z-50',
+        overlay: 'z-40',
+        base: 'z-50',
+      }"
+    >
       <UCard>
         <template #header>
           <div class="flex items-center justify-between w-full">
@@ -838,6 +927,6 @@ const onAddressInputChanged = (input: string) => {
           </div>
         </div>
       </UCard>
-    </UModal>
+    </UModal> -->
   </div>
 </template>

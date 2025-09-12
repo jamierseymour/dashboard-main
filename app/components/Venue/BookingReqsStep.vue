@@ -34,7 +34,11 @@ const form = computed({
 // Helper function for cancellation policy updates
 const updateCancellationPolicy = (field: string, value: string | number) => {
   const numericValue =
-    typeof value === "string" ? parseFloat(value) || 0 : value;
+    typeof value === "string"
+      ? value === ""
+        ? ""
+        : parseFloat(value) || 0
+      : value;
   form.value = {
     ...form.value,
     cancellationPolicy: {
@@ -57,7 +61,9 @@ const updateSeasonalPricing = (
         field === "peakMonths"
           ? value // Value will already be an array of numbers from USelectMenu
           : typeof value === "string"
-          ? parseFloat(value) || 0
+          ? value === ""
+            ? ""
+            : parseFloat(value) || 0
           : value,
     },
   };
@@ -83,6 +89,7 @@ const selectedPeakMonths = computed({
               v-model="form.minimumHours"
               color="primary"
               variant="outline"
+              placeholder="e.g. 4"
             />
           </div>
           <div class="flex flex-col flex-1">
@@ -91,6 +98,7 @@ const selectedPeakMonths = computed({
               v-model="form.noticeRequired"
               color="primary"
               variant="outline"
+              placeholder="e.g. 7"
             />
           </div>
         </div>

@@ -135,8 +135,6 @@ async function onFileChange(e: Event) {
     return;
   }
 
-  console.log("Starting file upload:", file.name, file.type, file.size);
-
   try {
     loading.value = true;
 
@@ -155,8 +153,6 @@ async function onFileChange(e: Event) {
       console.error("Upload failed:", result.error);
       throw new Error(result.error);
     }
-
-    console.log("Upload successful:", result);
 
     toast.add({
       title: "Success",

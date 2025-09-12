@@ -33,7 +33,6 @@ const { data, error, refresh } = await useAsyncData<IVenue[] | null>(
   async () => {
     // Wait for auth to be ready
     if (!auth.user?.id) {
-      console.log("No authenticated user found");
       return null;
     }
 
@@ -47,7 +46,6 @@ const { data, error, refresh } = await useAsyncData<IVenue[] | null>(
       return null;
     }
 
-    console.log(`Found ${data?.length || 0} venues for user ${auth.user.id}`);
     return data || null;
   },
   {

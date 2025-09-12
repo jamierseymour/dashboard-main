@@ -41,10 +41,12 @@ watch(
 
 <template>
   <div class="w-full p-12">
-    <h2 class="text-2xl font-semibold mb-6">Venue Photos</h2>
-    <p class="text-gray-600 mb-4">
-      Upload up to 8 photos of your venue. Drag to reorder.
-    </p>
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-2xl font-semibold mb-6">Venue Photos</h2>
+      <p class="text-gray-600 mb-4">
+        Upload up to 8 photos of your venue. Drag to reorder.
+      </p>
+    </div>
 
     <FormImageUploader
       :initialImages="photos"

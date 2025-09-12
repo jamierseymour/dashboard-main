@@ -135,14 +135,10 @@ export const useAuth = defineStore("auth", () => {
     if (!state.user?.id) return { error: "Not authenticated" };
 
     try {
-      console.log("Starting avatar upload for user:", state.user.id);
-
       // Create a unique file path
       const fileExt = file.name.split(".").pop();
       const fileName = `${state.user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
-
-      console.log("Uploading file to path:", filePath);
 
       // Upload the file to Supabase storage with timeout
       const uploadPromise = supabase.storage
@@ -192,16 +188,12 @@ export const useAuth = defineStore("auth", () => {
         throw uploadError;
       }
 
-      console.log("Upload successful, getting public URL...");
-
       // Get the public URL
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
       if (!data?.publicUrl) {
         throw new Error("Failed to get public URL for uploaded file");
       }
-
-      console.log("Public URL generated:", data.publicUrl);
 
       // Update the profile with new avatar URL
       const updateResult = await updateProfile({ picUrl: data.publicUrl });
@@ -214,7 +206,6 @@ export const useAuth = defineStore("auth", () => {
         throw new Error("Avatar uploaded but failed to update profile");
       }
 
-      console.log("Avatar upload and profile update completed successfully");
       return { publicUrl: data.publicUrl };
     } catch (error) {
       console.error("Error uploading avatar:", error);
@@ -293,12 +284,6 @@ export const useAuth = defineStore("auth", () => {
 
       // Step 2: Create user profile in users table
       try {
-        console.log(
-          "Creating user profile in users table...",
-          authData,
-          userData
-        );
-
         const { error: profileError } = await (
           supabase.from("users") as any
         ).upsert({

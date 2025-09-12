@@ -94,8 +94,6 @@ const { data: venue } = useAsyncData<IVenue | null>("venue", async () => {
   } as IVenue;
 });
 
-console.log("data", venue.value);
-
 // Parse event types for display as badges
 const parsedEventTypes = computed(() => {
   if (!venue.value?.event_types) return [];

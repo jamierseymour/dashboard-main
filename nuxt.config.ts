@@ -8,16 +8,22 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
   ],
-
+  ssr: false,
   devtools: {
     enabled: true,
+  },
+
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith("gmp-"),
+    },
   },
 
   app: {
     head: {
       script: [
         {
-          src: `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&loading=async&v=weekly`,
+          src: `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places,marker&loading=async&v=weekly`,
           async: true,
           defer: true,
         },

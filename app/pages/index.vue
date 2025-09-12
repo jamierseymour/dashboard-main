@@ -73,8 +73,6 @@ const filteredVenues = computed(() => {
 
 const filterVenues = (eventType: string | null) => {
   activeEventTypeFilter.value = eventType;
-  console.log("Filtering venues by event type:", eventType);
-  console.log("Filtered venues count:", filteredVenues.value.length);
 };
 
 // Venue type options
@@ -88,15 +86,8 @@ const venueTypes = [
 
 // Handle search submission (placeholder for now)
 const handleSearch = () => {
-  console.log("Search params:", {
-    type: venueType.value,
-    guests: guestCount.value,
-    date: eventDate.value,
-  });
   // Will implement actual search functionality later
 };
-
-console.log("Venues:", venues.value);
 </script>
 
 <template>
