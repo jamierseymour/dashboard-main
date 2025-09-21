@@ -80,7 +80,7 @@
           <div class="absolute top-2 right-2 flex space-x-2">
             <button
               @click="removeImage(index)"
-              class="p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600 focus:outline-none"
+              class="p-1.5 bg-purple-500 rounded-full cursor-pointer text-white hover:bg-purple-600 focus:outline-none"
               :disabled="isUploading"
             >
               <svg
@@ -151,26 +151,42 @@ const totalUploads = ref(0);
 
 // Initialize with any existing images
 onMounted(() => {
+  console.log("🔧 Component mounted");
+  console.log("📝 Props:", props);
+  console.log("👤 Auth user:", auth.user);
+  console.log("🗄️ Supabase client:", supabase);
+
   if (props.initialImages && props.initialImages.length > 0) {
+    console.log("🖼️ Initializing with existing images:", props.initialImages);
     images.value = props.initialImages.map((url, index) => ({
       id: `existing-${index}`,
       url,
       cdnUrl: url, // For existing images, the url is already the CDN url
       path: extractPathFromUrl(url),
     }));
+    console.log("✅ Images initialized:", images.value);
+  } else {
+    console.log("ℹ️ No initial images provided");
   }
 });
 
 // Extract the storage path from a Supabase URL
 function extractPathFromUrl(url) {
-  // This is a simple approach and might need adjustment based on your actual URL structure
-  if (!url) return null;
+  console.log("🔗 Extracting path from URL:", url);
+
+  if (!url) {
+    console.log("❌ No URL provided");
+    return null;
+  }
+
   try {
     // For URLs like: https://your-project.supabase.co/storage/v1/object/public/bucket-name/path/to/file.jpg
     const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
-    return match ? match[1] : null;
+    const path = match ? match[1] : null;
+    console.log("📁 Extracted path:", path);
+    return path;
   } catch (e) {
-    console.error("Error extracting path from URL:", e);
+    console.error("💥 Error extracting path from URL:", e);
     return null;
   }
 }
@@ -179,17 +195,27 @@ function extractPathFromUrl(url) {
 watch(
   () => images.value,
   (newImages) => {
+    console.log("👀 Images array changed:", newImages);
     const imageUrls = newImages.map((img) => img.cdnUrl).filter((url) => url);
+    console.log("📤 Emitting image URLs:", imageUrls);
     emit("update:images", imageUrls);
   },
   { deep: true }
 );
 
 const processUploadQueue = async () => {
+  console.log("🚀 Processing upload queue");
+  console.log("📊 Queue status:", {
+    queueLength: uploadQueue.value.length,
+    currentIndex: currentUploadIndex.value,
+    totalUploads: totalUploads.value,
+  });
+
   if (
     uploadQueue.value.length === 0 ||
     currentUploadIndex.value >= uploadQueue.value.length
   ) {
+    console.log("✅ Upload queue completed");
     isUploading.value = false;
     uploadProgress.value = 0;
     uploadQueue.value = [];
@@ -201,6 +227,16 @@ const processUploadQueue = async () => {
   const currentItem = uploadQueue.value[currentUploadIndex.value];
   const { file, imageId } = currentItem;
 
+  console.log(
+    `📤 Uploading file ${currentUploadIndex.value + 1}/${totalUploads.value}:`,
+    {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      imageId: imageId,
+    }
+  );
+
   try {
     // Generate a unique filename to avoid collisions
     const fileExt = file.name.split(".").pop();
@@ -209,11 +245,17 @@ const processUploadQueue = async () => {
       filePath = `${auth.user.id}/${
         props.folderPath ? props.folderPath + "/" : ""
       }${Date.now()}-${file.name}`;
+      console.log("👤 Using authenticated user path:", filePath);
     } else {
       filePath = `${
         props.folderPath ? props.folderPath + "/" : ""
       }${Date.now()}-${file.name}`;
+      console.log("🔓 Using anonymous path:", filePath);
     }
+
+    console.log("⬆️ Starting Supabase upload...");
+    console.log("🪣 Bucket:", props.bucketName);
+    console.log("📁 File path:", filePath);
 
     // Upload the file to Supabase Storage
     const { data, error } = await supabase.storage
@@ -223,24 +265,50 @@ const processUploadQueue = async () => {
         upsert: false,
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error("💥 Supabase upload error:", error);
+      throw error;
+    }
+
+    console.log("✅ Upload successful:", data);
 
     // Get the public URL
+    console.log("🔗 Getting public URL...");
     const { data: urlData } = supabase.storage
       .from(props.bucketName)
       .getPublicUrl(filePath);
 
+    console.log("🌐 Public URL data:", urlData);
+
     // Update the image object with the CDN URL
     const imageIndex = images.value.findIndex((img) => img.id === imageId);
+    console.log(
+      "🔍 Finding image index for ID",
+      imageId,
+      "found at:",
+      imageIndex
+    );
+
     if (imageIndex !== -1) {
+      console.log("📝 Updating image object with CDN URL:", urlData.publicUrl);
       images.value[imageIndex].cdnUrl = urlData.publicUrl;
       images.value[imageIndex].path = filePath;
+      console.log("✅ Updated image object:", images.value[imageIndex]);
+    } else {
+      console.error("❌ Could not find image with ID:", imageId);
     }
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("💥 Error uploading image:", error);
+    console.error("📊 Error details:", {
+      message: error.message,
+      statusCode: error.statusCode,
+      error: error.error,
+    });
+
     // Remove the failed image from the array
     const imageIndex = images.value.findIndex((img) => img.id === imageId);
     if (imageIndex !== -1) {
+      console.log("🗑️ Removing failed image from array at index:", imageIndex);
       images.value.splice(imageIndex, 1);
     }
   }
@@ -251,31 +319,57 @@ const processUploadQueue = async () => {
     (currentUploadIndex.value / totalUploads.value) * 100
   );
 
+  console.log("📈 Upload progress:", uploadProgress.value + "%");
+
   // Process next item in queue
   await processUploadQueue();
 };
 
 const handleFileUpload = async (event) => {
+  console.log("📁 File upload triggered");
   const files = Array.from(event.target.files);
-  if (files.length === 0) return;
+  console.log(
+    "📎 Selected files:",
+    files.map((f) => ({ name: f.name, size: f.size, type: f.type }))
+  );
+
+  if (files.length === 0) {
+    console.log("ℹ️ No files selected");
+    return;
+  }
 
   // Filter out files that would exceed the 8 image limit
   const availableSlots = 8 - images.value.length;
   const filesToProcess = files.slice(0, availableSlots);
 
-  if (filesToProcess.length === 0) return;
+  console.log("📊 Slot availability:", {
+    currentImages: images.value.length,
+    availableSlots: availableSlots,
+    selectedFiles: files.length,
+    filesToProcess: filesToProcess.length,
+  });
 
+  if (filesToProcess.length === 0) {
+    console.log("⚠️ No files to process (limit reached)");
+    return;
+  }
+
+  console.log("🚀 Starting upload process");
   isUploading.value = true;
   uploadProgress.value = 0;
   uploadQueue.value = [];
   currentUploadIndex.value = 0;
 
   // Prepare the upload queue and add image previews
+  console.log("📋 Preparing upload queue...");
   for (const file of filesToProcess) {
     const imageId = Date.now() + Math.random();
+    console.log("🆔 Generated image ID:", imageId, "for file:", file.name);
+
     const reader = new FileReader();
 
     reader.onload = (e) => {
+      console.log("🖼️ File reader loaded preview for:", file.name);
       images.value.push({
         id: imageId,
         url: e.target.result, // Local preview URL
@@ -283,66 +377,111 @@ const handleFileUpload = async (event) => {
         cdnUrl: null, // Will be populated after upload
         path: null, // Will be populated after upload
       });
+      console.log(
+        "📝 Added image to array. Current images count:",
+        images.value.length
+      );
     };
-    reader.readAsDataURL(file);
 
+    reader.onerror = (e) => {
+      console.error("💥 FileReader error for", file.name, ":", e);
+    };
+
+    reader.readAsDataURL(file);
     uploadQueue.value.push({ file, imageId });
   }
 
   totalUploads.value = uploadQueue.value.length;
+  console.log("📊 Upload queue prepared:", {
+    totalUploads: totalUploads.value,
+    queueItems: uploadQueue.value.map((item) => ({
+      fileName: item.file.name,
+      imageId: item.imageId,
+    })),
+  });
 
   // Start processing the upload queue
+  console.log("🎬 Starting upload queue processing...");
   await processUploadQueue();
 
   // Reset input
   event.target.value = "";
+  console.log("🔄 Input reset");
 };
 
 const removeImage = async (index) => {
+  console.log("🗑️ Removing image at index:", index);
   const image = images.value[index];
+  console.log("📄 Image to remove:", image);
 
   // If this image has a path in Supabase Storage, delete it
   if (image.path) {
+    console.log("🗄️ Deleting from Supabase storage:", image.path);
     try {
       const { error } = await supabase.storage
         .from(props.bucketName)
         .remove([image.path]);
 
       if (error) {
-        console.error("Error removing image from storage:", error);
+        console.error("💥 Error removing image from storage:", error);
+      } else {
+        console.log("✅ Successfully removed from storage");
       }
     } catch (error) {
-      console.error("Error removing image from storage:", error);
+      console.error("💥 Exception removing image from storage:", error);
     }
+  } else {
+    console.log("ℹ️ Image has no storage path, skipping storage deletion");
   }
 
   // Remove from local array
   images.value.splice(index, 1);
+  console.log(
+    "✅ Image removed from local array. Remaining images:",
+    images.value.length
+  );
 };
 
 const startDrag = (event, index) => {
-  if (isUploading.value) return;
+  console.log("🎯 Start drag for index:", index);
+  if (isUploading.value) {
+    console.log("⚠️ Cannot drag while uploading");
+    return;
+  }
 
   isDragging.value = true;
   draggedIndex.value = index;
   event.dataTransfer.effectAllowed = "move";
   event.dataTransfer.setData("text/plain", index);
+  console.log("✅ Drag started");
 };
 
 const endDrag = () => {
+  console.log("🏁 End drag");
   isDragging.value = false;
   draggedIndex.value = null;
 };
 
 const onDrop = (event, dropIndex) => {
-  if (isUploading.value) return;
+  console.log("📍 Drop at index:", dropIndex);
+  if (isUploading.value) {
+    console.log("⚠️ Cannot drop while uploading");
+    return;
+  }
 
   const dragIndex = parseInt(event.dataTransfer.getData("text/plain"));
-  if (dragIndex === dropIndex) return;
+  console.log("📊 Drag from index:", dragIndex, "to index:", dropIndex);
+
+  if (dragIndex === dropIndex) {
+    console.log("ℹ️ Same index, no reordering needed");
+    return;
+  }
 
   const item = images.value[dragIndex];
+  console.log("🔄 Reordering images:", item);
   images.value.splice(dragIndex, 1);
   images.value.splice(dropIndex, 0, item);
+  console.log("✅ Images reordered");
 };
 </script>
 

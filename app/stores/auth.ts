@@ -142,7 +142,7 @@ export const useAuth = defineStore("auth", () => {
 
       // Upload the file to Supabase storage with timeout
       const uploadPromise = supabase.storage
-        .from("avatars")
+        .from("profile-images")
         .upload(filePath, file);
 
       // Add timeout to prevent infinite loading

@@ -13,14 +13,22 @@ const open = ref(false);
 
 const links = [
   [
-    {
-      label: "today",
-      icon: "i-lucide-sun",
-      to: "/dashboard",
-      onSelect: () => {
-        open.value = false;
-      },
-    },
+    // {
+    //   label: "bookings",
+    //   icon: "i-lucide-bookmark",
+    //   to: "/bookings",
+    //   onSelect: () => {
+    //     open.value = false;
+    //   },
+    // },
+    // {
+    //   label: "today",
+    //   icon: "i-lucide-sun",
+    //   to: "/dashboard",
+    //   onSelect: () => {
+    //     open.value = false;
+    //   },
+    // },
     {
       label: "calendar",
       icon: "i-lucide-calendar",

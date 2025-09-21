@@ -129,6 +129,25 @@ const SubmitVenue = async () => {
         photos: formData.value.photos,
         provinces: formData.value.provinces,
         address: formData.value.address,
+        // Add structured address data
+        address_line_1:
+          formData.value.structuredAddress?.address_line_1 || null,
+        address_line_2:
+          formData.value.structuredAddress?.address_line_2 || null,
+        city: formData.value.structuredAddress?.city || null,
+        state_province:
+          formData.value.structuredAddress?.state_province || null,
+        postal_code: formData.value.structuredAddress?.postal_code || null,
+        country: formData.value.structuredAddress?.country || "ZA",
+        latitude: formData.value.structuredAddress?.latitude || null,
+        longitude: formData.value.structuredAddress?.longitude || null,
+        google_place_id:
+          formData.value.structuredAddress?.google_place_id || null,
+        formatted_address:
+          formData.value.structuredAddress?.formatted_address || null,
+        address_components:
+          formData.value.structuredAddress?.address_components || null,
+        place_types: formData.value.structuredAddress?.place_types || null,
         user_id: auth.user?.id, // Add the user ID to associate the venue with the user
         // Add seasonal pricing data
         seasonal_pricing: {

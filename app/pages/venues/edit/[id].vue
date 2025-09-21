@@ -99,6 +99,8 @@ const fetchVenueData = async () => {
       .eq("id", venueId)
       .single();
 
+    console.log("Fetched venue data:", data);
+
     if (error) throw error;
     if (!data) throw new Error("Venue not found");
 
@@ -460,7 +462,7 @@ const onAddressInputChanged = (input: string) => {
                   />
                 </UFormGroup>
               </div>
-              <div class="flex-1">
+              <!-- <div class="flex-1">
                 <UFormGroup label="Province" required>
                   <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     Province: {{ form.selectedProvince || "Not set" }}
@@ -472,7 +474,7 @@ const onAddressInputChanged = (input: string) => {
                     class="w-full"
                   />
                 </UFormGroup>
-              </div>
+              </div> -->
             </div>
 
             <!-- Description -->

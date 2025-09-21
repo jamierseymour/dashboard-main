@@ -50,24 +50,24 @@ const dropdownItems = computed(() => [
       disabled: true,
     },
   ],
-  [
-    {
-      label: "Settings",
-      icon: "i-heroicons-cog-8-tooth",
-      click: () => navigateTo("/settings"),
-    },
-  ],
+  // [
+  //   {
+  //     label: "Settings",
+  //     icon: "i-heroicons-cog-8-tooth",
+  //     click: () => navigateTo("/settings"),
+  //   },
+  // ],
   [
     {
       label: "Dashboard",
       icon: "i-heroicons-home",
       click: () => navigateTo("/dashboard"),
     },
-    {
-      label: "My Venues",
-      icon: "i-heroicons-building-office",
-      click: () => navigateTo("/venues/my-venues"),
-    },
+    // {
+    //   label: "My Venues",
+    //   icon: "i-heroicons-building-office",
+    //   click: () => navigateTo("/venues/my-venues"),
+    // },
   ],
   [
     {

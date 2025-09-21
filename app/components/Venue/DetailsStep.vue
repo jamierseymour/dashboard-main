@@ -14,21 +14,14 @@ const emit = defineEmits<{
 
 const selectedAddress = ref<any>(null);
 
-const onPlaceSelected = (place: any) => {
-  selectedAddress.value = {
-    formatted_address: place.formattedAddress || place.formatted_address,
-    coordinates: {
-      lat: place.location?.lat || place.geometry?.location?.lat() || 0,
-      lng: place.location?.lng || place.geometry?.location?.lng() || 0,
-    },
-    address_components:
-      place.addressComponents || place.address_components || [],
-  };
+const onPlaceSelected = (structuredAddress: any) => {
+  selectedAddress.value = structuredAddress;
 
-  // Update the form data with the selected address
+  // Update the form data with both the simple address and structured address
   const updatedForm = {
     ...props.formData,
-    address: place.formatted_address || place.formattedAddress || "",
+    address: structuredAddress.formatted_address || "",
+    structuredAddress: structuredAddress,
   };
   emit("update:formData", updatedForm);
 };
@@ -106,10 +99,12 @@ const form = computed({
       />
 
       <div v-if="selectedAddress" class="mt-6">
-        <h2 class="text-lg font-semibold mb-2">Selected Address:</h2>
-        <pre class="bg-gray-100 p-4 rounded-lg text-sm">{{
-          JSON.stringify(selectedAddress, null, 2)
-        }}</pre>
+        <h2 class="text-lg font-semibold mb-2">
+          Selected Address:
+          <span class="font-normal">{{
+            selectedAddress.formatted_address
+          }}</span>
+        </h2>
       </div>
 
       <div class="flex flex-row gap-3">

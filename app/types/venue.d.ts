@@ -64,17 +64,44 @@ export type VenueLocation = {
   parkingNotes?: string;
 };
 
+export type StructuredAddress = {
+  // Core address fields
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+
+  // Location coordinates
+  latitude: number | null;
+  longitude: number | null;
+
+  // Google Places data
+  google_place_id: string;
+  formatted_address: string;
+  address_components: Array<{
+    longText: string;
+    shortText: string;
+    types: string[];
+  }>;
+  place_types: string[];
+
+  // Keep original place data for reference
+  original_place_data?: any;
+};
+
 export type SeasonalPricing = {
-  peak: number;
-  offPeak: number;
+  peak: string | number;
+  offPeak: string | number;
   peakMonths?: number[];
 };
 
 export type CancellationPolicy = {
-  refundableDays: number; // Days before event for full refund
-  partialRefundDays: number; // Days before event for partial refund
-  partialRefundPercentage: number; // Percentage refunded
-  nonRefundableDays: number; // Days before event where no refund applies
+  refundableDays: string | number; // Days before event for full refund
+  partialRefundDays: string | number; // Days before event for partial refund
+  partialRefundPercentage: string | number; // Percentage refunded
+  nonRefundableDays: string | number; // Days before event where no refund applies
 };
 
 export type VenueAmenities = {
@@ -88,8 +115,8 @@ export type VenueAmenities = {
   microphone: boolean;
   airConditioning: boolean;
   heating: boolean;
-  tables: number;
-  chairs: number;
+  tables: string | number;
+  chairs: string | number;
   danceFloor: boolean;
   outdoorSpace: boolean;
   indoorSpace: boolean;
@@ -165,9 +192,10 @@ export interface VenueFormData {
   provinces: Province | null;
   eventTypes: EventType[];
   address: string;
+  structuredAddress?: StructuredAddress; // New structured address data
   seasonalPricing: SeasonalPricing;
-  minimumHours: number;
-  noticeRequired: number; // days
+  minimumHours: string | number;
+  noticeRequired: string | number; // days
   cancellationPolicy: CancellationPolicy;
   amenities: VenueAmenities;
 }
