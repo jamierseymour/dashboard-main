@@ -14,14 +14,21 @@ const emit = defineEmits<{
 
 const selectedAddress = ref<any>(null);
 
-const onPlaceSelected = (structuredAddress: any) => {
-  selectedAddress.value = structuredAddress;
+const onPlaceSelected = (place: any) => {
+  selectedAddress.value = {
+    formatted_address: place.formattedAddress || place.formatted_address,
+    coordinates: {
+      lat: place.location?.lat || place.geometry?.location?.lat() || 0,
+      lng: place.location?.lng || place.geometry?.location?.lng() || 0,
+    },
+    address_components:
+      place.addressComponents || place.address_components || [],
+  };
 
-  // Update the form data with both the simple address and structured address
+  // Update the form data with the selected address
   const updatedForm = {
     ...props.formData,
-    address: structuredAddress.formatted_address || "",
-    structuredAddress: structuredAddress,
+    address: place.formatted_address || place.formattedAddress || "",
   };
   emit("update:formData", updatedForm);
 };
@@ -88,23 +95,23 @@ const form = computed({
         class="w-full"
       />
 
-      <!-- Updated GoogleAutocomplete with Places UI Kit -->
+      <!-- Updated GoogleAutocomplete with new PlaceAutocompleteElement -->
       <GoogleAutocompleteVue
         placeholder="Search for an address..."
         :show-details="false"
-        :component-restrictions="{ country: 'za' }"
-        :location-bias="{ lat: -26.2041, lng: 28.0473 }"
+        :options="{
+          componentRestrictions: { country: 'za' },
+          types: ['address'],
+        }"
         @place-selected="onPlaceSelected"
         @input-changed="onInputChanged"
       />
 
       <div v-if="selectedAddress" class="mt-6">
-        <h2 class="text-lg font-semibold mb-2">
-          Selected Address:
-          <span class="font-normal">{{
-            selectedAddress.formatted_address
-          }}</span>
-        </h2>
+        <h2 class="text-lg font-semibold mb-2">Selected Address:</h2>
+        <pre class="bg-gray-100 p-4 rounded-lg text-sm">{{
+          JSON.stringify(selectedAddress, null, 2)
+        }}</pre>
       </div>
 
       <div class="flex flex-row gap-3">

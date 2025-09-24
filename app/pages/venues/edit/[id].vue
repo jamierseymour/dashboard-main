@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { VenueFormData, Province, EventType } from "~/types/venue";
 import GoogleAutocomplete from "~/components/Form/GoogleAutocomplete.vue";
+import ImageUploader from "~/components/Form/ImageUploader.vue";
 
 const client = useSupabaseClient();
 const route = useRoute();
@@ -59,7 +60,7 @@ const form = reactive<VenueFormData>({
 });
 
 // Event type options
-const eventTypeOptions = [
+const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Wedding", value: "Wedding" },
   { label: "Conference", value: "Conference" },
   { label: "Corporate Event", value: "Corporate Event" },
@@ -72,19 +73,6 @@ const eventTypeOptions = [
   { label: "Private Party", value: "Private Party" },
   { label: "Team Building", value: "Team Building" },
   { label: "Other", value: "Other" },
-];
-
-// Province options
-const provinceOptions = [
-  { label: "Eastern Cape", value: "Eastern Cape" },
-  { label: "Free State", value: "Free State" },
-  { label: "Gauteng", value: "Gauteng" },
-  { label: "KwaZulu-Natal", value: "KwaZulu-Natal" },
-  { label: "Limpopo", value: "Limpopo" },
-  { label: "Mpumalanga", value: "Mpumalanga" },
-  { label: "Northern Cape", value: "Northern Cape" },
-  { label: "North West", value: "North West" },
-  { label: "Western Cape", value: "Western Cape" },
 ];
 
 // Add debug logging
@@ -217,19 +205,93 @@ const fetchVenueData = async () => {
   }
 };
 
-// Save venue data
+// Enhanced save venue function with proper debugging and user feedback
 const saveVenue = async () => {
+  console.log("🚀 Starting venue save process");
+  console.log("📋 Current form data:", JSON.stringify(form, null, 2));
+
+  // Validate required fields before saving
+  const requiredFields = {
+    venueName: form.venueName,
+    description: form.description,
+    minCapacity: form.minCapacity,
+    maxCapacity: form.maxCapacity,
+    price: form.price,
+    address: form.address,
+  };
+
+  console.log("✅ Checking required fields:", requiredFields);
+
+  const missingFields = Object.entries(requiredFields)
+    .filter(([key, value]) => !value || value === "")
+    .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+    console.error("❌ Missing required fields:", missingFields);
+    toast.add({
+      title: "Validation Error",
+      description: `Please fill in the following required fields: ${missingFields.join(
+        ", "
+      )}`,
+      color: "red",
+      timeout: 5000,
+    });
+    return;
+  }
+
   saving.value = true;
+  console.log("💾 Setting saving state to true");
+
+  // Create a timeout to prevent indefinite spinning
+  const timeoutId = setTimeout(() => {
+    console.warn("⏰ Save operation timed out after 30 seconds");
+    saving.value = false;
+    toast.add({
+      title: "Request Timeout",
+      description: "The save operation took too long. Please try again.",
+      color: "red",
+      timeout: 8000,
+    });
+  }, 30000); // 30 second timeout
+
   try {
+    console.log("📦 Preparing venue data for Supabase...");
+
+    // Validate and parse numeric values
+    const parsedMinCapacity = parseInt(form.minCapacity);
+    const parsedMaxCapacity = parseInt(form.maxCapacity);
+    const parsedPrice = parseFloat(form.price);
+
+    console.log("🔢 Parsed numeric values:", {
+      minCapacity: parsedMinCapacity,
+      maxCapacity: parsedMaxCapacity,
+      price: parsedPrice,
+    });
+
+    if (isNaN(parsedMinCapacity) || parsedMinCapacity < 0) {
+      throw new Error("Invalid minimum capacity value");
+    }
+    if (isNaN(parsedMaxCapacity) || parsedMaxCapacity < 0) {
+      throw new Error("Invalid maximum capacity value");
+    }
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      throw new Error("Invalid price value");
+    }
+    if (parsedMinCapacity > parsedMaxCapacity) {
+      throw new Error(
+        "Minimum capacity cannot be greater than maximum capacity"
+      );
+    }
+
     // Format data for Supabase
     const venueData = {
-      venue_name: form.venueName,
-      description: form.description,
-      company_name: form.companyName,
-      min_capacity: parseInt(form.minCapacity) || 0,
-      max_capacity: parseInt(form.maxCapacity) || 0,
-      price: parseFloat(form.price) || 0,
-      address: form.address,
+      venue_name: form.venueName.trim(),
+      description: form.description.trim(),
+      company_name: form.companyName?.trim() || null,
+      min_capacity: parsedMinCapacity,
+      max_capacity: parsedMaxCapacity,
+      price: parsedPrice,
+      address: form.address.trim(),
       selected_province:
         typeof form.selectedProvince === "string"
           ? form.selectedProvince
@@ -241,37 +303,157 @@ const saveVenue = async () => {
       event_types: form.eventTypes.map((type) =>
         JSON.stringify({ label: type, value: type })
       ),
-      photos: form.photos,
-      minimum_hours: form.minimumHours,
-      notice_required: form.noticeRequired,
-      amenities: form.amenities,
+      photos: form.photos || [],
+      minimum_hours: form.minimumHours || 4,
+      notice_required: form.noticeRequired || 7,
+      amenities: {
+        ...form.amenities,
+        // Ensure numeric values are properly handled
+        tables: parseInt(form.amenities.tables?.toString() || "0") || 0,
+        chairs: parseInt(form.amenities.chairs?.toString() || "0") || 0,
+      },
       seasonal_pricing: {
-        peak: parseFloat(form.seasonalPricing?.peak?.toString() || "0"),
-        off_peak: parseFloat(form.seasonalPricing?.offPeak?.toString() || "0"),
+        peak: parseFloat(form.seasonalPricing?.peak?.toString() || "0") || 0,
+        off_peak:
+          parseFloat(form.seasonalPricing?.offPeak?.toString() || "0") || 0,
         peak_months: form.seasonalPricing?.peakMonths || [],
       },
-      cancellation_policy: form.cancellationPolicy,
+      cancellation_policy: {
+        refundableDays:
+          parseInt(
+            form.cancellationPolicy?.refundableDays?.toString() || "30"
+          ) || 30,
+        partialRefundDays:
+          parseInt(
+            form.cancellationPolicy?.partialRefundDays?.toString() || "14"
+          ) || 14,
+        partialRefundPercentage:
+          parseInt(
+            form.cancellationPolicy?.partialRefundPercentage?.toString() || "50"
+          ) || 50,
+        nonRefundableDays:
+          parseInt(
+            form.cancellationPolicy?.nonRefundableDays?.toString() || "7"
+          ) || 7,
+      },
+      updated_at: new Date().toISOString(),
     };
 
-    const { error } = await client
+    console.log(
+      "📋 Final venue data to be sent:",
+      JSON.stringify(venueData, null, 2)
+    );
+    console.log("🎯 Updating venue with ID:", venueId);
+    console.log("🗄️ Using Supabase client:", !!client);
+
+    // Show progress toast
+    const progressToast = toast.add({
+      title: "Saving Changes",
+      description: "Updating venue information...",
+      color: "blue",
+      timeout: 0, // Don't auto-dismiss
+      loading: true,
+    });
+
+    console.log("⬆️ Sending update request to Supabase...");
+
+    const { data, error } = await client
       .from("venues")
       .update(venueData)
-      .eq("id", venueId);
+      .eq("id", venueId)
+      .select(); // Add select to get the updated data back
+
+    console.log("📨 Supabase response received");
+    console.log("📊 Response data:", data);
+    console.log("❌ Response error:", error);
+
+    // Clear timeout since operation completed
+    clearTimeout(timeoutId);
+
+    // Remove progress toast
+    toast.remove(progressToast);
 
     if (error) {
-      // Handle error silently or log to error tracking service
-    } else {
-      // Show success modal instead of toast and redirect
-      showSuccessModal.value = true;
+      console.error("💥 Supabase error details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+
+      let errorMessage = "Failed to update venue";
+
+      // Provide specific error messages based on error type
+      if (error.code === "23505") {
+        errorMessage = "A venue with this name already exists";
+      } else if (error.code === "23502") {
+        errorMessage = "Missing required information";
+      } else if (error.code === "23514") {
+        errorMessage = "Invalid data format";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.add({
+        title: "Save Failed",
+        description: errorMessage,
+        color: "red",
+        timeout: 8000,
+      });
+
+      throw new Error(`Supabase error: ${error.message}`);
     }
-  } catch (error) {
-    console.error("Error updating venue:", error);
+
+    if (!data || data.length === 0) {
+      console.warn("⚠️ No data returned from update operation");
+      toast.add({
+        title: "Warning",
+        description: "Update completed but no confirmation received",
+        color: "yellow",
+        timeout: 5000,
+      });
+    } else {
+      console.log("✅ Venue updated successfully:", data[0]);
+    }
+
+    // Show success notification
+    toast.add({
+      title: "Success!",
+      description: `Venue "${form.venueName}" has been updated successfully`,
+      color: "green",
+      timeout: 5000,
+    });
+
+    console.log("🎉 Save operation completed successfully");
+
+    // Optional: Show success modal or redirect
+    // showSuccessModal.value = true;
+  } catch (error: any) {
+    console.error("💥 Error in save operation:", error);
+    console.error("📊 Error stack:", error.stack);
+
+    // Clear timeout if still active
+    clearTimeout(timeoutId);
+
+    let userFriendlyMessage = "An unexpected error occurred while saving";
+
+    if (error.message?.includes("Invalid")) {
+      userFriendlyMessage = error.message;
+    } else if (error.message?.includes("network")) {
+      userFriendlyMessage =
+        "Network error. Please check your connection and try again";
+    } else if (error.message?.includes("timeout")) {
+      userFriendlyMessage = "The operation timed out. Please try again";
+    }
+
     toast.add({
       title: "Error",
-      description: "Failed to update venue",
-      color: "error",
+      description: userFriendlyMessage,
+      color: "red",
+      timeout: 8000,
     });
   } finally {
+    console.log("🏁 Save operation finished, setting saving state to false");
     saving.value = false;
   }
 };
@@ -292,62 +474,10 @@ const closeModal = () => {
   showSuccessModal.value = false;
 };
 
-// Remove photo
-const removePhoto = (index: number) => {
-  form.photos.splice(index, 1);
-};
-
-// Handle photo uploads
-const handlePhotoUpload = async (event: any) => {
-  const files = event.target.files;
-  if (!files.length) return;
-
-  const toastId = toast.add({
-    title: "Uploading",
-    description: "Uploading photos...",
-    color: "secondary",
-    icon: "i-heroicons-arrow-path",
-    loading: true,
-  });
-
-  try {
-    // This is a placeholder for your actual upload logic
-    // You would typically upload to Supabase storage here
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileName = `venues/${venueId}/${Date.now()}-${file.name}`;
-
-      // Upload file to Supabase Storage
-      const { data, error } = await client.storage
-        .from("avatars")
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: publicUrlData } = client.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      // Add to photos array
-      form.photos.push(publicUrlData.publicUrl);
-    }
-
-    toast.remove(toastId);
-    toast.add({
-      title: "Success",
-      description: "Photos uploaded successfully",
-      color: "success",
-    });
-  } catch (error) {
-    console.error("Error uploading photos:", error);
-    toast.remove(toastId);
-    toast.add({
-      title: "Error",
-      description: "Failed to upload photos",
-      color: "error",
-    });
-  }
+// Handle photo update
+const handlePhotoUpdate = (updatedPhotos: string[]) => {
+  console.log("📸 Photos updated:", updatedPhotos);
+  form.photos = updatedPhotos;
 };
 
 // Fetch venue data on page load
@@ -491,7 +621,7 @@ const onAddressInputChanged = (input: string) => {
             </UFormGroup>
 
             <!-- Capacity and Pricing Row -->
-            <div class="flex flex-col lg:flex-row gap-4">
+            <div class="flex flex-col lg:flex-row gap-4 mt-3">
               <div class="flex-1">
                 <UFormGroup label="Minimum Capacity" required>
                   <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -535,14 +665,29 @@ const onAddressInputChanged = (input: string) => {
 
             <!-- Event Types -->
             <UFormGroup label="Event Types" required>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Event Types you offer:
+              </div>
               <USelectMenu
                 v-model="form.eventTypes"
-                :options="eventTypeOptions"
+                :items="availableEventTypes"
                 placeholder="Select event types"
                 multiple
+                selected-icon="i-bx-party"
                 class="w-full"
               />
             </UFormGroup>
+
+            <!-- <div class="flex flex-row gap-3">
+        <USelectMenu
+          v-model="form.eventTypes"
+          multiple
+          selected-icon="i-bx-party"
+          class="h-full w-full"
+          placeholder="Event Types Offered (Select as many as applicable)"
+          :items="availableEventTypes"
+        />
+      </div> -->
           </div>
         </UCard>
 
@@ -556,43 +701,12 @@ const onAddressInputChanged = (input: string) => {
           </template>
 
           <div class="space-y-4">
-            <UFormGroup label="Photos">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                @change="handlePhotoUpload"
-                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-              />
-            </UFormGroup>
-
-            <!-- Photo gallery -->
-            <div
-              v-if="form.photos.length"
-              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"
-            >
-              <div
-                v-for="(photo, index) in form.photos"
-                :key="index"
-                class="relative group"
-              >
-                <img
-                  :src="photo"
-                  alt="Venue photo"
-                  class="h-40 w-full object-cover rounded-lg"
-                />
-                <button
-                  @click="removePhoto(index)"
-                  class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <UIcon name="i-heroicons-trash" class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            <div v-else class="text-gray-500 text-center py-8">
-              No photos uploaded yet
-            </div>
+            <ImageUploader
+              :initial-images="form.photos"
+              :venue-id="venueId"
+              bucket-name="avatars"
+              @update:images="handlePhotoUpdate"
+            />
           </div>
         </UCard>
 

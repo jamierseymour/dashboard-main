@@ -2,9 +2,9 @@
 import AppHeader from "~/components/AppHeader.vue";
 
 // Protect all dashboard pages with auth middleware
-definePageMeta({
-  middleware: "auth",
-});
+// definePageMeta({
+//   middleware: "auth",
+// });
 
 const route = useRoute();
 const toast = useToast();
@@ -237,9 +237,8 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <AppHeader
-      class="fixed top-0 mb-[120px] left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800"
-    />
+    <!-- class="fixed top-0 mb-[120px] left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800" -->
+    <AppHeader />
 
     <div class="flex-1">
       <!-- Adjust this value based on your AppHeader height -->
