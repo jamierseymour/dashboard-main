@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { VenueFormData } from "@/types/venue";
 import DetailsStep from "@/components/Venue/DetailsStep.vue";
+import LocationStep from "@/components/Venue/LocationStep.vue";
 import MediaStep from "@/components/Venue/MediaStep.vue";
 import ExtrasStep from "@/components/Venue/ExtrasStep.vue";
 import BookingRequirements from "@/components/Venue/BookingReqsStep.vue";
@@ -71,6 +72,12 @@ const items = [
     icon: "i-lucide-building",
   },
   {
+    slot: "location",
+    title: "Location",
+    description: "Where is your venue located",
+    icon: "i-lucide-map-pin",
+  },
+  {
     slot: "booking",
     title: "Booking Requirements",
     description: "Nitty Gritty Details for booking your venue",
@@ -79,14 +86,14 @@ const items = [
   {
     slot: "extras",
     title: "Extras and Amenities",
-    description: "Review and submit your venue",
-    icon: "i-lucide-check-circle",
+    description: "Additional amenities and services",
+    icon: "i-lucide-sparkles",
   },
   {
     slot: "media",
-    title: "Location",
-    description: "Where is your venue located",
-    icon: "i-lucide-map-pin",
+    title: "Photos",
+    description: "Upload photos of your venue",
+    icon: "i-lucide-camera",
   },
 ];
 
@@ -229,8 +236,8 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
         />
       </template>
 
-      <template #extras>
-        <ExtrasStep
+      <template #location>
+        <LocationStep
           :form-data="formData"
           @update:form-data="formData = $event"
         />
@@ -240,6 +247,13 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
         <BookingRequirements
           :form-data="formData"
           @update:form-data="(newData) => (formData = newData)"
+        />
+      </template>
+
+      <template #extras>
+        <ExtrasStep
+          :form-data="formData"
+          @update:form-data="formData = $event"
         />
       </template>
 

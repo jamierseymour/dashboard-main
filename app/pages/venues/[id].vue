@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Masonry from "~/components/Venue/Masonry.vue";
+
 // import BookingForm from "../../components/Venue/BookingForm.vue";
 const client = useSupabaseClient();
 const route = useRoute();
@@ -147,6 +149,10 @@ const logoSrc = computed(() => {
       />
       <div v-else class="h-48 w-full bg-gray-300 lg:h-64"></div>
 
+      <Masonry
+        v-if="venue?.photos && venue.photos.length > 1"
+        :images="venue.photos.slice(1, 5)"
+      />
       <!-- Venue Header with Logo and Name - Overlaying hero image -->
       <div
         v-if="venue"
@@ -170,9 +176,6 @@ const logoSrc = computed(() => {
               >
                 {{ venue.venue_name }}
               </h1>
-              <p class="text-base lg:text-lg text-white/90">
-                {{ provinceDisplay }}
-              </p>
               <p class="text-base lg:text-lg text-white/90">
                 {{ venue.company_name }}
               </p>

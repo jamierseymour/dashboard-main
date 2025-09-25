@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import type { VenueFormData } from "~/types/venue";
 import type { EventType } from "~/types/venue";
-import GoogleAutocompleteVue from "~/components/Form/GoogleAutocomplete.vue";
 
 const props = defineProps<{
   formData: VenueFormData;
@@ -12,35 +11,6 @@ const emit = defineEmits<{
   "update:formData": [data: VenueFormData];
 }>();
 
-const selectedAddress = ref<any>(null);
-
-const onPlaceSelected = (place: any) => {
-  selectedAddress.value = {
-    formatted_address: place.formattedAddress || place.formatted_address,
-    coordinates: {
-      lat: place.location?.lat || place.geometry?.location?.lat() || 0,
-      lng: place.location?.lng || place.geometry?.location?.lng() || 0,
-    },
-    address_components:
-      place.addressComponents || place.address_components || [],
-  };
-
-  // Update the form data with the selected address
-  const updatedForm = {
-    ...props.formData,
-    address: place.formatted_address || place.formattedAddress || "",
-  };
-  emit("update:formData", updatedForm);
-};
-
-const onInputChanged = (value: string) => {
-  // Update the form data with the input value
-  const updatedForm = {
-    ...props.formData,
-    address: value,
-  };
-  emit("update:formData", updatedForm);
-};
 
 const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Wedding", value: "Wedding" },
@@ -57,9 +27,6 @@ const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Other", value: "Other" },
 ];
 
-const handlePlaceSelected = (place) => {
-  selectedAddress.value = place.formattedAddress || place.formatted_address;
-};
 
 // Create computed properties for two-way binding
 const form = computed({
@@ -95,24 +62,6 @@ const form = computed({
         class="w-full"
       />
 
-      <!-- Updated GoogleAutocomplete with new PlaceAutocompleteElement -->
-      <GoogleAutocompleteVue
-        placeholder="Search for an address..."
-        :show-details="false"
-        :options="{
-          componentRestrictions: { country: 'za' },
-          types: ['address'],
-        }"
-        @place-selected="onPlaceSelected"
-        @input-changed="onInputChanged"
-      />
-
-      <div v-if="selectedAddress" class="mt-6">
-        <h2 class="text-lg font-semibold mb-2">Selected Address:</h2>
-        <pre class="bg-gray-100 p-4 rounded-lg text-sm">{{
-          JSON.stringify(selectedAddress, null, 2)
-        }}</pre>
-      </div>
 
       <div class="flex flex-row gap-3">
         <USelectMenu
@@ -121,7 +70,7 @@ const form = computed({
           selected-icon="i-bx-party"
           class="h-full w-full"
           placeholder="Event Types Offered (Select as many as applicable)"
-          :items="availableEventTypes"
+          :options="availableEventTypes"
         />
       </div>
 

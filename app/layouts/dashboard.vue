@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppHeader from "~/components/AppHeader.vue";
+import { useAuth } from "~/stores/auth";
 
 // Protect all dashboard pages with auth middleware
 // definePageMeta({
@@ -8,8 +9,29 @@ import AppHeader from "~/components/AppHeader.vue";
 
 const route = useRoute();
 const toast = useToast();
+const auth = useAuth();
 
 const open = ref(false);
+
+// Get avatar URL with fallback
+const avatarUrl = computed(() => {
+  return (
+    auth.profile?.picUrl ||
+    auth.profile?.avatar_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      auth.profile?.name || auth.user?.email || "User"
+    )}&background=FFBE61&color=000000&bold=true`
+  );
+});
+
+// Navigation menu UI configuration for active state highlighting
+const navigationUI = {
+  item: {
+    base: "group block w-full rounded-md p-2 text-sm font-medium transition-colors duration-200 ease-in-out",
+    active: "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-l-4 border-blue-500",
+    inactive: "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800",
+  },
+};
 
 const links = [
   [
@@ -92,6 +114,22 @@ const links = [
           label: "Profile",
           to: "/settings",
           exact: true,
+          onSelect: () => {
+            open.value = false;
+          },
+        },
+        {
+          label: "About Me",
+          to: "/settings/about",
+          avatar: avatarUrl,
+          onSelect: () => {
+            open.value = false;
+          },
+        },
+        {
+          label: "My Events",
+          icon: "i-lucide-calendar",
+          to: "/settings/events",
           onSelect: () => {
             open.value = false;
           },
@@ -237,7 +275,6 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <!-- class="fixed top-0 mb-[120px] left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800" -->
     <AppHeader />
 
     <div class="flex-1">
@@ -268,6 +305,7 @@ onMounted(async () => {
               :collapsed="collapsed"
               :items="links[0]"
               orientation="vertical"
+              :ui="navigationUI"
             />
 
             <div>
@@ -279,6 +317,7 @@ onMounted(async () => {
               :collapsed="collapsed"
               :items="links[1]"
               orientation="vertical"
+              :ui="navigationUI"
             />
 
             <UNavigationMenu
@@ -286,6 +325,7 @@ onMounted(async () => {
               :items="links[2]"
               orientation="vertical"
               class="mt-auto mb-8"
+              :ui="navigationUI"
             />
 
             <!-- <UNavigationMenu

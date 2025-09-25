@@ -179,6 +179,8 @@ const props = defineProps({
   },
 });
 
+console.log("Masonry images:", props.images);
+
 // Reactive state
 const selectedImageIndex = ref(null);
 const isLiked = ref(false);
@@ -319,7 +321,7 @@ definePageMeta({
 });
 </script>
 
-<style scoped>
+<!-- <style scoped>
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
   .grid-cols-4 {
@@ -342,4 +344,4 @@ definePageMeta({
     @apply row-span-1;
   }
 }
-</style>
+</style> -->

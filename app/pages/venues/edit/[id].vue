@@ -59,6 +59,8 @@ const form = reactive<VenueFormData>({
   },
 });
 
+const originalForm = ref<VenueFormData | null>(null);
+
 // Event type options
 const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Wedding", value: "Wedding" },
@@ -75,7 +77,20 @@ const availableEventTypes: { label: string; value: EventType }[] = [
   { label: "Other", value: "Other" },
 ];
 
-// Add debug logging
+const isFieldEdited = (fieldPath: string) => {
+  if (!originalForm.value) return false;
+
+  const keys = fieldPath.split(".");
+  let original: any = originalForm.value;
+  let current: any = form;
+
+  for (const key of keys) {
+    original = original?.[key];
+    current = current?.[key];
+  }
+
+  return original !== current;
+};
 
 // Fetch venue data
 const fetchVenueData = async () => {
@@ -183,6 +198,26 @@ const fetchVenueData = async () => {
       };
     }
 
+    const getChangedFields = () => {
+      if (!originalForm.value) return [];
+      const changed: string[] = [];
+
+      const compare = (current: any, original: any, prefix = "") => {
+        Object.keys(current).forEach((key) => {
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+
+          if (typeof current[key] === "object" && current[key] !== null) {
+            compare(current[key], original[key] || {}, fullKey);
+          } else if (current[key] !== original[key]) {
+            changed.push(fullKey);
+          }
+        });
+      };
+
+      compare(form, originalForm.value);
+      return changed;
+    };
+
     // Parse cancellation policy
     if (data.cancellation_policy) {
       form.cancellationPolicy = {
@@ -193,6 +228,8 @@ const fetchVenueData = async () => {
         nonRefundableDays: data.cancellation_policy.nonRefundableDays || 7,
       };
     }
+
+    originalForm.value = JSON.parse(JSON.stringify(form));
   } catch (error: any) {
     console.error("Error fetching venue:", error);
     toast.add({
@@ -203,6 +240,26 @@ const fetchVenueData = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const getChangedFields = () => {
+  if (!originalForm.value) return [];
+  const changed: string[] = [];
+
+  const compare = (current: any, original: any, prefix = "") => {
+    Object.keys(current).forEach((key) => {
+      const fullKey = prefix ? `${prefix}.${key}` : key;
+
+      if (typeof current[key] === "object" && current[key] !== null) {
+        compare(current[key], original[key] || {}, fullKey);
+      } else if (current[key] !== original[key]) {
+        changed.push(fullKey);
+      }
+    });
+  };
+
+  compare(form, originalForm.value);
+  return changed;
 };
 
 // Enhanced save venue function with proper debugging and user feedback
@@ -233,7 +290,7 @@ const saveVenue = async () => {
       description: `Please fill in the following required fields: ${missingFields.join(
         ", "
       )}`,
-      color: "red",
+      color: "error",
       timeout: 5000,
     });
     return;
@@ -249,7 +306,7 @@ const saveVenue = async () => {
     toast.add({
       title: "Request Timeout",
       description: "The save operation took too long. Please try again.",
-      color: "red",
+      color: "error",
       timeout: 8000,
     });
   }, 30000); // 30 second timeout
@@ -345,6 +402,16 @@ const saveVenue = async () => {
     );
     console.log("🎯 Updating venue with ID:", venueId);
     console.log("🗄️ Using Supabase client:", !!client);
+
+    const changedFields = getChangedFields();
+    if (changedFields.length > 0) {
+      toast.add({
+        title: "Changes detected",
+        description: `You have modified: ${changedFields.join(", ")}`,
+        color: "blue",
+        timeout: 5000,
+      });
+    }
 
     // Show progress toast
     const progressToast = toast.add({
