@@ -31,6 +31,7 @@
           variant="ghost"
           icon="i-heroicons-pencil-square-20-solid"
           label="Edit Profile"
+          class="cursor-pointer"
           @click="isEditing = !isEditing"
         />
       </div>
@@ -98,6 +99,7 @@
               color="primary"
               icon="i-heroicons-pencil-square-20-solid"
               label="Edit Profile"
+              class="cursor-pointer"
               @click="isEditing = true"
             />
           </div>
@@ -149,6 +151,7 @@
               color="primary"
               icon="i-heroicons-check"
               label="Save Changes"
+              class="cursor-pointer"
               :loading="isSaving"
             />
             <UButton
@@ -156,6 +159,7 @@
               variant="ghost"
               icon="i-heroicons-x-mark"
               label="Cancel"
+              class="cursor-pointer"
               @click="cancelEdit"
             />
           </div>

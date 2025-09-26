@@ -139,53 +139,14 @@ const logoSrc = computed(() => {
 
 <template>
   <div class="bg-white">
-    <!-- Header Image -->
-    <div class="relative">
-      <img
-        v-if="venue?.photos && venue.photos.length > 0"
-        :src="venue.photos[0]"
-        alt="Header Image"
-        class="h-48 w-full object-cover lg:h-64"
-      />
-      <div v-else class="h-48 w-full bg-gray-300 lg:h-64"></div>
-
+    <!-- Masonry Gallery -->
+    <div class="px-4 py-6 sm:px-6 lg:px-8">
       <Masonry
-        v-if="venue?.photos && venue.photos.length > 1"
-        :images="venue.photos.slice(1, 5)"
+        v-if="venue?.photos && venue.photos.length > 0"
+        :images="venue.photos"
+        :venue-name="venue.venue_name"
+        :max-images="8"
       />
-      <!-- Venue Header with Logo and Name - Overlaying hero image -->
-      <div
-        v-if="venue"
-        class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent"
-      >
-        <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-          <div class="flex items-center py-4 lg:py-6">
-            <!-- Logo -->
-            <div class="flex-shrink-0 mr-6">
-              <img
-                :src="logoSrc"
-                alt="Venue Logo"
-                class="h-16 w-16 lg:h-20 lg:w-20 rounded-full border-4 border-white shadow-lg object-cover"
-              />
-            </div>
-
-            <!-- Venue Name and Info -->
-            <div class="flex-1">
-              <h1
-                class="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-1 lg:mb-2"
-              >
-                {{ venue.venue_name }}
-              </h1>
-              <p class="text-base lg:text-lg text-white/90">
-                {{ venue.company_name }}
-              </p>
-              <p v-if="venue.created_at" class="text-sm text-white/80 mt-1">
-                Listed on {{ new Date(venue.created_at).toLocaleDateString() }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Event Types Badges -->

@@ -125,14 +125,13 @@ const handleSearch = () => {
         </p>
 
         <!-- Search Bar - Reduced Transparency -->
-        <div
+        <!-- <div
           class="w-full max-w-4xl bg-[#032334]/65 backdrop-blur-sm rounded-full p-2 shadow-lg"
         >
           <form
             class="flex flex-col md:flex-row items-center"
             @submit.prevent="handleSearch"
           >
-            <!-- I'm looking for -->
             <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
               <label class="block text-sm text-blue-200 mb-1"
                 >I'm looking for</label
@@ -152,7 +151,6 @@ const handleSearch = () => {
               </select>
             </div>
 
-            <!-- Number of guests -->
             <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
               <label class="block text-sm text-blue-200 mb-1"
                 >Number of guests</label
@@ -165,7 +163,6 @@ const handleSearch = () => {
               />
             </div>
 
-            <!-- Date -->
             <div class="flex-1 px-4 py-2">
               <label class="block text-sm text-blue-200 mb-1">Date</label>
               <input
@@ -175,7 +172,6 @@ const handleSearch = () => {
               />
             </div>
 
-            <!-- Search Button -->
             <div class="px-4 py-2">
               <button
                 type="submit"
@@ -185,7 +181,7 @@ const handleSearch = () => {
               </button>
             </div>
           </form>
-        </div>
+        </div> -->
 
         <div class="container mx-auto p-4 max-w-[1228px]">
           <VenueFilterBar @filter-change="filterVenues" />

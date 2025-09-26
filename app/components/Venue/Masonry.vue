@@ -1,3 +1,165 @@
+<script setup>
+// Props
+const props = defineProps({
+  images: {
+    type: Array,
+    default: () => [],
+  },
+  venueName: {
+    type: String,
+    default: "Beautiful Venue",
+  },
+  maxImages: {
+    type: Number,
+    default: 8,
+  },
+});
+
+console.log("Masonry images:", props.images);
+
+// Reactive state
+const selectedImageIndex = ref(null);
+const isLiked = ref(false);
+
+// Normalize images to handle both URL strings and objects
+const normalizeImages = (images) => {
+  return images.map((image, index) => {
+    // If it's a string (URL), convert to object
+    if (typeof image === 'string') {
+      return {
+        url: image,
+        alt: `${props.venueName} - Photo ${index + 1}`
+      };
+    }
+    // If it's already an object, return as is
+    return image;
+  });
+};
+
+// Sample images for demo (replace with your actual images)
+const sampleImages = props.images.length > 0 ? normalizeImages(props.images) : [];
+
+// Computed
+const displayImages = computed(() => sampleImages.slice(0, props.maxImages));
+
+// Methods
+const openLightbox = (index) => {
+  selectedImageIndex.value = index;
+};
+
+const closeLightbox = () => {
+  selectedImageIndex.value = null;
+};
+
+const nextImage = () => {
+  selectedImageIndex.value =
+    selectedImageIndex.value === displayImages.value.length - 1
+      ? 0
+      : selectedImageIndex.value + 1;
+};
+
+const prevImage = () => {
+  selectedImageIndex.value =
+    selectedImageIndex.value === 0
+      ? displayImages.value.length - 1
+      : selectedImageIndex.value - 1;
+};
+
+const setSelectedIndex = (index) => {
+  selectedImageIndex.value = index;
+};
+
+const handleShare = async () => {
+  if (process.client) {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: props.venueName,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log("Sharing failed:", err);
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // You could show a toast notification here
+        console.log("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+      }
+    }
+  }
+};
+
+// Keyboard navigation
+const handleKeyDown = (e) => {
+  if (selectedImageIndex.value === null) return;
+
+  if (e.key === "Escape") {
+    closeLightbox();
+  } else if (e.key === "ArrowLeft") {
+    prevImage();
+  } else if (e.key === "ArrowRight") {
+    nextImage();
+  }
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  if (process.client) {
+    document.addEventListener("keydown", handleKeyDown);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    document.removeEventListener("keydown", handleKeyDown);
+  }
+});
+
+// Watch for lightbox state to handle body scroll
+watch(selectedImageIndex, (newValue) => {
+  if (process.client) {
+    if (newValue !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }
+});
+
+// SEO and meta
+definePageMeta({
+  title: "Venue Gallery",
+});
+</script>
+
+<!-- <style scoped>
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .grid-cols-4 {
+    @apply grid-cols-2 grid-rows-3 h-80;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-4 {
+    @apply grid-cols-1 gap-1;
+    grid-template-rows: 200px repeat(4, 100px);
+    height: auto;
+  }
+
+  .col-span-2 {
+    @apply col-span-1;
+  }
+
+  .row-span-2 {
+    @apply row-span-1;
+  }
+}
+</style> -->
 <template>
   <div class="w-full max-w-6xl mx-auto">
     <!-- Header with actions -->
@@ -161,187 +323,3 @@
     />
   </div>
 </template>
-
-<script setup>
-// Props
-const props = defineProps({
-  images: {
-    type: Array,
-    default: () => [],
-  },
-  venueName: {
-    type: String,
-    default: "Beautiful Venue",
-  },
-  maxImages: {
-    type: Number,
-    default: 8,
-  },
-});
-
-console.log("Masonry images:", props.images);
-
-// Reactive state
-const selectedImageIndex = ref(null);
-const isLiked = ref(false);
-
-// Sample images for demo (replace with your actual images)
-const sampleImages =
-  props.images.length > 0
-    ? props.images
-    : [
-        {
-          url: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600",
-          alt: "Modern living room with large windows",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=400",
-          alt: "Kitchen with marble countertops",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=600",
-          alt: "Cozy bedroom with natural light",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300",
-          alt: "Modern bathroom with rainfall shower",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=600&h=400",
-          alt: "Outdoor patio with seating area",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?w=400&h=500",
-          alt: "Dining area with modern furniture",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=300",
-          alt: "Home office space",
-        },
-        {
-          url: "https://images.unsplash.com/photo-1558618666-fbd6c21cd19b?w=400&h=400",
-          alt: "Walk-in closet",
-        },
-      ];
-
-// Computed
-const displayImages = computed(() => sampleImages.slice(0, props.maxImages));
-
-// Methods
-const openLightbox = (index) => {
-  selectedImageIndex.value = index;
-};
-
-const closeLightbox = () => {
-  selectedImageIndex.value = null;
-};
-
-const nextImage = () => {
-  selectedImageIndex.value =
-    selectedImageIndex.value === displayImages.value.length - 1
-      ? 0
-      : selectedImageIndex.value + 1;
-};
-
-const prevImage = () => {
-  selectedImageIndex.value =
-    selectedImageIndex.value === 0
-      ? displayImages.value.length - 1
-      : selectedImageIndex.value - 1;
-};
-
-const setSelectedIndex = (index) => {
-  selectedImageIndex.value = index;
-};
-
-const handleShare = async () => {
-  if (process.client) {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: props.venueName,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log("Sharing failed:", err);
-      }
-    } else {
-      // Fallback: copy URL to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        // You could show a toast notification here
-        console.log("Link copied to clipboard!");
-      } catch (err) {
-        console.error("Failed to copy link:", err);
-      }
-    }
-  }
-};
-
-// Keyboard navigation
-const handleKeyDown = (e) => {
-  if (selectedImageIndex.value === null) return;
-
-  if (e.key === "Escape") {
-    closeLightbox();
-  } else if (e.key === "ArrowLeft") {
-    prevImage();
-  } else if (e.key === "ArrowRight") {
-    nextImage();
-  }
-};
-
-// Lifecycle hooks
-onMounted(() => {
-  if (process.client) {
-    document.addEventListener("keydown", handleKeyDown);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (process.client) {
-    document.removeEventListener("keydown", handleKeyDown);
-  }
-});
-
-// Watch for lightbox state to handle body scroll
-watch(selectedImageIndex, (newValue) => {
-  if (process.client) {
-    if (newValue !== null) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-  }
-});
-
-// SEO and meta
-definePageMeta({
-  title: "Venue Gallery",
-});
-</script>
-
-<!-- <style scoped>
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-  .grid-cols-4 {
-    @apply grid-cols-2 grid-rows-3 h-80;
-  }
-}
-
-@media (max-width: 480px) {
-  .grid-cols-4 {
-    @apply grid-cols-1 gap-1;
-    grid-template-rows: 200px repeat(4, 100px);
-    height: auto;
-  }
-
-  .col-span-2 {
-    @apply col-span-1;
-  }
-
-  .row-span-2 {
-    @apply row-span-1;
-  }
-}
-</style> -->

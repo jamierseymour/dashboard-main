@@ -102,6 +102,7 @@
                   size="sm"
                   icon="i-heroicons-eye"
                   label="View Details"
+                  class="cursor-pointer"
                   @click="viewEvent(event)"
                 />
                 <UButton
@@ -111,6 +112,7 @@
                   size="sm"
                   icon="i-heroicons-photo"
                   label="Photos ({{ event.photos }})"
+                  class="cursor-pointer"
                   @click="viewPhotos(event)"
                 />
                 <UButton
@@ -120,6 +122,7 @@
                   size="sm"
                   icon="i-heroicons-chat-bubble-left-right"
                   label="Feedback"
+                  class="cursor-pointer"
                   @click="viewFeedback(event)"
                 />
                 <UButton
@@ -128,6 +131,7 @@
                   size="sm"
                   icon="i-heroicons-arrow-path"
                   label="Book Again"
+                  class="cursor-pointer"
                   @click="bookAgain(event)"
                 />
               </div>
@@ -158,6 +162,7 @@
           color="primary"
           icon="i-heroicons-plus"
           label="Create Your First Event"
+          class="cursor-pointer"
           @click="createEvent"
         />
       </div>
@@ -268,12 +273,7 @@ const getDaysSince = (dateString: string) => {
 
 // Event actions
 const viewEvent = (event: any) => {
-  console.log("Viewing event:", event);
-  useToast().add({
-    title: "Event Details",
-    description: `Viewing details for ${event.title}`,
-    color: "blue",
-  });
+  navigateTo(`/events/${event.id}`);
 };
 
 const viewPhotos = (event: any) => {
@@ -304,11 +304,6 @@ const bookAgain = (event: any) => {
 };
 
 const createEvent = () => {
-  console.log("Creating new event");
-  useToast().add({
-    title: "Create Event",
-    description: "Opening event creation form",
-    color: "green",
-  });
+  navigateTo("/create-event");
 };
 </script>

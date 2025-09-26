@@ -28,14 +28,7 @@ defineProps({
     <!-- Form -->
     <form class="space-y-6">
       <!-- Date Input -->
-      <div>
-        <input
-          type="date"
-          id="date"
-          name="date"
-          class="mt-1 block w-full rounded-xl border border-gray-600 bg-white py-2 px-3 text-black placeholder-gray-400 focus:border-yellow-400 focus:outline-none focus:ring-yellow-400"
-        />
-      </div>
+      <div>UCalendar</div>
 
       <!-- Number of Guests Input -->
       <div>

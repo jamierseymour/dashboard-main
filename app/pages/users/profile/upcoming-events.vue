@@ -15,6 +15,7 @@
           color="primary"
           icon="i-heroicons-plus"
           label="Create Event"
+          class="cursor-pointer"
           @click="createEvent"
         />
       </div>
@@ -68,6 +69,7 @@
                   size="sm"
                   icon="i-heroicons-eye"
                   label="View Details"
+                  class="cursor-pointer"
                   @click="viewEvent(event)"
                 />
                 <UButton
@@ -76,6 +78,7 @@
                   size="sm"
                   icon="i-heroicons-pencil-square"
                   label="Edit"
+                  class="cursor-pointer"
                   @click="editEvent(event)"
                 />
               </div>
@@ -106,6 +109,7 @@
           color="primary"
           icon="i-heroicons-plus"
           label="Create Event"
+          class="cursor-pointer"
           @click="createEvent"
         />
       </div>
@@ -181,12 +185,7 @@ const getEventStatusColor = (status: string) => {
 
 // Event actions
 const viewEvent = (event: any) => {
-  console.log("Viewing event:", event);
-  useToast().add({
-    title: "Event Details",
-    description: `Viewing details for ${event.title}`,
-    color: "blue",
-  });
+  navigateTo(`/events/${event.id}`);
 };
 
 const editEvent = (event: any) => {
@@ -199,11 +198,6 @@ const editEvent = (event: any) => {
 };
 
 const createEvent = () => {
-  console.log("Creating new event");
-  useToast().add({
-    title: "Create Event",
-    description: "Opening event creation form",
-    color: "green",
-  });
+  navigateTo("/create-event");
 };
 </script>
