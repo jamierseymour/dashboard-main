@@ -70,30 +70,35 @@ const items = [
     title: "Venue Details",
     description: "Basic information about your venue",
     icon: "i-lucide-building",
+    class: "stepper-item"
   },
   {
     slot: "location",
     title: "Location",
     description: "Where is your venue located",
     icon: "i-lucide-map-pin",
+    class: "stepper-item"
   },
   {
     slot: "booking",
     title: "Booking Requirements",
     description: "Nitty Gritty Details for booking your venue",
     icon: "i-lucide-check-circle",
+    class: "stepper-item"
   },
   {
     slot: "extras",
     title: "Extras and Amenities",
     description: "Additional amenities and services",
     icon: "i-lucide-sparkles",
+    class: "stepper-item"
   },
   {
     slot: "media",
     title: "Photos",
     description: "Upload photos of your venue",
     icon: "i-lucide-camera",
+    class: "stepper-item"
   },
 ];
 
@@ -227,8 +232,15 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
 </script>
 
 <template>
-  <div class="mt-24">
-    <UStepper ref="stepper" v-model="currentStep" :items="items" class="w-full">
+  <div class="mt-16 sm:mt-24 pb-24">
+    <div class="px-2 sm:px-4">
+      <UStepper
+        ref="stepper"
+        v-model="currentStep"
+        :items="items"
+        class="w-full overflow-x-auto"
+        orientation="horizontal"
+      >
       <template #details>
         <DetailsStep
           :form-data="formData"
@@ -264,39 +276,65 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
         />
       </template>
     </UStepper>
+    </div>
 
-    <div class="flex items-center justify-center mt-4">
-      <div class="flex justify-between w-full max-w-1/2">
-        <UButton
-          leading-icon="i-lucide-arrow-left"
-          :disabled="!stepper?.hasPrev"
-          class="cursor-pointer"
-          @click="stepper?.prev()"
-        >
-          Prev
-        </UButton>
+    <!-- Sticky footer with navigation buttons -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <UButton
+            leading-icon="i-lucide-arrow-left"
+            :disabled="!stepper?.hasPrev"
+            class="cursor-pointer"
+            size="lg"
+            @click="stepper?.prev()"
+          >
+            Prev
+          </UButton>
 
-        <UButton
-          v-if="stepper?.hasNext"
-          trailing-icon="i-lucide-arrow-right"
-          :disabled="!stepper?.hasNext"
-          class="cursor-pointer"
-          @click="stepper?.next()"
-        >
-          Next
-        </UButton>
+          <UButton
+            v-if="stepper?.hasNext"
+            trailing-icon="i-lucide-arrow-right"
+            :disabled="!stepper?.hasNext"
+            class="cursor-pointer"
+            size="lg"
+            @click="stepper?.next()"
+          >
+            Next
+          </UButton>
 
-        <UButton
-          v-else
-          trailing-icon="i-lucide-arrow-right"
-          class="cursor-pointer"
-          :disabled="isSubmitting"
-          @click="checkAuthAndSubmit()"
-        >
-          <span v-if="isSubmitting">Submitting...</span>
-          <span v-else>Submit</span>
-        </UButton>
+          <UButton
+            v-else
+            trailing-icon="i-lucide-arrow-right"
+            class="cursor-pointer"
+            size="lg"
+            :disabled="isSubmitting"
+            @click="checkAuthAndSubmit()"
+          >
+            <span v-if="isSubmitting">Submitting...</span>
+            <span v-else>Submit</span>
+          </UButton>
+        </div>
       </div>
     </div>
+
+    <!-- Spacer to prevent content from being hidden behind sticky footer -->
+    <div class="h-24"></div>
   </div>
 </template>
+
+<style>
+/* Hide stepper descriptions on mobile */
+@media (max-width: 640px) {
+  :deep(.stepper-item p),
+  :deep([class*="UStepper"] p) {
+    display: none !important;
+  }
+
+  /* Make stepper titles smaller on mobile */
+  :deep([class*="UStepper"] h3),
+  :deep([class*="UStepper"] [class*="title"]) {
+    font-size: 0.875rem !important;
+  }
+}
+</style>

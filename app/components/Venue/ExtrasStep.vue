@@ -113,8 +113,8 @@ const removeCustomAmenity = (index: number) => {
 </script>
 
 <template>
-  <div class="w-full flex justify-center items-center p-12">
-    <div class="flex flex-col w-1/2 gap-6">
+  <div class="w-full flex justify-center items-center p-4 sm:p-8 lg:p-12">
+    <div class="flex flex-col w-full sm:w-3/4 lg:w-1/2 gap-6">
       <h2 class="text-2xl font-bold">Venue Extras and Amenities</h2>
       <p class="text-gray-600 dark:text-gray-400">
         Select all amenities available at your venue

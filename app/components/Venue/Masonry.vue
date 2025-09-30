@@ -231,11 +231,11 @@ definePageMeta({
       <!-- 3+ images masonry layout -->
       <div
         v-else-if="displayImages.length >= 3"
-        class="grid grid-cols-4 grid-rows-2 gap-2 h-96 rounded-2xl overflow-hidden md:grid-cols-4 sm:grid-cols-2 sm:grid-rows-3 sm:h-80"
+        class="grid grid-cols-4 grid-rows-2 gap-2 h-96 md:grid-cols-4 sm:grid-cols-2 sm:grid-rows-3 sm:h-80"
       >
         <!-- Main large image -->
         <div
-          class="col-span-2 row-span-2 cursor-pointer group relative overflow-hidden sm:col-span-2 sm:row-span-2"
+          class="col-span-2 row-span-2 cursor-pointer group relative overflow-hidden rounded-2xl sm:col-span-2 sm:row-span-2"
         >
           <NuxtImg
             :src="displayImages[0].url"
@@ -248,7 +248,7 @@ definePageMeta({
         </div>
 
         <!-- Top right images -->
-        <div class="cursor-pointer group relative overflow-hidden">
+        <div class="cursor-pointer group relative overflow-hidden rounded-2xl">
           <NuxtImg
             :src="displayImages[1]?.url || displayImages[0].url"
             :alt="displayImages[1]?.alt || displayImages[0].alt"
@@ -258,7 +258,7 @@ definePageMeta({
           />
         </div>
 
-        <div class="cursor-pointer group relative overflow-hidden">
+        <div class="cursor-pointer group relative overflow-hidden rounded-2xl">
           <NuxtImg
             :src="displayImages[2]?.url || displayImages[0].url"
             :alt="displayImages[2]?.alt || displayImages[0].alt"
@@ -269,7 +269,7 @@ definePageMeta({
         </div>
 
         <!-- Bottom right images -->
-        <div class="cursor-pointer group relative overflow-hidden">
+        <div class="cursor-pointer group relative overflow-hidden rounded-2xl">
           <NuxtImg
             :src="displayImages[3]?.url || displayImages[0].url"
             :alt="displayImages[3]?.alt || displayImages[0].alt"
@@ -279,7 +279,7 @@ definePageMeta({
           />
         </div>
 
-        <div class="cursor-pointer group relative overflow-hidden">
+        <div class="cursor-pointer group relative overflow-hidden rounded-2xl">
           <NuxtImg
             :src="displayImages[4]?.url || displayImages[0].url"
             :alt="displayImages[4]?.alt || displayImages[0].alt"
@@ -291,7 +291,7 @@ definePageMeta({
           <!-- Show more overlay if there are more than 5 images -->
           <div
             v-if="displayImages.length > 5"
-            class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-2xl"
           >
             <span class="text-white font-semibold text-lg">
               +{{ displayImages.length - 5 }} more

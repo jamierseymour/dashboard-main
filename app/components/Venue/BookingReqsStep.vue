@@ -77,8 +77,8 @@ const selectedPeakMonths = computed({
 </script>
 
 <template>
-  <div class="w-full flex justify-center items-center p-12">
-    <div class="flex flex-col w-1/2 gap-6">
+  <div class="w-full flex justify-center items-center p-4 sm:p-8 lg:p-12">
+    <div class="flex flex-col w-full sm:w-3/4 lg:w-1/2 gap-6">
       <!-- Booking Requirements Section -->
       <div class="flex flex-col gap-3">
         <h3 class="text-lg font-semibold">Booking Requirements</h3>

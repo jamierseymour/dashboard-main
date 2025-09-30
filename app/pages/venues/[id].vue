@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Masonry from "~/components/Venue/Masonry.vue";
+import { useAuth } from "~/stores/auth";
 
 // import BookingForm from "../../components/Venue/BookingForm.vue";
 const client = useSupabaseClient();
 const route = useRoute();
+const auth = useAuth();
 
 const product = {
   breadcrumbs: [
@@ -19,6 +21,7 @@ interface IVenue {
   id: number;
   address: string;
   logo?: string;
+  user_id?: string;
   amenities: {
     bar: boolean;
     wifi: boolean;
@@ -135,6 +138,11 @@ const provinceDisplay = computed(() => {
 const logoSrc = computed(() => {
   return venue.value?.logo || "/logos/logo-snip.png";
 });
+
+// Check if current user owns this venue
+const isOwner = computed(() => {
+  return auth.user?.id && venue.value?.user_id === auth.user.id;
+});
 </script>
 
 <template>
@@ -146,6 +154,16 @@ const logoSrc = computed(() => {
         :images="venue.photos"
         :venue-name="venue.venue_name"
         :max-images="8"
+      />
+    </div>
+
+    <!-- Edit Button for Owner -->
+    <div v-if="isOwner" class="flex justify-end px-4 sm:px-6 lg:px-8">
+      <UButton
+        icon="i-heroicons-pencil-square"
+        color="primary"
+        :to="`/venues/edit/${venue?.id}`"
+        label="Edit Venue"
       />
     </div>
 

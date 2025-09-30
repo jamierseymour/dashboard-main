@@ -121,6 +121,54 @@ const activeNavItem = computed(() => {
   if (path.startsWith('/services')) return 'services';
   return 'venues'; // default
 });
+
+// Dynamic button text and action based on user status and current page
+const hostButton = computed(() => {
+  if (!auth.loggedIn) {
+    return null; // Don't show button if not logged in
+  }
+
+  const isOnVenuePage = activeNavItem.value === 'venues';
+  const isOnServicePage = activeNavItem.value === 'services';
+  const isHost = auth.profile?.is_host;
+  const isServiceProvider = auth.profile?.is_service_provider;
+
+  if (isOnVenuePage) {
+    if (isHost) {
+      return {
+        label: 'Switch to Hosting',
+        icon: 'i-heroicons-building-office',
+        to: '/dashboard',
+        variant: 'soft' as const
+      };
+    } else {
+      return {
+        label: 'Become a Host',
+        icon: 'i-heroicons-home',
+        to: '/new-venue',
+        variant: 'solid' as const
+      };
+    }
+  } else if (isOnServicePage) {
+    if (isServiceProvider) {
+      return {
+        label: 'Service Dashboard',
+        icon: 'i-heroicons-sparkles',
+        to: '/service-dashboard',
+        variant: 'soft' as const
+      };
+    } else {
+      return {
+        label: 'Become a Provider',
+        icon: 'i-heroicons-sparkles',
+        to: '/become-provider',
+        variant: 'solid' as const
+      };
+    }
+  }
+
+  return null;
+});
 </script>
 
 <template>
@@ -182,9 +230,15 @@ const activeNavItem = computed(() => {
 
         <!-- Right: Actions -->
         <div class="flex flex-row justify-center items-center gap-2">
-          <p class="px-4 font-bold cursor-pointer">
-            <NuxtLink to="/new-venue"> List your venue </NuxtLink>
-          </p>
+          <UButton
+            v-if="hostButton"
+            :label="hostButton.label"
+            :icon="hostButton.icon"
+            :variant="hostButton.variant"
+            :to="hostButton.to"
+            size="sm"
+            class="rounded-full cursor-pointer"
+          />
           <UButton
             v-if="!auth.loggedIn"
             label="Sign up"
@@ -242,6 +296,15 @@ const activeNavItem = computed(() => {
           </NuxtLink>
           <div class="flex items-center gap-2">
             <UButton
+              v-if="hostButton"
+              :label="hostButton.label"
+              :icon="hostButton.icon"
+              :variant="hostButton.variant"
+              :to="hostButton.to"
+              size="xs"
+              class="rounded-full cursor-pointer text-xs"
+            />
+            <UButton
               v-if="!auth.loggedIn"
               label="Sign up"
               icon="i-heroicons-arrow-right"
@@ -290,49 +353,6 @@ const activeNavItem = computed(() => {
           </div>
         </div>
 
-        <!-- Mobile Navigation -->
-        <div class="flex items-center justify-center">
-          <div class="flex items-center gap-6 w-full max-w-sm justify-center">
-            <div
-              v-for="item in centerNavItems"
-              :key="item.label"
-              class="flex flex-col items-center cursor-pointer transition-all duration-300 hover:text-gray-900 dark:hover:text-white group pb-1"
-              :class="{
-                'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                'text-gray-600 dark:text-gray-400': activeNavItem !== item.label.toLowerCase()
-              }"
-              @click="() => navigateTo(item.to)"
-            >
-              <div class="flex items-center gap-1.5 mb-2">
-                <UIcon
-                  :name="item.icon"
-                  class="w-4 h-4 transition-colors duration-300"
-                  :class="{
-                    'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white': activeNavItem !== item.label.toLowerCase()
-                  }"
-                />
-                <span
-                  class="text-sm font-medium transition-colors duration-300"
-                  :class="{
-                    'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white': activeNavItem !== item.label.toLowerCase()
-                  }"
-                >
-                  {{ item.label }}
-                </span>
-              </div>
-              <!-- Underline -->
-              <div
-                class="h-0.5 w-full transition-all duration-300"
-                :class="{
-                  'bg-gray-900 dark:bg-white': activeNavItem === item.label.toLowerCase(),
-                  'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600': activeNavItem !== item.label.toLowerCase()
-                }"
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </header>

@@ -36,8 +36,8 @@ const form = computed({
 </script>
 
 <template>
-  <div class="w-full flex justify-center items-center p-12">
-    <div class="flex flex-col w-1/2 gap-3">
+  <div class="w-full flex justify-center items-center p-4 sm:p-8 lg:p-12">
+    <div class="flex flex-col w-full sm:w-3/4 lg:w-1/2 gap-3">
       <!-- Basic Info -->
       <UInput
         v-model="form.venueName"
@@ -71,6 +71,8 @@ const form = computed({
           class="h-full w-full"
           placeholder="Event Types Offered (Select as many as applicable)"
           :options="availableEventTypes"
+          option-attribute="label"
+          value-attribute="value"
         />
       </div>
 

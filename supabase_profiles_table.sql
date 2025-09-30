@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     bio TEXT,
     event_updates BOOLEAN DEFAULT false,
     terms_accepted BOOLEAN DEFAULT false,
+    is_host BOOLEAN DEFAULT false,
+    is_service_provider BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

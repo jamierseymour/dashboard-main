@@ -11,6 +11,8 @@ type ProfileData = {
   avatar_url?: string;
   picUrl?: string;
   bio?: string;
+  is_host?: boolean;
+  is_service_provider?: boolean;
 };
 
 interface IAuth {
@@ -89,7 +91,7 @@ export const useAuth = defineStore("auth", () => {
 
     try {
       const { data, error } = await (supabase.from("users") as any)
-        .select("user_id, name, email, created_at, picUrl, bio")
+        .select("user_id, name, email, created_at, picUrl, bio, is_host, is_service_provider")
         .eq("user_id", state.user.id)
         .single();
 
