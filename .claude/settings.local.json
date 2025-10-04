@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm update:*)",
+      "Bash(pnpm run:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

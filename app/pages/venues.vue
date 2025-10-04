@@ -11,7 +11,7 @@ const client = useSupabaseClient();
 
 // Define the IVenue interface
 interface IVenue {
-  id: bigint;
+  id: number;
   event_types: string[]; // This is an array of event types
   photos: string[];
   minCapacity: number | null;
@@ -86,6 +86,12 @@ const venueTypes = [
 // Handle search submission (placeholder for now)
 const handleSearch = () => {
   // Will implement actual search functionality later
+};
+
+// Navigate to venue detail page
+const goToVenue = async (venueId: number) => {
+  console.log('Navigating to venue:', venueId);
+  await navigateTo(`/venues/${venueId}`);
 };
 </script>
 
@@ -203,33 +209,32 @@ const handleSearch = () => {
         v-if="filteredVenues && filteredVenues.length > 0"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 -mt-24 gap-8"
       >
-        <div
+        <NuxtLink
           v-for="venue in filteredVenues"
-          :key="venue.id.toString()"
-          class="bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]"
+          :key="String(venue.id)"
+          :to="`/venues/${venue.id}`"
+          class="block bg-white rounded-3xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]"
         >
-          <NuxtLink :to="`/venues/${venue.id.toString()}`" class="block">
-            <div class="relative w-full h-48">
-              <!-- Image -->
-              <NuxtImg
-                :src="
-                  venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
-                "
-                alt="Venue Image"
-                class="w-full h-48 object-cover opacity-80 transition-opacity duration-300 hover:opacity-100"
-              />
+          <div class="relative w-full h-48">
+            <!-- Image -->
+            <NuxtImg
+              :src="
+                venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
+              "
+              alt="Venue Image"
+              class="w-full h-48 object-cover opacity-80 transition-opacity duration-300 hover:opacity-100"
+            />
 
-              <!-- Light Overlay -->
-              <div class="absolute inset-0 flex items-center justify-center">
-                <span
-                  class="text-dark-900 text-lg font-bold text-center bg-white/50 backdrop-blur-sm px-3 py-1 rounded-lg transition-all duration-300 hover:bg-white/70"
-                >
-                  {{ venue.venue_name }}
-                </span>
-              </div>
+            <!-- Light Overlay -->
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span
+                class="text-dark-900 text-lg font-bold text-center bg-white/50 backdrop-blur-sm px-3 py-1 rounded-lg transition-all duration-300 hover:bg-white/70"
+              >
+                {{ venue.venue_name }}
+              </span>
             </div>
-          </NuxtLink>
-        </div>
+          </div>
+        </NuxtLink>
       </div>
       <div v-else-if="activeEventTypeFilter" class="text-center py-12">
         <p class="text-gray-600 text-lg">

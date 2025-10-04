@@ -11,7 +11,7 @@ type ProfileData = {
   avatar_url?: string;
   picUrl?: string;
   bio?: string;
-  is_host?: boolean;
+  is_vendor?: boolean;
   is_service_provider?: boolean;
 };
 
@@ -91,7 +91,7 @@ export const useAuth = defineStore("auth", () => {
 
     try {
       const { data, error } = await (supabase.from("users") as any)
-        .select("user_id, name, email, created_at, picUrl, bio, is_host, is_service_provider")
+        .select("user_id, name, email, created_at, picUrl, bio, is_vendor, is_service_provider")
         .eq("user_id", state.user.id)
         .single();
 
@@ -296,6 +296,8 @@ export const useAuth = defineStore("auth", () => {
           event_updates: userData.eventUpdates,
           terms_accepted: userData.termsAccepted,
           bio: "",
+          is_vendor: false,
+          is_service_provider: false,
         });
 
         if (profileError) {
