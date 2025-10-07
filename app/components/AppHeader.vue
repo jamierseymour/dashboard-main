@@ -3,6 +3,7 @@ import { useAuth } from "~/stores/auth";
 import AuthModal from "~/components/Auth/AuthModal.vue";
 
 const auth = useAuth();
+const showBecomeHostModal = ref(false);
 
 
 const dropdownItems = computed(() => [
@@ -130,22 +131,22 @@ const hostButton = computed(() => {
 
   const isOnVenuePage = activeNavItem.value === 'venues';
   const isOnServicePage = activeNavItem.value === 'services';
-  const isHost = auth.profile?.is_host;
+  const isVendor = auth.profile?.is_vendor;
   const isServiceProvider = auth.profile?.is_service_provider;
 
   if (isOnVenuePage) {
-    if (isHost) {
+    if (isVendor) {
       return {
         label: 'Switch to Hosting',
         icon: 'i-heroicons-building-office',
-        to: '/dashboard',
+        action: () => navigateTo('/dashboard'),
         variant: 'soft' as const
       };
     } else {
       return {
         label: 'Become a Host',
         icon: 'i-heroicons-home',
-        to: '/new-venue',
+        action: () => showBecomeHostModal.value = true,
         variant: 'solid' as const
       };
     }
@@ -154,14 +155,14 @@ const hostButton = computed(() => {
       return {
         label: 'Service Dashboard',
         icon: 'i-heroicons-sparkles',
-        to: '/service-dashboard',
+        action: () => navigateTo('/service-dashboard'),
         variant: 'soft' as const
       };
     } else {
       return {
         label: 'Become a Provider',
         icon: 'i-heroicons-sparkles',
-        to: '/become-provider',
+        action: () => showBecomeHostModal.value = true,
         variant: 'solid' as const
       };
     }
@@ -235,9 +236,9 @@ const hostButton = computed(() => {
             :label="hostButton.label"
             :icon="hostButton.icon"
             :variant="hostButton.variant"
-            :to="hostButton.to"
             size="sm"
             class="rounded-full cursor-pointer"
+            @click="hostButton.action"
           />
           <UButton
             v-if="!auth.loggedIn"
@@ -300,9 +301,9 @@ const hostButton = computed(() => {
               :label="hostButton.label"
               :icon="hostButton.icon"
               :variant="hostButton.variant"
-              :to="hostButton.to"
               size="xs"
               class="rounded-full cursor-pointer text-xs"
+              @click="hostButton.action"
             />
             <UButton
               v-if="!auth.loggedIn"
@@ -359,4 +360,7 @@ const hostButton = computed(() => {
 
   <!-- Auth Modal -->
   <AuthModal v-if="auth.modal" />
+
+  <!-- Become Host Modal -->
+  <BecomeHostModal :active="showBecomeHostModal" @set-active="showBecomeHostModal = $event" />
 </template>

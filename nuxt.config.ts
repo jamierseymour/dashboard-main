@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@pinia/nuxt",
   ],
-  ssr: false,
+  ssr: true,
   devtools: {
     enabled: true,
   },
