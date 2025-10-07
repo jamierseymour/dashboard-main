@@ -1,22 +1,25 @@
 <script setup lang="ts">
 import Login from "./LoginForm.vue";
 import Register from "./SignupForm.vue";
+import ForgotPassword from "./ForgotPasswordForm.vue";
 import { useAuth } from "~/stores/auth";
 
 const auth = useAuth();
 
-const activeTab = ref<"login" | "register">("login");
+const activeTab = ref<"login" | "register" | "forgot-password">("login");
 
 // Computed properties for accessibility
-const modalTitle = computed(() =>
-  activeTab.value === "login" ? "Login to your account" : "Create new account"
-);
+const modalTitle = computed(() => {
+  if (activeTab.value === "login") return "Login to your account";
+  if (activeTab.value === "register") return "Create new account";
+  return "Reset your password";
+});
 
-const modalDescription = computed(() =>
-  activeTab.value === "login"
-    ? "Enter your credentials to access your dashboard"
-    : "Fill in your details to create a new account"
-);
+const modalDescription = computed(() => {
+  if (activeTab.value === "login") return "Enter your credentials to access your dashboard";
+  if (activeTab.value === "register") return "Fill in your details to create a new account";
+  return "Enter your email to receive password reset instructions";
+});
 </script>
 
 <template>
@@ -42,8 +45,8 @@ const modalDescription = computed(() =>
           {{ modalDescription }}
         </p>
 
-        <!-- Tab Navigation -->
-        <div class="flex border-b border-gray-200 dark:border-gray-700">
+        <!-- Tab Navigation - Only show if not in forgot password mode -->
+        <div v-if="activeTab !== 'forgot-password'" class="flex border-b border-gray-200 dark:border-gray-700">
           <button
             class="w-1/2 py-4 cursor-pointer text-center text-xl font-bold transition-all duration-200 border-b-2"
             :class="
@@ -74,17 +77,29 @@ const modalDescription = computed(() =>
           </button>
         </div>
 
+        <!-- Back button for forgot password -->
+        <div v-else class="flex items-center border-b border-gray-200 dark:border-gray-700 py-4 px-4">
+          <button
+            @click="activeTab = 'login'"
+            class="flex items-center text-primary hover:text-primary-600 transition-colors"
+          >
+            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 mr-2" />
+            <span class="font-medium">Back to Login</span>
+          </button>
+        </div>
+
         <!-- Form Content -->
         <div
           class="flex justify-center items-start"
           role="tabpanel"
           :aria-labelledby="
-            activeTab === 'login' ? 'login-tab' : 'register-tab'
+            activeTab === 'login' ? 'login-tab' : activeTab === 'register' ? 'register-tab' : 'forgot-password-tab'
           "
         >
           <div class="w-full">
-            <Login v-if="activeTab === 'login'" />
-            <Register v-else />
+            <Login v-if="activeTab === 'login'" @show-forgot-password="activeTab = 'forgot-password'" />
+            <Register v-else-if="activeTab === 'register'" />
+            <ForgotPassword v-else-if="activeTab === 'forgot-password'" @back-to-login="activeTab = 'login'" />
           </div>
         </div>
       </div>

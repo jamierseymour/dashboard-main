@@ -1,17 +1,8 @@
 <script setup lang="ts">
-// Redirect to venues page
-definePageMeta({
-  layout: "default",
-});
-
-// Use middleware redirect to avoid navigation timeout
-await navigateTo('/venues', { replace: true });
+// Redirect from / to /venues
+navigateTo('/venues', { redirectCode: 301 });
 </script>
 
 <template>
-  <div class="flex items-center justify-center h-screen">
-    <div class="text-center">
-      <p class="text-gray-600">Redirecting...</p>
-    </div>
-  </div>
+  <div>Redirecting to venues...</div>
 </template>

@@ -1,0 +1,270 @@
+<script setup lang="ts">
+import VenueFilterBar from "~/components/Venue/VenueFilterBar.vue";
+
+// Explicitly set layout for performance
+definePageMeta({
+  layout: "default",
+});
+
+const client = useSupabaseClient();
+
+// Define the IVenue interface
+interface IVenue {
+  id: bigint;
+  event_types: string[]; // This is an array of event types
+  photos: string[];
+  minCapacity: number | null;
+  venue_name: string;
+  maxCapacity: number | null;
+}
+
+// Use `useAsyncData` to fetch data with optimization
+const { data, error } = await useAsyncData<IVenue[] | null>(
+  "venues",
+  async () => {
+    const { data, error } = await client
+      .from("venues")
+      .select()
+      .limit(12) // Limit initial load to 12 venues for performance
+      .order("id", { ascending: false }); // Show newest first
+
+    if (error) {
+      console.error("Error fetching venues:", error);
+      return null; // Return null in case of error
+    }
+
+    return data || null; // Ensure we return `null` if data is undefined
+  },
+  {
+    default: () => [], // Provide default value to prevent hydration mismatch
+  }
+);
+
+// Create a `computed` property for safer access to `data`
+const venues = computed(() => data.value || []);
+
+// Search form data
+const venueType = ref("");
+const guestCount = ref("");
+const eventDate = ref("");
+
+// Active filter for venue types
+const activeEventTypeFilter = ref<string | null>(null);
+
+// Computed property for filtered venues
+const filteredVenues = computed(() => {
+  if (!activeEventTypeFilter.value) {
+    return venues.value;
+  }
+
+  // Filter venues by the selected event type
+  // Check if the venue's event_types array includes the selected filter
+  return venues.value.filter(
+    (venue) =>
+      venue.event_types &&
+      venue.event_types.some(
+        (eventType) =>
+          eventType.toLowerCase() === activeEventTypeFilter.value!.toLowerCase()
+      )
+  );
+});
+
+const filterVenues = (eventType: string | null) => {
+  activeEventTypeFilter.value = eventType;
+};
+
+// Venue type options
+const venueTypes = [
+  { value: "", label: "Any type" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "bar", label: "Bar" },
+  { value: "club", label: "Club" },
+  { value: "event_space", label: "Event Space" },
+];
+
+// Handle search submission (placeholder for now)
+const handleSearch = () => {
+  // Will implement actual search functionality later
+};
+</script>
+
+<template>
+  <div>
+    <!-- Hero Section with Background Image -->
+    <div class="relative w-full h-[500px]">
+      <!-- Background Image -->
+      <div class="absolute inset-0 w-full h-full">
+        <img
+          src="/images/find/hero.png"
+          alt="Venue Search Hero"
+          class="w-full h-full object-cover"
+        />
+
+        <!-- Dark Blue Overlay with Gradient -->
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-blue-900/30 to-transparent"
+        />
+
+        <!-- Improved White Fade Overlay - covers more of the image -->
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent"
+        />
+      </div>
+
+      <!-- Hero Content -->
+      <div
+        class="relative z-10 flex flex-col items-center justify-center h-full px-4 text-white"
+      >
+        <h1 class="text-5xl font-bold text-center mt-12 mb-8 text-shadow">
+          plan less, party more
+        </h1>
+        <p class="text-2xl font-medium text-center mb-12 text-shadow">
+          book now, don't stress — we've got you covered
+        </p>
+
+        <!-- Search Bar - Reduced Transparency -->
+        <!-- <div
+          class="w-full max-w-4xl bg-[#032334]/65 backdrop-blur-sm rounded-full p-2 shadow-lg"
+        >
+          <form
+            class="flex flex-col md:flex-row items-center"
+            @submit.prevent="handleSearch"
+          >
+            <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
+              <label class="block text-sm text-blue-200 mb-1"
+                >I'm looking for</label
+              >
+              <select
+                v-model="venueType"
+                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
+              >
+                <option
+                  v-for="type in venueTypes"
+                  :key="type.value"
+                  :value="type.value"
+                  class="bg-navy-800 text-white"
+                >
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
+              <label class="block text-sm text-blue-200 mb-1"
+                >Number of guests</label
+              >
+              <input
+                v-model="guestCount"
+                type="number"
+                placeholder="How many people?"
+                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
+              />
+            </div>
+
+            <div class="flex-1 px-4 py-2">
+              <label class="block text-sm text-blue-200 mb-1">Date</label>
+              <input
+                v-model="eventDate"
+                type="date"
+                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
+              />
+            </div>
+
+            <div class="px-4 py-2">
+              <button
+                type="submit"
+                class="bg-white hover:bg-gray-100 text-mulberry font-bold py-3 px-8 rounded-full transition-colors"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+        </div> -->
+
+        <div class="container mx-auto p-4 max-w-[1228px]">
+          <VenueFilterBar @filter-change="filterVenues" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Venues Grid (Existing Content) -->
+    <div class="container mx-auto p-4 max-w-[1228px] mt-8">
+      <!-- Display filtered venues count -->
+      <div v-if="activeEventTypeFilter" class="mb-4">
+        <p class="text-gray-600">
+          Showing {{ filteredVenues.length }} venues for "{{
+            activeEventTypeFilter
+          }}"
+        </p>
+      </div>
+
+      <div
+        v-if="filteredVenues && filteredVenues.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 -mt-24 gap-8"
+      >
+        <div
+          v-for="venue in filteredVenues"
+          :key="venue.id.toString()"
+          class="bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]"
+        >
+          <NuxtLink :to="`/venues/${venue.id.toString()}`" class="block cursor-pointer">
+            <div class="relative w-full h-48">
+              <!-- Image -->
+              <NuxtImg
+                :src="
+                  venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
+                "
+                alt="Venue Image"
+                class="w-full h-48 object-cover opacity-80 transition-opacity duration-300 hover:opacity-100"
+              />
+
+              <!-- Light Overlay -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span
+                  class="text-dark-900 text-lg font-bold text-center bg-white/50 backdrop-blur-sm px-3 py-1 rounded-lg transition-all duration-300 hover:bg-white/70"
+                >
+                  {{ venue.venue_name }}
+                </span>
+              </div>
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+      <div v-else-if="activeEventTypeFilter" class="text-center py-12">
+        <p class="text-gray-600 text-lg">
+          No venues found for "{{ activeEventTypeFilter }}"
+        </p>
+        <button
+          @click="filterVenues(null)"
+          class="mt-4 text-mulberry hover:underline"
+        >
+          Show all venues
+        </button>
+      </div>
+      <div v-else class="text-center">
+        Loading venues or no venues available...
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+/* Add custom styles */
+.bg-navy-800 {
+  background-color: #1a365d;
+}
+
+.text-mulberry {
+  color: #c0397a; /* Mulberry color - adjust the hex code as needed */
+}
+
+/* Text shadow for better readability against the gradient */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Fix date input appearance in different browsers */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+</style>

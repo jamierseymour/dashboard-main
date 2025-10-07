@@ -339,6 +339,31 @@ export const useAuth = defineStore("auth", () => {
     }
   }
 
+  // Sign in with OAuth (Google, Facebook, etc.)
+  async function signInWithOAuth(provider: 'google' | 'facebook') {
+    try {
+      state.loading = true;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
+      // OAuth redirect will happen automatically
+      // Auth state will be updated via the onAuthStateChange listener after redirect
+      return { success: true };
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
+      return { error };
+    } finally {
+      state.loading = false;
+    }
+  }
+
   // Toggle auth modal
   function toggleModal(value?: boolean) {
     state.modal = value !== undefined ? value : !state.modal;
@@ -350,6 +375,7 @@ export const useAuth = defineStore("auth", () => {
     signIn,
     signUp,
     signOut,
+    signInWithOAuth,
     fetchUserProfile,
     updateProfile,
     uploadAvatar,
