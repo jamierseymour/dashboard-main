@@ -11,12 +11,18 @@ const items = [
   },
   {
     id: 2,
+    name: "My Bookings",
+    to: "/users/profile/bookings",
+    icon: "i-heroicons-calendar",
+  },
+  {
+    id: 3,
     name: "Upcoming Events",
     to: "/users/profile/upcoming-events",
     icon: "i-heroicons-calendar-days",
   },
   {
-    id: 3,
+    id: 4,
     name: "Past Events",
     to: "/users/profile/past-events",
     icon: "i-heroicons-archive-box",

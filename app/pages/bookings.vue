@@ -19,39 +19,184 @@ const stats = ref({
 });
 
 // Sample data for now - replace with actual Supabase queries
-const sampleBookings = [
+const sampleVenueBookings = [
   {
     id: 1,
+    type: "venue",
     venue_name: "Garden Palace",
     customer_name: "John Smith",
-    event_date: "2024-02-15",
+    customer_email: "john.smith@email.com",
+    event_date: "2025-03-15",
+    check_in_date: "2025-03-15",
+    check_out_date: "2025-03-16",
     event_type: "Wedding",
     status: "confirmed",
+    payment_status: "deposit_paid",
     guests: 150,
-    amount: 15000,
-    created_at: "2024-01-10",
+    amount: 45000,
+    deposit_paid: 15000,
+    created_at: "2025-01-10",
+    message_to_host: "Looking forward to hosting our special day at your beautiful venue!",
   },
   {
     id: 2,
+    type: "venue",
     venue_name: "City Conference Center",
     customer_name: "Sarah Johnson",
-    event_date: "2024-02-20",
+    customer_email: "sarah.j@company.com",
+    event_date: "2025-04-20",
+    check_in_date: "2025-04-20",
+    check_out_date: "2025-04-20",
     event_type: "Corporate Event",
     status: "pending",
-    guests: 50,
-    amount: 5000,
-    created_at: "2024-01-12",
+    payment_status: "unpaid",
+    guests: 75,
+    amount: 12000,
+    deposit_paid: 0,
+    created_at: "2025-02-05",
+    message_to_host: "Need venue for annual company retreat. Do you provide catering?",
   },
   {
     id: 3,
+    type: "venue",
     venue_name: "Sunset Lounge",
     customer_name: "Mike Wilson",
-    event_date: "2024-01-05",
-    event_type: "Birthday",
+    customer_email: "mikew@email.com",
+    event_date: "2025-02-08",
+    check_in_date: "2025-02-08",
+    check_out_date: "2025-02-08",
+    event_type: "Birthday Party",
     status: "completed",
-    guests: 25,
-    amount: 2500,
-    created_at: "2023-12-20",
+    payment_status: "paid",
+    guests: 30,
+    amount: 5500,
+    deposit_paid: 5500,
+    created_at: "2025-01-15",
+    message_to_host: "Thanks for an amazing party!",
+  },
+  {
+    id: 4,
+    type: "venue",
+    venue_name: "Beachside Villa",
+    customer_name: "Emily Davis",
+    customer_email: "emily.davis@email.com",
+    event_date: "2025-05-10",
+    check_in_date: "2025-05-10",
+    check_out_date: "2025-05-12",
+    event_type: "Anniversary Celebration",
+    status: "confirmed",
+    payment_status: "paid",
+    guests: 50,
+    amount: 28000,
+    deposit_paid: 28000,
+    created_at: "2025-01-20",
+    message_to_host: "Celebrating 25 years together!",
+  },
+  {
+    id: 5,
+    type: "venue",
+    venue_name: "Mountain Lodge",
+    customer_name: "David Brown",
+    customer_email: "david.b@email.com",
+    event_date: "2025-03-01",
+    check_in_date: "2025-03-01",
+    check_out_date: "2025-03-01",
+    event_type: "Team Building",
+    status: "declined",
+    payment_status: "unpaid",
+    guests: 40,
+    amount: 8000,
+    deposit_paid: 0,
+    created_at: "2025-01-25",
+    message_to_host: "Unfortunately had to cancel due to schedule conflict.",
+  },
+];
+
+const sampleServiceBookings = [
+  {
+    id: 101,
+    type: "service",
+    service_name: "Elite Catering Services",
+    service_type: "Catering",
+    customer_name: "Jessica Martinez",
+    customer_email: "jessica.m@email.com",
+    event_date: "2025-03-22",
+    event_type: "Wedding Reception",
+    status: "confirmed",
+    payment_status: "deposit_paid",
+    guests: 120,
+    amount: 18000,
+    deposit_paid: 6000,
+    created_at: "2025-01-12",
+    message_to_host: "Need full catering service including vegetarian options",
+  },
+  {
+    id: 102,
+    type: "service",
+    service_name: "Premier Photography",
+    service_type: "Photography",
+    customer_name: "Robert Chen",
+    customer_email: "robert.chen@email.com",
+    event_date: "2025-04-15",
+    event_type: "Corporate Event",
+    status: "pending",
+    payment_status: "unpaid",
+    guests: 80,
+    amount: 8500,
+    deposit_paid: 0,
+    created_at: "2025-02-01",
+    message_to_host: "Need photographer for 6 hours with edited photos delivered within 2 weeks",
+  },
+  {
+    id: 103,
+    type: "service",
+    service_name: "Sound & Light Productions",
+    service_type: "AV Equipment",
+    customer_name: "Amanda White",
+    customer_email: "amanda.w@email.com",
+    event_date: "2025-02-05",
+    event_type: "Concert",
+    status: "completed",
+    payment_status: "paid",
+    guests: 200,
+    amount: 15000,
+    deposit_paid: 15000,
+    created_at: "2025-01-05",
+    message_to_host: "Great service, everything worked perfectly!",
+  },
+  {
+    id: 104,
+    type: "service",
+    service_name: "Decor Dreams",
+    service_type: "Decoration",
+    customer_name: "Lisa Thompson",
+    customer_email: "lisa.t@email.com",
+    event_date: "2025-05-28",
+    event_type: "Birthday Party",
+    status: "confirmed",
+    payment_status: "deposit_paid",
+    guests: 45,
+    amount: 6500,
+    deposit_paid: 2500,
+    created_at: "2025-02-10",
+    message_to_host: "Looking for elegant floral arrangements with a vintage theme",
+  },
+  {
+    id: 105,
+    type: "service",
+    service_name: "DJ Master Mix",
+    service_type: "Entertainment",
+    customer_name: "Chris Anderson",
+    customer_email: "chris.a@email.com",
+    event_date: "2025-03-18",
+    event_type: "Wedding",
+    status: "pending",
+    payment_status: "unpaid",
+    guests: 100,
+    amount: 4500,
+    deposit_paid: 0,
+    created_at: "2025-02-08",
+    message_to_host: "Need DJ for 5 hours, mix of Top 40 and classics",
   },
 ];
 
@@ -59,6 +204,10 @@ const sampleBookings = [
 onMounted(() => {
   loadBookings();
 });
+
+// Booking type tabs (venue vs service)
+const bookingType = ref("venue");
+const allBookings = computed(() => [...sampleVenueBookings, ...sampleServiceBookings]);
 
 const loadBookings = async () => {
   loading.value = true;
@@ -71,17 +220,24 @@ const loadBookings = async () => {
 
     // For now, use sample data
     await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate loading
-    bookings.value = sampleBookings;
+
+    // Get bookings based on type
+    if (bookingType.value === "venue") {
+      bookings.value = sampleVenueBookings;
+    } else {
+      bookings.value = sampleServiceBookings;
+    }
 
     // Calculate stats
+    const currentBookings = bookings.value;
     stats.value = {
-      total: bookings.value.length,
-      upcoming: bookings.value.filter(
-        (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled"
+      total: currentBookings.length,
+      upcoming: currentBookings.filter(
+        (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled" && b.status !== "declined"
       ).length,
-      completed: bookings.value.filter((b) => b.status === "completed").length,
-      cancelled: bookings.value.filter((b) => b.status === "cancelled").length,
-      revenue: bookings.value
+      completed: currentBookings.filter((b) => b.status === "completed").length,
+      cancelled: currentBookings.filter((b) => b.status === "cancelled" || b.status === "declined").length,
+      revenue: currentBookings
         .filter((b) => b.status === "completed")
         .reduce((sum, b) => sum + b.amount, 0),
     };
@@ -92,12 +248,17 @@ const loadBookings = async () => {
   }
 };
 
+// Watch for booking type changes
+watch(bookingType, () => {
+  loadBookings();
+});
+
 // Filter bookings
 const activeTab = ref("all");
 const filteredBookings = computed(() => {
   if (activeTab.value === "upcoming") {
     return bookings.value.filter(
-      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled"
+      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled" && b.status !== "declined"
     );
   }
   if (activeTab.value === "completed") {
@@ -117,12 +278,35 @@ const getStatusColor = (status: string) => {
     case "pending":
       return "warning";
     case "cancelled":
+    case "declined":
       return "error";
     case "completed":
       return "primary";
     default:
       return "neutral";
   }
+};
+
+// Payment status colors
+const getPaymentStatusColor = (status: string) => {
+  switch (status) {
+    case "paid":
+      return "success";
+    case "deposit_paid":
+      return "primary";
+    case "unpaid":
+      return "error";
+    case "refunded":
+    case "partially_refunded":
+      return "warning";
+    default:
+      return "neutral";
+  }
+};
+
+// Format payment status
+const formatPaymentStatus = (status: string) => {
+  return status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 };
 
 // Format currency
@@ -161,6 +345,29 @@ const formatDate = (dateString: string) => {
 
     <template #body>
       <div class="p-6 space-y-6">
+        <!-- Booking Type Tabs -->
+        <UCard>
+          <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
+            <UButton
+              :variant="bookingType === 'venue' ? 'solid' : 'ghost'"
+              :color="bookingType === 'venue' ? 'primary' : 'neutral'"
+              icon="i-heroicons-building-office"
+              @click="bookingType = 'venue'"
+            >
+              Venue Bookings
+            </UButton>
+            <UButton
+              :variant="bookingType === 'service' ? 'solid' : 'ghost'"
+              :color="bookingType === 'service' ? 'primary' : 'neutral'"
+              icon="i-heroicons-sparkles"
+              @click="bookingType = 'service'"
+            >
+              Service Bookings
+            </UButton>
+          </div>
+        </UCard>
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <UCard>
@@ -311,7 +518,7 @@ const formatDate = (dateString: string) => {
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                   >
-                    Venue & Customer
+                    {{ bookingType === 'venue' ? 'Venue' : 'Service' }} & Customer
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -327,6 +534,11 @@ const formatDate = (dateString: string) => {
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                   >
                     Status
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
+                    Payment
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -348,22 +560,28 @@ const formatDate = (dateString: string) => {
                   :key="booking.id"
                   class="hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4">
                     <div>
                       <div
                         class="text-sm font-medium text-gray-900 dark:text-white"
                       >
-                        {{ booking.venue_name }}
+                        {{ bookingType === 'venue' ? (booking as any).venue_name : (booking as any).service_name }}
                       </div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">
                         {{ booking.customer_name }}
                       </div>
+                      <div class="text-xs text-gray-400 dark:text-gray-500">
+                        {{ (booking as any).customer_email }}
+                      </div>
                     </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4">
                     <div>
                       <div class="text-sm text-gray-900 dark:text-white">
                         {{ booking.event_type }}
+                      </div>
+                      <div v-if="bookingType === 'service'" class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ (booking as any).service_type }}
                       </div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">
                         {{ booking.guests }} guests
@@ -379,9 +597,21 @@ const formatDate = (dateString: string) => {
                     <UBadge
                       :color="getStatusColor(booking.status)"
                       variant="subtle"
+                      class="capitalize"
                     >
                       {{ booking.status }}
                     </UBadge>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <UBadge
+                      :color="getPaymentStatusColor((booking as any).payment_status)"
+                      variant="subtle"
+                    >
+                      {{ formatPaymentStatus((booking as any).payment_status) }}
+                    </UBadge>
+                    <div v-if="(booking as any).deposit_paid > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Deposit: {{ formatCurrency((booking as any).deposit_paid) }}
+                    </div>
                   </td>
                   <td
                     class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
@@ -394,12 +624,13 @@ const formatDate = (dateString: string) => {
                         View
                       </UButton>
                       <UButton
+                        v-if="booking.status === 'pending'"
                         size="sm"
-                        variant="ghost"
-                        icon="i-heroicons-pencil"
-                        color="warning"
+                        variant="soft"
+                        icon="i-heroicons-check"
+                        color="success"
                       >
-                        Edit
+                        Accept
                       </UButton>
                     </div>
                   </td>
