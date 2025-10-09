@@ -72,6 +72,8 @@ export const useAuth = defineStore("auth", () => {
           await fetchUserProfile();
           // Close auth modal on successful login
           state.modal = false;
+          // Resolve any waiting auth promises
+          resolveAuthPromise(true);
         } else if (event === "SIGNED_OUT") {
           state.user = null;
           state.loggedIn = false;
@@ -368,7 +370,40 @@ export const useAuth = defineStore("auth", () => {
 
   // Toggle auth modal
   function toggleModal(value?: boolean) {
+    const previousModalState = state.modal;
     state.modal = value !== undefined ? value : !state.modal;
+
+    // If modal is being closed and there's a waiting promise, resolve it with false
+    if (previousModalState === true && state.modal === false && authPromiseResolve) {
+      resolveAuthPromise(false);
+    }
+  }
+
+  // Promise-based authentication for async operations
+  let authPromiseResolve: ((value: boolean) => void) | null = null;
+
+  function waitForAuth(): Promise<boolean> {
+    return new Promise((resolve) => {
+      // If already logged in, resolve immediately
+      if (state.loggedIn) {
+        resolve(true);
+        return;
+      }
+
+      // Store the resolve function to be called after auth
+      authPromiseResolve = resolve;
+
+      // Open the auth modal
+      state.modal = true;
+    });
+  }
+
+  // Call this when auth succeeds to resolve the waiting promise
+  function resolveAuthPromise(success: boolean) {
+    if (authPromiseResolve) {
+      authPromiseResolve(success);
+      authPromiseResolve = null;
+    }
   }
 
   return {
@@ -382,5 +417,7 @@ export const useAuth = defineStore("auth", () => {
     updateProfile,
     uploadAvatar,
     toggleModal,
+    waitForAuth,
+    resolveAuthPromise,
   };
 });

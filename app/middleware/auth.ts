@@ -10,13 +10,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
   // Check if user is authenticated
   if (!auth.loggedIn) {
-    // Store the intended destination
-    const redirectTo = to.fullPath;
-
-    // Redirect to home with return path
-    return navigateTo({
-      path: "/",
-      query: { redirect: redirectTo },
-    });
+    // Redirect to home
+    return navigateTo("/");
   }
 });

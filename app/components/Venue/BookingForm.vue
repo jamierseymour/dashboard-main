@@ -1,77 +1,68 @@
 <script setup lang="ts">
-defineProps({
+const props = defineProps({
   venue: {
     type: Object,
     required: true,
   },
 });
+
+const selectedDate = ref();
+const guests = ref(1);
+
+async function goToRequest() {
+  console.log('Navigating to:', `/venues/${props.venue.id}/request`);
+  await navigateTo(`/venues/${props.venue.id}/request`);
+}
 </script>
 
 <template>
-  <div class="pt-4 p-4 rounded-xl bg-[#032334]">
-    <!-- Yellow Centered Heading -->
-    <h2 class="text-2xl font-bold text-center text-yellow-400 mb-6">
-      booking details
-    </h2>
-
-    <!-- Pricing Information -->
-    <div class="mb-6 text-white">
-      <p class="text-xl font-bold text-center">R{{ venue?.price }}</p>
-      <p class="text-sm text-center text-gray-300">
-        Minimum hours: {{ venue?.minimum_hours }}
-      </p>
-      <p class="text-sm text-center text-gray-300">
-        Notice required: {{ venue?.notice_required }} days
-      </p>
+  <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
+    <!-- Pricing Header -->
+    <div class="mb-4">
+      <div class="flex items-baseline gap-1">
+        <span class="text-2xl font-semibold">R{{ venue?.price }}</span>
+        <span class="text-gray-600">per night</span>
+      </div>
     </div>
 
-    <!-- Form -->
-    <form class="space-y-6">
-      <!-- Date Input -->
-      <div>UCalendar</div>
-
-      <!-- Number of Guests Input -->
-      <div>
+    <!-- Date Selection -->
+    <div class="mb-4 rounded-lg border border-gray-300 cursor-pointer">
+      <div class="p-3">
+        <div class="text-xs font-semibold uppercase">Select date</div>
+        <div class="text-sm text-gray-600">
+          {{ selectedDate ? new Date(selectedDate).toLocaleDateString("en-ZA", { month: "short", day: "numeric", year: "numeric" }) : "Add date" }}
+        </div>
+      </div>
+      <div class="border-t border-gray-300 p-3">
+        <div class="text-xs font-semibold uppercase">Guests</div>
         <input
+          v-model.number="guests"
           type="number"
-          id="guests"
-          name="guests"
-          placeholder="Enter number of guests"
-          class="mt-1 block w-full rounded-xl border border-gray-600 bg-white py-2 px-3 text-black placeholder-gray-400 focus:border-yellow-400 focus:outline-none focus:ring-yellow-400"
+          :min="venue?.min_capacity || 1"
+          :max="venue?.max_capacity || 100"
+          class="w-full border-0 p-0 text-sm text-gray-600 focus:ring-0"
+          placeholder="1 guest"
         />
       </div>
-
-      <!-- Time Input -->
-      <div>
-        <input
-          type="text"
-          id="time"
-          name="time"
-          placeholder="Time"
-          class="mt-1 block w-full rounded-xl border border-gray-600 bg-white py-2 px-3 text-black placeholder-gray-400 focus:border-yellow-400 focus:outline-none focus:ring-yellow-400"
-        />
-      </div>
-
-      <!-- Seating Preference -->
-      <div>
-        <input
-          type="text"
-          id="seating"
-          name="seating"
-          placeholder="Seating Preference"
-          class="mt-1 block w-full rounded-xl border border-gray-600 bg-white py-2 px-3 text-black placeholder-gray-400 focus:border-yellow-400 focus:outline-none focus:ring-yellow-400"
-        />
-      </div>
-    </form>
-
-    <!-- Centered Book Now Button -->
-    <div class="mt-8 flex justify-center">
-      <button
-        type="submit"
-        class="w-full max-w-xs rounded-full mx-12 bg-white py-3 px-8 text-center text-lg font-bold text-mulberry-600 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
-      >
-        book now
-      </button>
     </div>
+
+    <!-- Calendar -->
+    <div class="mb-4">
+      <UCalendar v-model="selectedDate" />
+    </div>
+
+    <!-- Request Button -->
+    <UButton
+      block
+      size="xl"
+      color="primary"
+      label="Request to book"
+      class="mb-4 cursor-pointer"
+      @click="goToRequest"
+    />
+
+    <p class="mb-4 text-center text-sm text-gray-600">
+      You won't be charged yet
+    </p>
   </div>
 </template>

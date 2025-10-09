@@ -20,6 +20,13 @@ const modalDescription = computed(() => {
   if (activeTab.value === "register") return "Fill in your details to create a new account";
   return "Enter your email to receive password reset instructions";
 });
+
+// Handle modal close
+function handleModalClose(isOpen: boolean) {
+  if (!isOpen) {
+    auth.toggleModal(false);
+  }
+}
 </script>
 
 <template>
@@ -32,6 +39,7 @@ const modalDescription = computed(() => {
     }"
     :aria-labelledby="'auth-modal-title'"
     :aria-describedby="'auth-modal-description'"
+    @update:open="handleModalClose"
   >
     <template #content>
       <div>

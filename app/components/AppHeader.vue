@@ -111,6 +111,12 @@ const centerNavItems = ref([
     icon: "i-heroicons-sparkles",
     to: "/services",
     description: "Browse event services"
+  },
+  {
+    label: "Create Event",
+    icon: "i-heroicons-plus-circle",
+    to: "/events/create",
+    description: "Plan your event"
   }
 ]);
 
@@ -120,6 +126,7 @@ const activeNavItem = computed(() => {
   const path = route.path;
   if (path.startsWith('/venues')) return 'venues';
   if (path.startsWith('/services')) return 'services';
+  if (path.startsWith('/events/create')) return 'create event';
   return 'venues'; // default
 });
 
@@ -188,15 +195,15 @@ const hostButton = computed(() => {
         <!-- Center: Navigation -->
         <div class="flex items-center justify-center">
           <div class="flex items-center gap-8">
-            <div
+            <NuxtLink
               v-for="item in centerNavItems"
               :key="item.label"
+              :to="item.to"
               class="flex flex-col items-center cursor-pointer transition-all duration-300 hover:text-gray-900 dark:hover:text-white group pb-1"
               :class="{
                 'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
                 'text-gray-600 dark:text-gray-400': activeNavItem !== item.label.toLowerCase()
               }"
-              @click="() => navigateTo(item.to)"
             >
               <div class="flex items-center gap-2 mb-2">
                 <UIcon
@@ -225,7 +232,7 @@ const hostButton = computed(() => {
                   'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600': activeNavItem !== item.label.toLowerCase()
                 }"
               />
-            </div>
+            </NuxtLink>
           </div>
         </div>
 

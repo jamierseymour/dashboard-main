@@ -13,9 +13,9 @@ interface IVenue {
   id: bigint;
   event_types: string[]; // This is an array of event types
   photos: string[];
-  minCapacity: number | null;
   venue_name: string;
-  maxCapacity: number | null;
+  max_capacity: number | null;
+  city: string | null;
 }
 
 // Use `useAsyncData` to fetch data with optimization
@@ -24,7 +24,7 @@ const { data, error } = await useAsyncData<IVenue[] | null>(
   async () => {
     const { data, error } = await client
       .from("venues")
-      .select()
+      .select("id, event_types, photos, venue_name, max_capacity, city")
       .limit(12) // Limit initial load to 12 venues for performance
       .order("id", { ascending: false }); // Show newest first
 
@@ -188,9 +188,9 @@ const handleSearch = () => {
     </div>
 
     <!-- Venues Grid (Existing Content) -->
-    <div class="container mx-auto p-4 max-w-[1228px] mt-8">
+    <div class="container mx-auto px-6 lg:px-10 xl:px-20 mt-8 max-w-[1920px]">
       <!-- Display filtered venues count -->
-      <div v-if="activeEventTypeFilter" class="mb-4">
+      <div v-if="activeEventTypeFilter" class="mb-6">
         <p class="text-gray-600">
           Showing {{ filteredVenues.length }} venues for "{{
             activeEventTypeFilter
@@ -200,35 +200,44 @@ const handleSearch = () => {
 
       <div
         v-if="filteredVenues && filteredVenues.length > 0"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 -mt-24 gap-8"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 -mt-24 gap-x-5 gap-y-8"
       >
-        <div
+        <NuxtLink
           v-for="venue in filteredVenues"
           :key="venue.id.toString()"
-          class="bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02]"
+          :to="`/venues/${venue.id.toString()}`"
+          class="block group"
         >
-          <NuxtLink :to="`/venues/${venue.id.toString()}`" class="block cursor-pointer">
-            <div class="relative w-full h-48">
-              <!-- Image -->
-              <NuxtImg
-                :src="
-                  venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
-                "
-                alt="Venue Image"
-                class="w-full h-48 object-cover opacity-80 transition-opacity duration-300 hover:opacity-100"
-              />
+          <!-- Image -->
+          <div class="relative w-full aspect-square mb-3 rounded-xl overflow-hidden">
+            <NuxtImg
+              :src="
+                venue.photos && venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
+              "
+              alt="Venue Image"
+              class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+            />
+          </div>
 
-              <!-- Light Overlay -->
-              <div class="absolute inset-0 flex items-center justify-center">
-                <span
-                  class="text-dark-900 text-lg font-bold text-center bg-white/50 backdrop-blur-sm px-3 py-1 rounded-lg transition-all duration-300 hover:bg-white/70"
-                >
-                  {{ venue.venue_name }}
-                </span>
-              </div>
+          <!-- Venue Info Below Image -->
+          <div>
+            <!-- Venue Name - Bold -->
+            <h3 class="font-semibold text-[15px] text-gray-900 mb-1 truncate">
+              {{ venue.venue_name }}
+            </h3>
+
+            <!-- Capacity and City - Justified Between -->
+            <div class="flex justify-between items-start text-gray-600 text-[15px] gap-2">
+              <span v-if="venue.max_capacity" class="flex-shrink-0">
+                Up to {{ venue.max_capacity }} pax
+              </span>
+              <span v-else class="flex-shrink-0 opacity-0">-</span>
+              <span v-if="venue.city" class="text-right truncate">
+                {{ venue.city }}
+              </span>
             </div>
-          </NuxtLink>
-        </div>
+          </div>
+        </NuxtLink>
       </div>
       <div v-else-if="activeEventTypeFilter" class="text-center py-12">
         <p class="text-gray-600 text-lg">
