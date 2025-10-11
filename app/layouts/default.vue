@@ -15,6 +15,6 @@ import AppFooter from "~/components/AppFooter.vue";
     <!-- Mobile Bottom Navigation -->
     <MobileBottomNav />
 
-    <AppFooter />
+    <!-- <AppFooter /> -->
   </div>
 </template>

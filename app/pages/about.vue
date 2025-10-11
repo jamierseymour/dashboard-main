@@ -7,7 +7,7 @@ const { data: page } = await useAsyncData("index", () =>
   queryCollection("index").first(),
 );
 
-console.log("data", page.value)
+console.log("data", page.value);
 
 const title = page.value?.seo?.title || page.value?.title;
 const description = page.value?.seo?.description || page.value?.description;
@@ -92,7 +92,7 @@ useSeoMeta({
     <USeparator />
 
     <UPageCTA v-bind="page.cta" variant="naked" class="overflow-hidden">
-      <LazyAboutStarsBg />
+      <!-- <LazyAboutStarsBg /> -->
     </UPageCTA>
   </div>
 </template>
