@@ -7,6 +7,8 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "@nuxt/image",
     "@pinia/nuxt",
+    "@nuxtjs/web-vitals",
+    "@sentry/nuxt/module",
   ],
   ssr: true,
   devtools: {

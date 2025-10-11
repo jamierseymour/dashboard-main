@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { logoSvg } from "~/assets/OyeIcons";
+
 const columns = [
   // {
   //   label: "Resources",
@@ -50,8 +52,6 @@ const columns = [
   },
 ];
 
-// const toast = useToast()
-
 const email = ref("");
 const loading = ref(false);
 
@@ -69,15 +69,19 @@ function onSubmit() {
   <div class="relative h-px mt-6 bg-gray-200 dark:bg-gray-800">
     <div class="absolute inset-0 flex items-center justify-center">
       <div class="bg-white dark:bg-gray-900 px-3">
-        <img
+        <UIcon
           src="/logos/logo-no-text.svg"
           alt="Logo"
+          :path="logoSvg"
           class="w-24 h-24 mt-2 -mx-2"
         />
       </div>
     </div>
   </div>
-  <UFooter :ui="{ top: 'border-b border-[var(--ui-border)]' }">
+  <UFooter
+    :ui="{ top: 'border-b border-[var(--ui-border)]' }"
+    class="bg-gray-50"
+  >
     <template #top>
       <UContainer>
         <UFooterColumns :columns="columns" :ui="{ link: 'cursor-pointer' }">

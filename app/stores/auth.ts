@@ -93,7 +93,9 @@ export const useAuth = defineStore("auth", () => {
 
     try {
       const { data, error } = await (supabase.from("users") as any)
-        .select("user_id, name, email, created_at, picUrl, bio, is_vendor, is_service_provider")
+        .select(
+          "user_id, name, email, created_at, picUrl, bio, is_vendor, is_service_provider",
+        )
         .eq("user_id", state.user.id)
         .single();
 
@@ -101,7 +103,7 @@ export const useAuth = defineStore("auth", () => {
         // Check if it's a "table doesn't exist" error
         if (error.code === "42P01") {
           console.warn(
-            "Users table doesn't exist yet. Create it in Supabase to enable profile features."
+            "Users table doesn't exist yet. Create it in Supabase to enable profile features.",
           );
           return;
         }
@@ -155,11 +157,11 @@ export const useAuth = defineStore("auth", () => {
           () =>
             reject(
               new Error(
-                "Upload timeout - please check your storage configuration"
-              )
+                "Upload timeout - please check your storage configuration",
+              ),
             ),
-          30000
-        )
+          30000,
+        ),
       );
 
       const { data: uploadData, error: uploadError } = (await Promise.race([
@@ -176,7 +178,7 @@ export const useAuth = defineStore("auth", () => {
           uploadError.message?.includes("not found")
         ) {
           throw new Error(
-            "Storage bucket not configured. Please create an 'avatars' bucket in Supabase Storage."
+            "Storage bucket not configured. Please create an 'avatars' bucket in Supabase Storage.",
           );
         }
 
@@ -185,7 +187,7 @@ export const useAuth = defineStore("auth", () => {
           uploadError.message?.includes("permission")
         ) {
           throw new Error(
-            "Storage permissions not configured. Please check your RLS policies."
+            "Storage permissions not configured. Please check your RLS policies.",
           );
         }
 
@@ -205,7 +207,7 @@ export const useAuth = defineStore("auth", () => {
       if (updateResult?.error) {
         console.error(
           "Failed to update profile with new avatar URL:",
-          updateResult.error
+          updateResult.error,
         );
         throw new Error("Avatar uploaded but failed to update profile");
       }
@@ -255,6 +257,19 @@ export const useAuth = defineStore("auth", () => {
     }
   }
 
+  const setHostStatus = async () => {
+    if (!state.profile) return;
+    const { data, error } = await supabase
+      .from("users")
+      .update({ is_vendor: true })
+      .eq("id", state.profile.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    profile.value = data;
+  };
+
   // Sign up new user
   async function signUp(userData: {
     email: string;
@@ -277,7 +292,7 @@ export const useAuth = defineStore("auth", () => {
               event_updates: userData.eventUpdates,
             },
           },
-        }
+        },
       );
 
       if (signUpError) throw signUpError;
@@ -344,7 +359,7 @@ export const useAuth = defineStore("auth", () => {
   }
 
   // Sign in with OAuth (Google, Facebook, etc.)
-  async function signInWithOAuth(provider: 'google' | 'facebook') {
+  async function signInWithOAuth(provider: "google" | "facebook") {
     try {
       state.loading = true;
 
@@ -374,7 +389,11 @@ export const useAuth = defineStore("auth", () => {
     state.modal = value !== undefined ? value : !state.modal;
 
     // If modal is being closed and there's a waiting promise, resolve it with false
-    if (previousModalState === true && state.modal === false && authPromiseResolve) {
+    if (
+      previousModalState === true &&
+      state.modal === false &&
+      authPromiseResolve
+    ) {
       resolveAuthPromise(false);
     }
   }

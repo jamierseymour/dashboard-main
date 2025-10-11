@@ -58,7 +58,7 @@ const sendResetEmail = async () => {
 
       // Optionally redirect back to login after a delay
       setTimeout(() => {
-        emit('backToLogin');
+        emit("backToLogin");
       }, 3000);
     }
   } catch (error) {
@@ -71,7 +71,7 @@ const sendResetEmail = async () => {
 </script>
 
 <template>
-  <div class="mx-auto w-5/6 p-4 pb-0">
+  <div class="mx-auto pb-0">
     <UAlert
       v-if="authError"
       color="error"
@@ -127,8 +127,8 @@ const sendResetEmail = async () => {
           type="submit"
           color="primary"
           size="lg"
-          class="w-1/2 mb-3 rounded-full"
           :disabled="loading"
+          class="bg-gradient-to-r cursor-pointer h-12 hover:opacity-85 from-violet-400 to-purple-700 rounded-md w-full flex items-center justify-center text-md font-bold"
         >
           <span v-if="loading" class="animate-spin mr-2">&#9696;</span>
           {{ loading ? "Sending..." : "Send Reset Email" }}
@@ -139,7 +139,7 @@ const sendResetEmail = async () => {
     <div class="text-center mt-4 mb-4">
       <button
         @click="emit('backToLogin')"
-        class="text-sm text-[#FFBE61] hover:underline"
+        class="text-sm text-primary-500 cursor-pointer hover:underline"
       >
         Back to Login
       </button>

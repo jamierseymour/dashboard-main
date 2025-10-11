@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { VenueFormData } from "@/types/venue";
+import VenueCategoryStep from "@/components/Venue/VenueCategoryStep.vue";
+import VenueTypeStep from "@/components/Venue/VenueTypeStep.vue";
+import EventTypesStep from "@/components/Venue/EventTypesStep.vue";
 import DetailsStep from "@/components/Venue/DetailsStep.vue";
 import LocationStep from "@/components/Venue/LocationStep.vue";
 import MediaStep from "@/components/Venue/MediaStep.vue";
@@ -7,11 +10,20 @@ import ExtrasStep from "@/components/Venue/ExtrasStep.vue";
 import BookingRequirements from "@/components/Venue/BookingReqsStep.vue";
 import AuthModal from "@/components/Auth/AuthModal.vue"; // Import your auth modal
 import { useAuth } from "~/stores/auth";
+import { v4 as uuidv4 } from "uuid";
+
+definePageMeta({
+  layout: "blank",
+});
+
+const tempVenueId = ref(uuidv4());
 
 const supabase = useSupabaseClient();
 const auth = useAuth();
 
 const formData = ref<VenueFormData>({
+  venueCategory: null,
+  venueType: null,
   photos: [],
   description: "",
   venueName: "",
@@ -34,6 +46,7 @@ const formData = ref<VenueFormData>({
   },
   // Initialize seasonalPricing with default values
   seasonalPricing: {
+    enabled: false,
     peak: "",
     offPeak: "",
     peakMonths: [],
@@ -64,43 +77,58 @@ const currentStep = ref(0);
 const isSubmitting = ref(false);
 const pendingSubmission = ref(false);
 
-const items = [
+const steps = [
   {
-    slot: "details",
+    id: 0,
+    title: "Venue Category",
+    description: "Is this a wedding venue or a general venue?",
+    icon: "i-lucide-tag",
+  },
+  {
+    id: 1,
+    title: "Venue Type",
+    description: "What type of venue is this?",
+    icon: "i-lucide-layers",
+  },
+  {
+    id: 2,
+    title: "Event Types",
+    description: "What types of events can your venue host?",
+    icon: "i-lucide-calendar-range",
+  },
+  {
+    id: 3,
     title: "Venue Details",
     description: "Basic information about your venue",
     icon: "i-lucide-building",
-    class: "stepper-item"
   },
   {
-    slot: "location",
+    id: 4,
     title: "Location",
     description: "Where is your venue located",
     icon: "i-lucide-map-pin",
-    class: "stepper-item"
   },
   {
-    slot: "booking",
+    id: 5,
     title: "Booking Requirements",
     description: "Nitty Gritty Details for booking your venue",
     icon: "i-lucide-check-circle",
-    class: "stepper-item"
   },
   {
-    slot: "extras",
+    id: 6,
     title: "Extras and Amenities",
     description: "Additional amenities and services",
     icon: "i-lucide-sparkles",
-    class: "stepper-item"
   },
   {
-    slot: "media",
+    id: 7,
     title: "Photos",
     description: "Upload photos of your venue",
     icon: "i-lucide-camera",
-    class: "stepper-item"
   },
 ];
+
+const currentStepInfo = computed(() => steps[currentStep.value]);
 
 // Check authentication status
 const checkAuthAndSubmit = async () => {
@@ -125,18 +153,20 @@ const SubmitVenue = async () => {
   try {
     // Prepare the data for Supabase
     // @ts-ignore - Supabase type configuration issue
-    const { data, error } = await supabase.from("venues").insert([
+    const { error } = await supabase.from("venues").insert([
       {
+        id: tempVenueId.value,
         venue_name: formData.value.venueName,
         company_name: formData.value.companyName,
         description: formData.value.description,
         selected_province: formData.value.selectedProvince,
         event_types: formData.value.eventTypes,
-        min_capacity: parseInt(formData.value.minCapacity),
-        max_capacity: parseInt(formData.value.maxCapacity),
-        price: parseFloat(formData.value.price),
-        minimum_hours: parseInt(formData.value.minimumHours) || 0,
-        notice_required: parseInt(formData.value.noticeRequired) || 0,
+        min_capacity: parseInt(formData.value.minCapacity.toString()),
+        max_capacity: parseInt(formData.value.maxCapacity.toString()),
+        price: parseFloat(formData.value.price.toString()),
+        minimum_hours: parseInt(formData.value.minimumHours.toString()) || 0,
+        notice_required:
+          parseInt(formData.value.noticeRequired.toString()) || 0,
         cancellation_policy: formData.value.cancellationPolicy,
         photos: formData.value.photos,
         provinces: formData.value.provinces,
@@ -163,8 +193,10 @@ const SubmitVenue = async () => {
         user_id: auth.user?.id, // Add the user ID to associate the venue with the user
         // Add seasonal pricing data
         seasonal_pricing: {
-          peak: parseFloat(formData.value.seasonalPricing?.peak) || 0,
-          off_peak: parseFloat(formData.value.seasonalPricing?.offPeak) || 0,
+          peak:
+            parseFloat(formData.value.seasonalPricing?.peak.toString()) || 0,
+          off_peak:
+            parseFloat(formData.value.seasonalPricing?.offPeak.toString()) || 0,
           peak_months: formData.value.seasonalPricing?.peakMonths ?? [],
         },
 
@@ -183,8 +215,8 @@ const SubmitVenue = async () => {
           dance_floor: formData.value.amenities?.danceFloor ?? false,
           outdoor_space: formData.value.amenities?.outdoorSpace ?? false,
           indoor_space: formData.value.amenities?.indoorSpace ?? false,
-          tables: parseInt(formData.value.amenities?.tables) || 0,
-          chairs: parseInt(formData.value.amenities?.chairs) || 0,
+          tables: parseInt(formData.value.amenities?.tables.toString()) || 0,
+          chairs: parseInt(formData.value.amenities?.chairs.toString()) || 0,
           custom_amenities: formData.value.amenities?.customAmenities ?? [],
         },
       },
@@ -194,6 +226,9 @@ const SubmitVenue = async () => {
 
     // Clear the pending submission flag
     pendingSubmission.value = false;
+
+    // Clear the draft after successful submission
+    clearDraft();
 
     // Show success message and redirect
     useToast().add({
@@ -220,7 +255,117 @@ const SubmitVenue = async () => {
   }
 };
 
-const stepper = useTemplateRef("stepper");
+// Navigation functions
+const goToNextStep = () => {
+  if (currentStep.value < steps.length - 1) {
+    currentStep.value++;
+  }
+};
+
+const goToPrevStep = () => {
+  if (currentStep.value > 0) {
+    currentStep.value--;
+  }
+};
+
+const hasNext = computed(() => currentStep.value < steps.length - 1);
+const hasPrev = computed(() => currentStep.value > 0);
+
+// Calculate progress percentage
+const progressPercentage = computed(() => {
+  return ((currentStep.value + 1) / steps.length) * 100;
+});
+
+// LocalStorage draft management
+const DRAFT_KEY = "venue-form-draft";
+const DRAFT_TIMESTAMP_KEY = "venue-form-draft-timestamp";
+const DRAFT_STEP_KEY = "venue-form-draft-step";
+
+const toast = useToast();
+
+// Save draft to localStorage
+const saveDraft = () => {
+  try {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(formData.value));
+    localStorage.setItem(DRAFT_TIMESTAMP_KEY, new Date().toISOString());
+    localStorage.setItem(DRAFT_STEP_KEY, currentStep.value.toString());
+  } catch (error) {
+    console.error("Failed to save draft:", error);
+  }
+};
+
+// Clear draft from localStorage
+const clearDraft = () => {
+  localStorage.removeItem(DRAFT_KEY);
+  localStorage.removeItem(DRAFT_TIMESTAMP_KEY);
+  localStorage.removeItem(DRAFT_STEP_KEY);
+};
+
+// Restore draft from localStorage
+const restoreDraft = () => {
+  try {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    const savedStep = localStorage.getItem(DRAFT_STEP_KEY);
+    const savedTimestamp = localStorage.getItem(DRAFT_TIMESTAMP_KEY);
+
+    if (savedDraft && savedTimestamp) {
+      formData.value = JSON.parse(savedDraft);
+      if (savedStep) {
+        currentStep.value = parseInt(savedStep);
+      }
+
+      // Format the timestamp
+      const draftDate = new Date(savedTimestamp);
+      const now = new Date();
+      const diffMs = now.getTime() - draftDate.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      let timeAgo = "";
+      if (diffMins < 1) {
+        timeAgo = "just now";
+      } else if (diffMins < 60) {
+        timeAgo = `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+      } else if (diffHours < 24) {
+        timeAgo = `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+      } else {
+        timeAgo = `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+      }
+
+      toast.add({
+        title: "Draft Restored",
+        description: `Your previous draft from ${timeAgo} has been restored.`,
+        color: "primary",
+      });
+    }
+  } catch (error) {
+    console.error("Failed to restore draft:", error);
+  }
+};
+
+// Watch formData and save to localStorage (debounced)
+let saveTimeout: NodeJS.Timeout | null = null;
+watch(
+  formData,
+  () => {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      saveDraft();
+    }, 1000); // Debounce for 1 second
+  },
+  { deep: true },
+);
+
+// Watch current step and save to localStorage
+watch(currentStep, () => {
+  saveDraft();
+});
+
+// Restore draft on mount
+onMounted(() => {
+  restoreDraft();
+});
 
 // Watch for authentication changes - only auto-submit if we have a pending submission
 watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
@@ -229,83 +374,114 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
     SubmitVenue();
   }
 });
+
+// Expose clearDraft to be called from layout
+provide("clearDraft", clearDraft);
 </script>
 
 <template>
-  <div class="mt-16 sm:mt-24 pb-24">
-    <div class="px-2 sm:px-4">
-      <UStepper
-        ref="stepper"
-        v-model="currentStep"
-        :items="items"
-        class="w-full overflow-x-auto"
-        orientation="horizontal"
-      >
-      <template #details>
+  <div class="pb-32">
+    <div class="px-4 sm:px-6 lg:px-8">
+      <!-- Page Header -->
+      <div class="max-w-3xl mx-auto text-center mb-8 mt-8">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <UIcon :name="currentStepInfo.icon" class="w-8 h-8 text-primary" />
+          <h1 class="text-3xl sm:text-4xl font-bold">
+            {{ currentStepInfo.title }}
+          </h1>
+        </div>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          {{ currentStepInfo.description }}
+        </p>
+      </div>
+
+      <!-- Step Content -->
+      <div class="max-w-7xl mx-auto">
+        <VenueCategoryStep
+          v-if="currentStep === 0"
+          :form-data="formData"
+          @update:form-data="formData = $event"
+          @next="goToNextStep"
+        />
+
+        <VenueTypeStep
+          v-if="currentStep === 1"
+          :form-data="formData"
+          @update:form-data="formData = $event"
+          @next="goToNextStep"
+        />
+
+        <EventTypesStep
+          v-if="currentStep === 2"
+          :form-data="formData"
+          @update:form-data="formData = $event"
+        />
+
         <DetailsStep
+          v-if="currentStep === 3"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
-      </template>
 
-      <template #location>
         <LocationStep
+          v-if="currentStep === 4"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
-      </template>
 
-      <template #booking>
         <BookingRequirements
+          v-if="currentStep === 5"
           :form-data="formData"
           @update:form-data="(newData) => (formData = newData)"
         />
-      </template>
 
-      <template #extras>
         <ExtrasStep
+          v-if="currentStep === 6"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
-      </template>
 
-      <template #media>
         <MediaStep
+          v-if="currentStep === 7"
           :form-data="formData"
+          :id="tempVenueId"
           @update:form-data="formData = $event"
         />
-      </template>
-    </UStepper>
+      </div>
     </div>
 
     <!-- Sticky footer with navigation buttons -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
+    <div
+      class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 z-50 shadow-lg"
+    >
+      <!-- Progress Bar -->
+      <UProgress :model-value="progressPercentage" color="primary" size="md" />
+
       <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center">
           <UButton
             leading-icon="i-lucide-arrow-left"
-            :disabled="!stepper?.hasPrev"
+            :disabled="!hasPrev"
             class="cursor-pointer"
             size="lg"
-            @click="stepper?.prev()"
+            @click="goToPrevStep"
           >
-            Prev
+            Previous
           </UButton>
 
           <UButton
-            v-if="stepper?.hasNext"
+            v-if="hasNext"
             trailing-icon="i-lucide-arrow-right"
-            :disabled="!stepper?.hasNext"
             class="cursor-pointer"
             size="lg"
-            @click="stepper?.next()"
+            @click="goToNextStep"
           >
             Next
           </UButton>
 
           <UButton
             v-else
-            trailing-icon="i-lucide-arrow-right"
+            trailing-icon="i-lucide-check"
             class="cursor-pointer"
             size="lg"
             :disabled="isSubmitting"
@@ -317,24 +493,5 @@ watch([() => auth.loggedIn, () => auth.modal], ([loggedIn, modalOpen]) => {
         </div>
       </div>
     </div>
-
-    <!-- Spacer to prevent content from being hidden behind sticky footer -->
-    <div class="h-24"></div>
   </div>
 </template>
-
-<style>
-/* Hide stepper descriptions on mobile */
-@media (max-width: 640px) {
-  :deep(.stepper-item p),
-  :deep([class*="UStepper"] p) {
-    display: none !important;
-  }
-
-  /* Make stepper titles smaller on mobile */
-  :deep([class*="UStepper"] h3),
-  :deep([class*="UStepper"] [class*="title"]) {
-    font-size: 0.875rem !important;
-  }
-}
-</style>

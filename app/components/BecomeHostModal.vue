@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useAuth } from "~/stores/auth";
+
+const auth = useAuth();
+
 interface ModalProps {
   active: boolean;
 }
@@ -12,12 +16,17 @@ const emit = defineEmits<{
 }>();
 
 const handleVenueClick = () => {
-  navigateTo('/new-venue');
-  emit("set-active", false);
+  if (auth.loggedIn) {
+    navigateTo("/new-venue");
+    emit("set-active", false);
+  } else {
+    navigateTo("/auth?redirect=new-venue");
+    emit("set-active", false);
+  }
 };
 
 const handleServiceClick = () => {
-  navigateTo('/become-provider');
+  navigateTo("/become-provider");
   emit("set-active", false);
 };
 </script>
@@ -41,7 +50,9 @@ const handleServiceClick = () => {
       >
         <div class="flex items-start gap-4">
           <div class="flex-shrink-0">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20">
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"
+            >
               <UIcon
                 name="i-heroicons-building-office"
                 class="h-6 w-6 text-primary-600 dark:text-primary-400"
@@ -49,7 +60,9 @@ const handleServiceClick = () => {
             </div>
           </div>
           <div class="flex-1">
-            <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
+            <h4
+              class="text-base font-semibold text-gray-900 dark:text-white mb-1"
+            >
               List Your Venue
             </h4>
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -72,7 +85,9 @@ const handleServiceClick = () => {
       >
         <div class="flex items-start gap-4">
           <div class="flex-shrink-0">
-            <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20">
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/20"
+            >
               <UIcon
                 name="i-heroicons-sparkles"
                 class="h-6 w-6 text-primary-600 dark:text-primary-400"
@@ -80,7 +95,9 @@ const handleServiceClick = () => {
             </div>
           </div>
           <div class="flex-1">
-            <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">
+            <h4
+              class="text-base font-semibold text-gray-900 dark:text-white mb-1"
+            >
               Sign Up as Service Provider
             </h4>
             <p class="text-sm text-gray-600 dark:text-gray-400">

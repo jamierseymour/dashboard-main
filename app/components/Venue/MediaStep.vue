@@ -4,6 +4,7 @@ import { ref, watch } from "vue";
 
 const props = defineProps<{
   formData: VenueFormData;
+  id: string;
 }>();
 
 const emit = defineEmits<{
@@ -35,7 +36,7 @@ watch(
       photos.value = newPhotos;
     }
   },
-  { deep: true }
+  { deep: true },
 );
 </script>
 
@@ -49,6 +50,7 @@ watch(
     </div>
 
     <FormImageUploader
+      :id="id"
       :initialImages="photos"
       bucketName="venue-photos"
       folderPath="venues"

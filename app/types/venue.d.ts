@@ -92,9 +92,23 @@ export type StructuredAddress = {
 };
 
 export type SeasonalPricing = {
+  enabled: boolean;
   peak: string | number;
   offPeak: string | number;
   peakMonths?: number[];
+};
+
+export type DayBasedPricing = {
+  enabled: boolean;
+  weekdayPrice: string | number; // Monday - Thursday
+  weekendPrice: string | number; // Friday - Sunday
+  publicHolidayPrice?: string | number; // Optional separate pricing for public holidays
+};
+
+export type ExclusivePackage = {
+  enabled: boolean;
+  price: string | number; // All-inclusive package price
+  description?: string;
 };
 
 export type CancellationPolicy = {
@@ -155,6 +169,32 @@ export type VenueStats = {
   bookingRate?: number;
 };
 
+export type VenueCategory = "wedding" | "general";
+
+export type WeddingVenueType =
+  | "Garden Venue"
+  | "Bushveld Venue"
+  | "Country Venue"
+  | "Forest Venue"
+  | "Farm Venue"
+  | "Beach Venue"
+  | "City Venue"
+  | "Wine Farm Venue";
+
+export type GeneralVenueType =
+  | "House"
+  | "Bar"
+  | "Garage"
+  | "Warehouse"
+  | "Cabin"
+  | "Movie Theater"
+  | "Mansion"
+  | "Community Center"
+  | "Castle"
+  | "Basketball Court"
+  | "Commercial Kitchen"
+  | "Barn";
+
 export type EventType =
   | "Wedding"
   | "Conference"
@@ -181,6 +221,8 @@ export type Province =
   | "Western Cape";
 
 export interface VenueFormData {
+  venueCategory: VenueCategory | null;
+  venueType: WeddingVenueType | GeneralVenueType | null;
   photos: string[];
   description: string;
   venueName: string;
@@ -194,6 +236,8 @@ export interface VenueFormData {
   address: string;
   structuredAddress?: StructuredAddress; // New structured address data
   seasonalPricing: SeasonalPricing;
+  dayBasedPricing?: DayBasedPricing;
+  exclusivePackage?: ExclusivePackage;
   minimumHours: string | number;
   noticeRequired: string | number; // days
   cancellationPolicy: CancellationPolicy;
@@ -213,6 +257,7 @@ export interface Venue {
   maxCapacity: number;
   price: number;
   seasonalPricing?: SeasonalPricing;
+  dayBasedPricing?: DayBasedPricing;
   minimumHours: number;
   noticeRequired: number; // days
   cancellationPolicy: string;

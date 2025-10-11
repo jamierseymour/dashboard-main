@@ -52,7 +52,7 @@ const login = async () => {
       });
 
       // Modal will be closed automatically by auth store listener
-      await navigateTo("/dashboard");
+      // await navigateTo("/dashboard");
     }
   } catch (error) {
     authError.value = "Login failed. Please try again.";
@@ -169,7 +169,7 @@ const signInWithFacebook = async () => {
           type="submit"
           color="primary"
           size="lg"
-          class="mb-3 w-full rounded-full flex items-center justify-center"
+          class="bg-gradient-to-r cursor-pointer h-12 hover:opacity-85 from-violet-400 to-purple-700 rounded-md w-full flex items-center justify-center text-md font-bold"
           :disabled="loading"
         >
           <span v-if="loading" class="animate-spin mr-2">&#9696;</span>
@@ -180,12 +180,13 @@ const signInWithFacebook = async () => {
 
     <!-- divider -->
     <div class="relative my-6">
-      <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+      <div class="absolute inset-0 flex items-center gap-4">
+        <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
+        <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
       </div>
       <div class="relative flex justify-center text-sm">
-        <span class="px-2 dark:bg-gray-900 bg-light-50 text-gray-500"
-          >Or continue with email</span
+        <span class="px-6 dark:bg-gray-900 bg-white font-bold text-gray-500">
+          or</span
         >
       </div>
     </div>
