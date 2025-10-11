@@ -28,6 +28,12 @@ onMounted(async () => {
   if (!auth.hydrated) {
     await auth.init();
   }
+  console.log("🟢 App mounted, auth initialized");
+});
+
+// Watch for modal state changes
+watch(() => auth.modal, (newValue, oldValue) => {
+  console.log("🟢 Auth modal state changed from", oldValue, "to", newValue);
 });
 
 const title = "Own Your Events - Events at your finger tips";

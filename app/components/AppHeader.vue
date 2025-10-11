@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { useAuth } from "~/stores/auth";
-import AuthModal from "~/components/Auth/AuthModal.vue";
 
 const auth = useAuth();
 const showBecomeHostModal = ref(false);
 
 const handleSignUp = () => {
+  console.log("🔵 Sign up button clicked!");
+  console.log("🔵 Auth object:", auth);
+  console.log("🔵 Auth modal state before:", auth.modal);
+
   try {
     auth.toggleModal(true);
+    console.log("🔵 Auth modal state after:", auth.modal);
   } catch (error) {
     console.error("❌ Error calling toggleModal:", error);
   }
@@ -36,73 +40,73 @@ const centerNavItems = ref([
     label: "Venues",
     icon: "i-heroicons-map-pin",
     to: "/venues",
-    description: "Find perfect venues"
+    description: "Find perfect venues",
   },
   {
     label: "Services",
     icon: "i-heroicons-sparkles",
     to: "/services",
-    description: "Browse event services"
+    description: "Browse event services",
   },
   {
     label: "Create Event",
     icon: "i-heroicons-plus-circle",
     to: "/events/create",
-    description: "Plan your event"
-  }
+    description: "Plan your event",
+  },
 ]);
 
 // Active navigation item based on current route
 const route = useRoute();
 const activeNavItem = computed(() => {
   const path = route.path;
-  if (path.startsWith('/venues')) return 'venues';
-  if (path.startsWith('/services')) return 'services';
-  if (path.startsWith('/events/create')) return 'create event';
-  return 'venues'; // default
+  if (path.startsWith("/venues")) return "venues";
+  if (path.startsWith("/services")) return "services";
+  if (path.startsWith("/events/create")) return "create event";
+  return "venues"; // default
 });
 
 // Dynamic button text and action based on user status and current page
 const hostButton = computed(() => {
-  if (!auth.loggedIn) {
-    return null; // Don't show button if not logged in
-  }
+  // if (!auth.loggedIn) {
+  //   return null; // Don't show button if not logged in
+  // }
 
-  const isOnVenuePage = activeNavItem.value === 'venues';
-  const isOnServicePage = activeNavItem.value === 'services';
+  const isOnVenuePage = activeNavItem.value === "venues";
+  const isOnServicePage = activeNavItem.value === "services";
   const isVendor = auth.profile?.is_vendor;
   const isServiceProvider = auth.profile?.is_service_provider;
 
   if (isOnVenuePage) {
     if (isVendor) {
       return {
-        label: 'Switch to Hosting',
-        icon: 'i-heroicons-building-office',
-        action: () => navigateTo('/dashboard'),
-        variant: 'soft' as const
+        label: "Switch to Hosting",
+        icon: "i-heroicons-building-office",
+        action: () => navigateTo("/dashboard"),
+        variant: "soft" as const,
       };
     } else {
       return {
-        label: 'Become a Host',
-        icon: 'i-heroicons-home',
-        action: () => showBecomeHostModal.value = true,
-        variant: 'solid' as const
+        label: "Become a Host",
+        icon: "i-heroicons-home",
+        action: () => (showBecomeHostModal.value = true),
+        variant: "solid" as const,
       };
     }
   } else if (isOnServicePage) {
     if (isServiceProvider) {
       return {
-        label: 'Service Dashboard',
-        icon: 'i-heroicons-sparkles',
-        action: () => navigateTo('/service-dashboard'),
-        variant: 'soft' as const
+        label: "Service Dashboard",
+        icon: "i-heroicons-sparkles",
+        action: () => navigateTo("/service-dashboard"),
+        variant: "soft" as const,
       };
     } else {
       return {
-        label: 'Become a Provider',
-        icon: 'i-heroicons-sparkles',
-        action: () => showBecomeHostModal.value = true,
-        variant: 'solid' as const
+        label: "Become a Provider",
+        icon: "i-heroicons-sparkles",
+        action: () => (showBecomeHostModal.value = true),
+        variant: "solid" as const,
       };
     }
   }
@@ -113,14 +117,21 @@ const hostButton = computed(() => {
 
 <template>
   <!-- Custom Header with centered navigation -->
-  <header class="h-20 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+  <header
+    class="h-20 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+  >
     <div class="w-full px-4 sm:px-6 lg:px-8 h-full">
       <!-- Desktop Header -->
       <div class="hidden md:flex items-center justify-between h-full">
         <!-- Left: Logo -->
         <div class="flex items-center">
           <NuxtLink to="/">
-            <NuxtImg src="logos/logo.svg" class="py-2" height="150" width="150" />
+            <NuxtImg
+              src="logos/logo.svg"
+              class="py-2"
+              height="150"
+              width="150"
+            />
           </NuxtLink>
         </div>
 
@@ -133,8 +144,10 @@ const hostButton = computed(() => {
               :to="item.to"
               class="flex flex-col items-center cursor-pointer transition-all duration-300 hover:text-gray-900 dark:hover:text-white group pb-1"
               :class="{
-                'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                'text-gray-600 dark:text-gray-400': activeNavItem !== item.label.toLowerCase()
+                'text-gray-900 dark:text-white':
+                  activeNavItem === item.label.toLowerCase(),
+                'text-gray-600 dark:text-gray-400':
+                  activeNavItem !== item.label.toLowerCase(),
               }"
             >
               <div class="flex items-center gap-2 mb-2">
@@ -142,15 +155,19 @@ const hostButton = computed(() => {
                   :name="item.icon"
                   class="w-5 h-5 transition-colors duration-300"
                   :class="{
-                    'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white': activeNavItem !== item.label.toLowerCase()
+                    'text-gray-900 dark:text-white':
+                      activeNavItem === item.label.toLowerCase(),
+                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white':
+                      activeNavItem !== item.label.toLowerCase(),
                   }"
                 />
                 <span
                   class="text-sm font-medium transition-colors duration-300"
                   :class="{
-                    'text-gray-900 dark:text-white': activeNavItem === item.label.toLowerCase(),
-                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white': activeNavItem !== item.label.toLowerCase()
+                    'text-gray-900 dark:text-white':
+                      activeNavItem === item.label.toLowerCase(),
+                    'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white':
+                      activeNavItem !== item.label.toLowerCase(),
                   }"
                 >
                   {{ item.label }}
@@ -160,8 +177,10 @@ const hostButton = computed(() => {
               <div
                 class="h-0.5 w-full transition-all duration-300"
                 :class="{
-                  'bg-gray-900 dark:bg-white': activeNavItem === item.label.toLowerCase(),
-                  'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600': activeNavItem !== item.label.toLowerCase()
+                  'bg-gray-900 dark:bg-white':
+                    activeNavItem === item.label.toLowerCase(),
+                  'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600':
+                    activeNavItem !== item.label.toLowerCase(),
                 }"
               />
             </NuxtLink>
@@ -179,16 +198,20 @@ const hostButton = computed(() => {
             class="rounded-full cursor-pointer"
             @click="hostButton.action"
           />
-          <UButton
+          <!-- <UButton
             v-if="!auth.loggedIn"
             label="Sign up"
             icon="i-heroicons-arrow-right"
             trailing
             class="hidden rounded-full cursor-pointer lg:flex"
             @click="handleSignUp()"
-          />
+          /> -->
           <NuxtLink v-if="auth.loggedIn" to="/users/profile">
-            <UAvatar class="cursor-pointer" :src="avatarUrl" :alt="displayName" />
+            <UAvatar
+              class="cursor-pointer"
+              :src="avatarUrl"
+              :alt="displayName"
+            />
           </NuxtLink>
           <HamburgerMenu />
           <UColorModeButton />
@@ -200,7 +223,12 @@ const hostButton = computed(() => {
         <!-- Top row: Logo and actions -->
         <div class="flex items-center justify-between mb-4">
           <NuxtLink to="/">
-            <NuxtImg src="logos/logo.svg" class="py-2" height="120" width="120" />
+            <NuxtImg
+              src="logos/logo.svg"
+              class="py-2"
+              height="120"
+              width="120"
+            />
           </NuxtLink>
           <div class="flex items-center gap-2">
             <UButton
@@ -222,20 +250,24 @@ const hostButton = computed(() => {
               @click="handleSignUp()"
             />
             <NuxtLink v-if="auth.loggedIn" to="/users/profile">
-              <UAvatar class="cursor-pointer" size="sm" :src="avatarUrl" :alt="displayName" />
+              <UAvatar
+                class="cursor-pointer"
+                size="sm"
+                :src="avatarUrl"
+                :alt="displayName"
+              />
             </NuxtLink>
             <HamburgerMenu />
             <UColorModeButton />
           </div>
         </div>
-
       </div>
     </div>
   </header>
 
-  <!-- Auth Modal -->
-  <AuthModal v-if="auth.modal" />
-
   <!-- Become Host Modal -->
-  <BecomeHostModal :active="showBecomeHostModal" @set-active="showBecomeHostModal = $event" />
+  <BecomeHostModal
+    :active="showBecomeHostModal"
+    @set-active="showBecomeHostModal = $event"
+  />
 </template>
