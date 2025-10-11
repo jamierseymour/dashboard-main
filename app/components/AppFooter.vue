@@ -1,39 +1,39 @@
 <script setup lang="ts">
 const columns = [
-  {
-    label: "Resources",
-    children: [
-      {
-        label: "Help center",
-      },
-      {
-        label: "Docs",
-      },
-      {
-        label: "Roadmap",
-      },
-      {
-        label: "Changelog",
-      },
-    ],
-  },
-  {
-    label: "Features",
-    children: [
-      {
-        label: "Affiliates",
-      },
-      {
-        label: "Portal",
-      },
-      {
-        label: "Jobs",
-      },
-      {
-        label: "Sponsors",
-      },
-    ],
-  },
+  // {
+  //   label: "Resources",
+  //   children: [
+  //     {
+  //       label: "Help center",
+  //     },
+  //     {
+  //       label: "Docs",
+  //     },
+  //     {
+  //       label: "Roadmap",
+  //     },
+  //     {
+  //       label: "Changelog",
+  //     },
+  //   ],
+  // },
+  // {
+  //   label: "Features",
+  //   children: [
+  //     {
+  //       label: "Affiliates",
+  //     },
+  //     {
+  //       label: "Portal",
+  //     },
+  //     {
+  //       label: "Jobs",
+  //     },
+  //     {
+  //       label: "Sponsors",
+  //     },
+  //   ],
+  // },
   {
     label: "Company",
     children: [
@@ -41,13 +41,10 @@ const columns = [
         label: "About",
       },
       {
-        label: "Pricing",
-      },
-      {
-        label: "Careers",
-      },
-      {
         label: "Blog",
+      },
+      {
+        label: "Contact us",
       },
     ],
   },
@@ -69,11 +66,21 @@ function onSubmit() {
 </script>
 
 <template>
-  <USeparator icon="i-simple-icons-nuxtdotjs" class="h-px" />
+  <div class="relative h-px mt-6 bg-gray-200 dark:bg-gray-800">
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="bg-white dark:bg-gray-900 px-3">
+        <img
+          src="/logos/logo-no-text.svg"
+          alt="Logo"
+          class="w-24 h-24 mt-2 -mx-2"
+        />
+      </div>
+    </div>
+  </div>
   <UFooter :ui="{ top: 'border-b border-[var(--ui-border)]' }">
     <template #top>
       <UContainer>
-        <UFooterColumns :columns="columns">
+        <UFooterColumns :columns="columns" :ui="{ link: 'cursor-pointer' }">
           <template #right>
             <form @submit.prevent="onSubmit">
               <UFormField
@@ -105,16 +112,40 @@ function onSubmit() {
 
     <template #left>
       <p class="text-sm text-(--ui-text-muted)">
-        Copyright © {{ new Date().getFullYear() }}
+        Own Your Events © {{ new Date().getFullYear() }}
       </p>
     </template>
 
     <template #right>
       <UButton
-        to="https://github.com/nuxt-ui-pro/landing/tree/v3"
+        to="https://instagram.com"
         target="_blank"
-        icon="i-simple-icons-github"
-        aria-label="GitHub"
+        icon="i-simple-icons-instagram"
+        aria-label="Instagram"
+        color="neutral"
+        variant="ghost"
+      />
+      <UButton
+        to="https://tiktok.com"
+        target="_blank"
+        icon="i-simple-icons-tiktok"
+        aria-label="TikTok"
+        color="neutral"
+        variant="ghost"
+      />
+      <UButton
+        to="https://facebook.com"
+        target="_blank"
+        icon="i-simple-icons-facebook"
+        aria-label="Facebook"
+        color="neutral"
+        variant="ghost"
+      />
+      <UButton
+        to="https://linkedin.com"
+        target="_blank"
+        icon="i-simple-icons-linkedin"
+        aria-label="LinkedIn"
         color="neutral"
         variant="ghost"
       />

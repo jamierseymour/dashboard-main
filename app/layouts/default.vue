@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppHeader from '~/components/AppHeader.vue'
-import MobileBottomNav from '~/components/MobileBottomNav.vue'
-// import AppFooter from '~/components/AppFooter.vue'
+import AppHeader from "~/components/AppHeader.vue";
+import MobileBottomNav from "~/components/MobileBottomNav.vue";
+import AppFooter from "~/components/AppFooter.vue";
 </script>
 
 <template>
@@ -15,6 +15,6 @@ import MobileBottomNav from '~/components/MobileBottomNav.vue'
     <!-- Mobile Bottom Navigation -->
     <MobileBottomNav />
 
-    <!-- <AppFooter /> -->
+    <AppFooter />
   </div>
 </template>
