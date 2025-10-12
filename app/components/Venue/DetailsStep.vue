@@ -17,7 +17,7 @@ const form = computed({
 });
 
 // Character counter for description
-const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_DESCRIPTION_LENGTH = 700;
 const descriptionLength = computed(() => form.value.description?.length || 0);
 const isDescriptionTooLong = computed(() => descriptionLength.value > MAX_DESCRIPTION_LENGTH);
 const descriptionCounterColor = computed(() => {

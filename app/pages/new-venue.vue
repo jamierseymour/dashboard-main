@@ -363,8 +363,13 @@ watch(currentStep, () => {
 });
 
 // Restore draft on mount
-onMounted(() => {
+onMounted(async () => {
   restoreDraft();
+
+  // Set user as vendor when they visit the new venue page
+  if (auth.loggedIn) {
+    await auth.setVendorStatus();
+  }
 });
 
 // Watch for authentication changes - only auto-submit if we have a pending submission

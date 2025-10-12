@@ -24,7 +24,7 @@ const avatarUrl = computed(() => {
     auth.profile?.picUrl ||
     auth.profile?.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      auth.profile?.name || auth.user?.email || "User"
+      auth.profile?.name || auth.user?.email || "User",
     )}&background=FFBE61&color=000000&bold=true`
   );
 });
@@ -56,6 +56,8 @@ const centerNavItems = ref([
   },
 ]);
 
+console.log("auth", auth);
+
 // Active navigation item based on current route
 const route = useRoute();
 const activeNavItem = computed(() => {
@@ -63,26 +65,55 @@ const activeNavItem = computed(() => {
   if (path.startsWith("/venues")) return "venues";
   if (path.startsWith("/services")) return "services";
   if (path.startsWith("/events/create")) return "create event";
+  if (path.startsWith("/vendor")) return "vendor";
+  if (
+    path.startsWith("/dashboard") ||
+    path.startsWith("/listings") ||
+    path.startsWith("/calendar") ||
+    path.startsWith("/bookings")
+  )
+    return "dashboard";
   return "venues"; // default
 });
 
+console.log("auth", auth.profile);
+
 // Dynamic button text and action based on user status and current page
 const hostButton = computed(() => {
-  // if (!auth.loggedIn) {
-  //   return null; // Don't show button if not logged in
-  // }
-
   const isOnVenuePage = activeNavItem.value === "venues";
   const isOnServicePage = activeNavItem.value === "services";
-  const isVendor = auth.profile?.is_vendor;
-  const isServiceProvider = auth.profile?.is_service_provider;
+  const isOnDashboard = activeNavItem.value === "dashboard";
+  const isOnVendor = activeNavItem.value === "vendor";
+  const isVendor = auth.loggedIn && auth.profile?.is_vendor;
+  const isServiceProvider = auth.loggedIn && auth.profile?.is_service_provider;
 
+  // Show "Switch to Planning" for vendors on vendor pages
+  if (isOnVendor && isVendor) {
+    return {
+      label: "Switch to Planning",
+      icon: "i-heroicons-calendar",
+      action: () => navigateTo("/"),
+      variant: "soft" as const,
+    };
+  }
+
+  // Show "Switch to Planning" for vendors on dashboard pages (old)
+  if (isOnDashboard && isVendor) {
+    return {
+      label: "Switch to Planning",
+      icon: "i-heroicons-calendar",
+      action: () => navigateTo("/"),
+      variant: "soft" as const,
+    };
+  }
+
+  // Show "Switch to Hosting" for logged-in vendors on home/venues page
   if (isOnVenuePage) {
     if (isVendor) {
       return {
         label: "Switch to Hosting",
         icon: "i-heroicons-building-office",
-        action: () => navigateTo("/dashboard"),
+        action: () => navigateTo("/vendor/listings"),
         variant: "soft" as const,
       };
     } else {

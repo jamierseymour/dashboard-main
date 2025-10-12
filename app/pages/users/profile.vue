@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+definePageMeta({
+  middleware: "auth",
+});
+
 const route = useRoute();
 const open = ref(false);
 

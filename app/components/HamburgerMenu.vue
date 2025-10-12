@@ -61,7 +61,7 @@ const menuItems = computed(() => {
         {
           label: "Switch to Hosting",
           icon: "i-heroicons-building-office",
-          click: () => navigateTo("/dashboard"),
+          click: () => navigateTo("/vendor/listings"),
           featured: true,
           emoji: "🏠",
         }

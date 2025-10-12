@@ -26,8 +26,8 @@ export interface BookingRequest {
   accommodation_needed: number;
 
   // Communication
-  message_to_host?: string;
-  host_response_message?: string;
+  message_to_host?: string | null;
+  host_response_message?: string | null;
 
   // Pricing (snapshot at time of booking)
   price_per_night: number;
@@ -43,14 +43,14 @@ export interface BookingRequest {
   // Timestamps
   created_at?: string;
   updated_at?: string;
-  confirmed_at?: string;
-  cancelled_at?: string;
-  completed_at?: string;
+  confirmed_at?: string | null;
+  cancelled_at?: string | null;
+  completed_at?: string | null;
 
   // Cancellation
-  cancellation_reason?: string;
-  cancelled_by?: "guest" | "host"; // Who cancelled
-  refund_amount?: number;
+  cancellation_reason?: string | null;
+  cancelled_by?: "guest" | "host" | null; // Who cancelled
+  refund_amount?: number | null;
 }
 
 export interface BookingWithDetails extends BookingRequest {
@@ -67,7 +67,7 @@ export interface BookingWithDetails extends BookingRequest {
   guest?: {
     id: string;
     email: string;
-    full_name?: string;
+    name?: string;
     avatar_url?: string;
   };
 
@@ -75,7 +75,7 @@ export interface BookingWithDetails extends BookingRequest {
   host?: {
     id: string;
     email: string;
-    full_name?: string;
+    name?: string;
     avatar_url?: string;
   };
 }

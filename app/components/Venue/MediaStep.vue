@@ -21,6 +21,7 @@ const updateFormData = (key: keyof VenueFormData, value: any) => {
 };
 
 const onImagesUpdate = (imageUrls: string[]) => {
+  console.log("📸 Received", imageUrls.length, "image URL(s)");
   photos.value = imageUrls;
   updateFormData("photos", imageUrls);
 };

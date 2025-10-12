@@ -257,17 +257,21 @@ export const useAuth = defineStore("auth", () => {
     }
   }
 
-  const setHostStatus = async () => {
-    if (!state.profile) return;
-    const { data, error } = await supabase
-      .from("users")
-      .update({ is_vendor: true })
-      .eq("id", state.profile.id)
-      .select()
-      .single();
+  const setVendorStatus = async () => {
+    if (!state.user?.id) return;
 
-    if (error) throw error;
-    profile.value = data;
+    try {
+      const { error } = await (supabase.from("users") as any)
+        .update({ is_vendor: true })
+        .eq("user_id", state.user.id);
+
+      if (error) throw error;
+
+      // Refresh profile data to get updated is_vendor status
+      await fetchUserProfile();
+    } catch (error) {
+      console.error("Error updating vendor status:", error);
+    }
   };
 
   // Sign up new user
@@ -313,7 +317,6 @@ export const useAuth = defineStore("auth", () => {
           event_updates: userData.eventUpdates,
           terms_accepted: userData.termsAccepted,
           bio: "",
-          is_vendor: false,
           is_service_provider: false,
         });
 
@@ -438,5 +441,6 @@ export const useAuth = defineStore("auth", () => {
     toggleModal,
     waitForAuth,
     resolveAuthPromise,
+    setVendorStatus,
   };
 });

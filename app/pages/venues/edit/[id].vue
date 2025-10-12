@@ -3,6 +3,11 @@ import type { VenueFormData, Province, EventType } from "~/types/venue";
 import GoogleAutocomplete from "~/components/Form/GoogleAutocomplete.vue";
 import ImageUploader from "~/components/Form/ImageUploader.vue";
 
+definePageMeta({
+  layout: "vendor",
+  middleware: "auth",
+});
+
 const client = useSupabaseClient();
 const route = useRoute();
 const toast = useToast();
@@ -288,7 +293,7 @@ const saveVenue = async () => {
     toast.add({
       title: "Validation Error",
       description: `Please fill in the following required fields: ${missingFields.join(
-        ", "
+        ", ",
       )}`,
       color: "error",
       timeout: 5000,
@@ -336,7 +341,7 @@ const saveVenue = async () => {
     }
     if (parsedMinCapacity > parsedMaxCapacity) {
       throw new Error(
-        "Minimum capacity cannot be greater than maximum capacity"
+        "Minimum capacity cannot be greater than maximum capacity",
       );
     }
 
@@ -358,7 +363,7 @@ const saveVenue = async () => {
             }),
       provinces: form.provinces,
       event_types: form.eventTypes.map((type) =>
-        JSON.stringify({ label: type, value: type })
+        JSON.stringify({ label: type, value: type }),
       ),
       photos: form.photos || [],
       minimum_hours: form.minimumHours || 4,
@@ -378,19 +383,20 @@ const saveVenue = async () => {
       cancellation_policy: {
         refundableDays:
           parseInt(
-            form.cancellationPolicy?.refundableDays?.toString() || "30"
+            form.cancellationPolicy?.refundableDays?.toString() || "30",
           ) || 30,
         partialRefundDays:
           parseInt(
-            form.cancellationPolicy?.partialRefundDays?.toString() || "14"
+            form.cancellationPolicy?.partialRefundDays?.toString() || "14",
           ) || 14,
         partialRefundPercentage:
           parseInt(
-            form.cancellationPolicy?.partialRefundPercentage?.toString() || "50"
+            form.cancellationPolicy?.partialRefundPercentage?.toString() ||
+              "50",
           ) || 50,
         nonRefundableDays:
           parseInt(
-            form.cancellationPolicy?.nonRefundableDays?.toString() || "7"
+            form.cancellationPolicy?.nonRefundableDays?.toString() || "7",
           ) || 7,
       },
       updated_at: new Date().toISOString(),
@@ -398,7 +404,7 @@ const saveVenue = async () => {
 
     console.log(
       "📋 Final venue data to be sent:",
-      JSON.stringify(venueData, null, 2)
+      JSON.stringify(venueData, null, 2),
     );
     console.log("🎯 Updating venue with ID:", venueId);
     console.log("🗄️ Using Supabase client:", !!client);
@@ -560,7 +566,7 @@ watch(
   () => {
     showSuccessModal.value = false;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Reset modal state when component unmounts
@@ -771,7 +777,7 @@ const onAddressInputChanged = (input: string) => {
             <ImageUploader
               :initial-images="form.photos"
               :venue-id="venueId"
-              bucket-name="avatars"
+              bucket-name="venue-photos"
               @update:images="handlePhotoUpdate"
             />
           </div>
@@ -1032,8 +1038,18 @@ const onAddressInputChanged = (input: string) => {
 
         <!-- Bottom actions -->
         <div class="flex justify-end space-x-3 pt-6 border-t">
-          <UButton color="neutral" to="/venues" variant="ghost">Cancel</UButton>
-          <UButton color="primary" @click="saveVenue" :loading="saving"
+          <UButton
+            color="neutral"
+            class="cursor-pointer"
+            to="/venues"
+            variant="ghost"
+            >Cancel</UButton
+          >
+          <UButton
+            color="primary"
+            class="cursor-pointer"
+            @click="saveVenue"
+            :loading="saving"
             >Save Changes</UButton
           >
         </div>
