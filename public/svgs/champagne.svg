@@ -1,0 +1,111 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 150px; height: 150px;"><style>
+     .line-champagne1-arrows-a {animation:line-champagne1-arrows-a 2s infinite;}
+     .line-champagne1-arrows-b {animation:line-champagne1-arrows-b 2s infinite;}
+     .line-champagne1-arrows-c {animation:line-champagne1-arrows-c 2s infinite;}
+     .line-champagne1-arrows-d {animation:line-champagne1-arrows-d 2s infinite;}
+     @keyframes line-champagne1-arrows-a {
+         0%{opacity: 0;}
+         20%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(0, -2px, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(0, -2px, 0); opacity: 0;}
+     }
+     @keyframes line-champagne1-arrows-b {
+         0%{opacity: 0;}
+         20%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(0, 2px, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(0, 2px, 0); opacity: 0;}
+     }
+     @keyframes line-champagne1-arrows-c {
+         0%{opacity: 0;}
+         20%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(2px, 0, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(2px, 0, 0); opacity: 0;}
+     }
+     @keyframes line-champagne1-arrows-d {
+         0%{opacity: 0;}
+         20%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(-2px, 0, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(-2px, 0, 0); opacity: 0;}
+     }
+
+     @media (prefers-reduced-motion: reduce) {
+         .line-champagne1-arrows-a, .line-champagne1-arrows-b, .line-champagne1-arrows-c, .line-champagne1-arrows-d {
+             animation: none;
+         }
+     }
+     
+     .line-champagne1-lines-a {animation:line-champagne1-lines-a 2s infinite;}
+     .line-champagne1-lines-b {animation:line-champagne1-lines-b 2s infinite;}
+     .line-champagne1-lines-c {animation:line-champagne1-lines-c 2s infinite;}
+     @keyframes line-champagne1-lines-a {
+         0%{opacity: 0;}
+         28%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(4px, -6px, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(4px, -6px, 0); opacity: 0;}
+     }
+     @keyframes line-champagne1-lines-b {
+         0%{opacity: 0;}
+         20%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(7px, -7px, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(7px, -7px, 0); opacity: 0;}
+     }
+     @keyframes line-champagne1-lines-c {
+         0%{opacity: 0;}
+         24%{transform:translate3d(0, 0, 0); opacity: 0;}
+         60%{opacity: .8;}
+         70%{transform:translate3d(6px, -6px, 0); opacity: .8;}
+         90%{opacity: 0;}
+         100%{transform:translate3d(6px, -6px, 0); opacity: 0;}
+     }
+     @media (prefers-reduced-motion: reduce) {
+         .line-champagne1-lines-a, .line-champagne1-lines-b, .line-champagne1-lines-c {
+             animation: none;
+         }
+     }
+     
+     .line-champagne1-main {animation:line-champagne1-main 2s infinite;}
+     @keyframes line-champagne1-main {
+         0%{transform:translate3d(0, 0, 0);}
+         20%{transform:translate3d(-4px, 4px, 0);}
+         50%{transform:translate3d(2px, -4px, 0);}
+         70%{transform:translate3d(0, 0, 0);}
+         100%{transform:translate3d(0, 0, 0);}
+     }
+     
+     .line-champagne-star-a{animation: line-champagne-star-a 2s infinite ease-in-out; transform-origin:81px 58px; transform: scale3d(0, 0, 0);}
+     .line-champagne-star-b{animation: line-champagne-star-b 2s infinite ease-in-out; transform-origin:28px 28px; transform: scale3d(0, 0, 0);}
+     @keyframes line-champagne-star-a{
+         0% {transform: scale3d(0, 0, 0); opacity: 0; }
+         20% {transform: scale3d(0, 0, 0); opacity: 0; }
+         30% {transform: scale3d(1, 1, 1); opacity: 1; }
+         40% {transform: scale3d(.8, .8, .8); opacity: 1;}
+         50% {transform: scale3d(1, 1, 1); opacity: 1;}
+         100% {transform: scale3d(1, 1, 1); opacity: 0;}
+     }
+     @keyframes line-champagne-star-b{
+         0% {transform: scale3d(0, 0, 0); opacity: 0; }
+         30% {transform: scale3d(0, 0, 0); opacity: 0; }
+         40% {transform: scale3d(1, 1, 1); opacity: 1; }
+         50% {transform: scale3d(.8, .8, .8); opacity: 1;}
+         70% {transform: scale3d(1, 1, 1); opacity: 1;}
+         100% {transform: scale3d(1, 1, 1); opacity: 0;}
+     }
+     @media (prefers-reduced-motion: reduce) {
+         .line-champagne-star-a, .line-champagne-star-b, line-champagne1-main {
+             animation: none;
+         }
+     }
+     
+    </style><g class="line-champagne1-main" style="animation-duration: 2s;"><path class="stroke1 fill1" d="M65.0992 42.3L58.6992 35.9L62.1992 32.4C62.9992 31.6 64.1992 31.6 64.9992 32.4L68.4992 35.9C69.2992 36.7 69.2992 37.9 68.4992 38.7L65.0992 42.3Z" fill="#fff" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1 fill1" d="M61.9 39.1L65.1 42.3C63.3 44.1 62.3 45.3 61 46.7C53.2 55.2 58.8 63.5 47.8 74.4L35.8 86.5C33.8 88.5 30.7 88.5 28.7 86.5L21.6 79.4L14.5 72.3C12.5 70.3 12.5 67.2 14.5 65.2L26.6 53.1C37.6 42.3 45.9 47.8 54.4 40C55.8 38.7 56.9 37.7 58.8 35.9L61.9 39.1Z" fill="#fff" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M56.8008 53.7H47.3008V44.2" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M34.1992 59.1C36.2992 57 39.7992 57 41.9992 59.1C44.0992 61.2 44.0992 64.7 41.9992 66.9" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M34.2 59.1L27.5 52.4" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M48.7 73.5L42 66.8" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M37.4008 84.8L31.3008 78.7" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M22.6 70.1L16.5 64" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path class="stroke1" d="M26.8008 74.3V74.2" stroke="rgba(178,42,240,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path></g><path class="stroke2 line-champagne1-lines-b" d="M70.9004 30.1L83.3004 17.7" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-lines-c" d="M74.6992 34.5L75.6992 33.5C78.5992 30.6 82.6992 29.3 86.6992 30L87.7992 30.2" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-lines-c" d="M66.5996 26.3L67.5996 25.3C70.4996 22.4 71.7996 18.3 71.0996 14.3L70.8996 13.2" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-a" d="M64.4004 73.1V76.4" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-b" d="M64.4004 83.5V86.8" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-c" d="M71.3004 79.9H67.9004" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-d" d="M60.8 79.9H57.5" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-a" d="M50.2012 13V16.3" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-b" d="M50.2012 23.4V26.8" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-c" d="M57.0012 19.9H53.7012" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 line-champagne1-arrows-d" d="M46.6008 19.9H43.3008" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 fill2 line-champagne-star-a" d="M87.8004 53.6L85.2004 58.2L87.5004 62.9L82.4004 61.9L78.6004 65.6L78.0004 60.3L73.4004 57.9L78.1004 55.7L79.0004 50.5L82.6004 54.4L87.8004 53.6Z" fill="#fff" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path><path class="stroke2 fill2 line-champagne-star-b" d="M32.9 21.6L28.3 24.2L23.6 21.9L24.6 27L21 30.8L26.2 31.4L28.6 36.1L30.8 31.3L36 30.4L32.1 26.8L32.9 21.6Z" fill="#fff" stroke="rgba(242,158,77,1)" stroke-width="2px" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" style="animation-duration: 2s;"></path></svg>

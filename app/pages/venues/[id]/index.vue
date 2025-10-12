@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BookingInfo from "~/components/Venue/BookingInfo.vue";
 import Masonry from "~/components/Venue/Masonry.vue";
 import { useAuth } from "~/stores/auth";
 
@@ -255,6 +256,8 @@ const isOwner = computed(() => {
               Maximum: {{ venue.max_capacity ?? "N/A" }}
             </p>
           </div>
+
+          <BookingInfo />
         </div>
       </div>
     </div>

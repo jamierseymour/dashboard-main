@@ -1,0 +1,148 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style="width: 150px; height: 150px;">
+    <style>
+        .line-mindmap1-line1 {
+            animation: line-mindmap1-line 3s infinite;
+            stroke-dasharray: 110;
+            stroke-dashoffset: 120;
+        }
+
+        .line-mindmap1-line2 {
+            animation: line-mindmap1-line 3s infinite;
+            stroke-dasharray: 110;
+            stroke-dashoffset: 120;
+        }
+
+        .line-mindmap1-line3 {
+            animation: line-mindmap1-line 3s infinite;
+            stroke-dasharray: 110;
+            stroke-dashoffset: 120;
+        }
+
+        .line-mindmap1-line4 {
+            animation: line-mindmap1-line 3s infinite;
+            stroke-dasharray: 110;
+            stroke-dashoffset: 120;
+        }
+
+        .line-mindmap1-line5 {
+            animation: line-mindmap1-line 3s infinite;
+            stroke-dasharray: 110;
+            stroke-dashoffset: 120;
+        }
+
+        @keyframes line-mindmap1-line {
+            0% {
+                stroke-dashoffset: 110;
+            }
+
+            30% {
+                stroke-dashoffset: 110;
+            }
+
+            80% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        .line-mindmap1-dot1 {
+            animation: line-mindmap1-dot 3s infinite ease-in-out;
+            transform-origin: 64.5px 20.5px;
+            transform: scale3d(0, 0, 0);
+        }
+
+        .line-mindmap1-dot2 {
+            animation: line-mindmap1-dot 3s infinite ease-in-out;
+            transform-origin: 80.5px 64.5px;
+            transform: scale3d(0, 0, 0);
+        }
+
+        .line-mindmap1-dot3 {
+            animation: line-mindmap1-dot 3s infinite ease-in-out;
+            transform-origin: 63.5px 83.5px;
+            transform: scale3d(0, 0, 0);
+        }
+
+        .line-mindmap1-dot4 {
+            animation: line-mindmap1-dot 3s infinite ease-in-out;
+            transform-origin: 21.5px 76.5px;
+            transform: scale3d(0, 0, 0);
+        }
+
+        .line-mindmap1-dot5 {
+            animation: line-mindmap1-dot 3s infinite ease-in-out;
+            transform-origin: 19.5px 17.5px;
+            transform: scale3d(0, 0, 0);
+        }
+
+        @keyframes line-mindmap1-dot {
+            0% {
+                transform: scale3d(0, 0, 0);
+            }
+
+            40% {
+                transform: scale3d(0, 0, 0);
+            }
+
+            50% {
+                transform: scale3d(1, 1, 1);
+            }
+
+            60% {
+                transform: scale3d(.8, .8, .8);
+            }
+
+            70% {
+                transform: scale3d(1, 1, 1);
+            }
+
+            100% {
+                transform: scale3d(1, 1, 1);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .line-mindmap1-line1,
+            .line-mindmap1-line2,
+            .line-mindmap1-line3,
+            .line-mindmap1-line4,
+            .line-mindmap1-line5,
+            .line-mindmap1-dot1,
+            .line-mindmap1-dot2,
+            .line-mindmap1-dot3,
+            .line-mindmap1-dot4,
+            .line-mindmap1-dot5 {
+                animation: none;
+            }
+        }
+    </style>
+    <line class="line-mindmap1-line1 stroke1" x1="51.0647" y1="53.6461" x2="65.0647" y2="16.6461" stroke="#F8955B"
+        stroke-width="2px" style="animation-duration: 3s;"></line>
+    <line class="line-mindmap1-line2 stroke1" x1="52.4138" y1="52.0896" x2="85.4138" y2="67.0896" stroke="#F8955B"
+        stroke-width="2px" style="animation-duration: 3s;"></line>
+    <line class="line-mindmap1-line3 stroke1" x1="52.9487" y1="51.6838" x2="63.9487" y2="84.6838" stroke="#F8955B"
+        stroke-width="2px" style="animation-duration: 3s;"></line>
+    <line class="line-mindmap1-line4 stroke1" x1="52.6122" y1="53.7907" x2="21.6122" y2="77.7907" stroke="#F8955B"
+        stroke-width="2px" style="animation-duration: 3s;"></line>
+    <line class="line-mindmap1-line5 stroke1" x1="52.2735" y1="52.6872" x2="17.2735" y2="15.6872" stroke="#F8955B"
+        stroke-width="2px" style="animation-duration: 3s;"></line>
+    <circle class="line-mindmap1-dot1 stroke1 fill1" cx="64.5" cy="20.5" r="7.5" fill="rgba(255,255,255,1)"
+        stroke="rgba(178,42,240,1)" stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="line-mindmap1-dot2 stroke1 fill1" cx="80.5" cy="64.5" r="7.5" fill="rgba(255,255,255,1)"
+        stroke="rgba(178,42,240,1)" stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="line-mindmap1-dot3 stroke1 fill1" cx="63.5" cy="83.5" r="7.5" fill="rgba(255,255,255,1)"
+        stroke="rgba(178,42,240,1)" stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="line-mindmap1-dot4 stroke1 fill1" cx="21.5" cy="76.5" r="7.5" fill="rgba(255,255,255,1)"
+        stroke="rgba(178,42,240,1)" stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="line-mindmap1-dot5 stroke1 fill1" cx="19.5" cy="17.5" r="7.5" fill="rgba(255,255,255,1)"
+        stroke="rgba(178,42,240,1)" stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="stroke1 fill1" cx="53" cy="53" r="16" fill="rgba(255,255,255,1)" stroke="rgba(178,42,240,1)"
+        stroke-width="2px" style="animation-duration: 3s;"></circle>
+</svg>

@@ -148,13 +148,8 @@ const menuItems = computed(() => {
 });
 
 const logout = async () => {
-  try {
-    await auth.signOut();
-    await navigateTo("/");
-  } catch (error) {
-    console.error("Error logging out:", error);
-    await navigateTo("/");
-  }
+  // signOut now handles navigation and error cleanup internally
+  await auth.signOut();
 };
 
 const handleItemClick = (item: any) => {

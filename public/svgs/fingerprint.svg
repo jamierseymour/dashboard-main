@@ -1,0 +1,25 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 32px; height: 32px;"><style>
+     .line-touchid2 {animation:line-touchid2-fingerprint 3s infinite; stroke-dasharray: 80;}
+     .line-touchid2-tick {animation:line-touchid2-tick 3s infinite; stroke-dasharray: 80;}
+     .line-touchid2-circle {animation:line-touchid2-circle 3s infinite;}
+     @keyframes line-touchid2-fingerprint {
+         0%{stroke-dashoffset: 90;}
+         100%{stroke-dashoffset: 0;}
+     }
+     @keyframes line-touchid2-tick {
+         0%{stroke-dashoffset: 90;}
+         60%{stroke-dashoffset: 90;}
+         100%{stroke-dashoffset: 0;}
+     }
+     @keyframes line-touchid2-circle {
+         0%{opacity: 0;}
+         50%{opacity: 0;}
+         60%{opacity: 1;}
+         100%{opacity: 1;}
+     }
+     @media (prefers-reduced-motion: reduce) {
+         .line-touchid2, .line-touchid2-tick, .line-touchid2-circle {
+             animation: none;
+         }
+     }
+    </style><g class="line-touchid2" style="animation-duration: 3s;"><path class="stroke1" d="M38 91.9999C38 91.9999 45.5 83 49.35 71.9999C52.3838 63.3318 56 49.5 50.625 46.4999C43.1063 42.3035 42.5 51.9999 42.5 51.9999" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M41.5 60C41.5 60 40.5 67 38 73C35.5 79 30.5 86 30.5 86" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M22 80L26.5 73" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M30.5 64.9999C30.5 64.9999 32 62.4999 32.5687 54.9999C32.5687 54.9999 32.0338 48.7325 33 46.2499C37.5 34.6873 48.5 35.4999 48.5 35.4999" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M52 90L57.5 78" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M60.5 70C60.5 70 64 56 62.5 48.5C61.6593 44.2964 57.5 39 57.5 39" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M66 85C66 85 70 76.5 71.5 68.5C73 60.5 73 50 73 50" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M70.5 42C70.5 42 64.5 26 47.25 26C30 26 24 42 24 42" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M15 72.5C15 72.5 19.1025 66.5724 20.5 62.25C21.9827 57.6641 22 50 22 50" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M12 52C12 52 12.1721 44.4804 14.25 38.75C16.3279 33.0196 22.5 25.5 22.5 25.5" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M28.5 21C28.5 21 35.5219 17 43.75 16C51.9781 15 59 17 59 17" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M66 21C66 21 81 31 82.5 45.25C83.5844 55.5523 81 69.5 81 69.5" stroke="#000" stroke-width="2px"></path></g><circle class="line-touchid2-circle stroke2 fill1" cx="71" cy="25" r="18" fill="rgba(94,230,80,1)" stroke="#000" stroke-width="2px" style="animation-duration: 3s;"></circle><g class="line-touchid2-tick" style="animation-duration: 3s;"><path class="stroke2" d="M62 26.8L67.1429 32L80 19" stroke="#000" stroke-width="2px"></path></g></svg>

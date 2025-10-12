@@ -1,0 +1,31 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style="width: 150px; height: 150px;">
+    <style>
+        .line-arrow-right5 {
+            animation: line-arrow-right5-move 1.6s infinite;
+        }
+
+        @keyframes line-arrow-right5-move {
+            0% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            50% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            100% {
+                transform: translate3d(-2px, 0, 0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .line-arrow-right5 {
+                animation: none;
+            }
+        }
+    </style>
+    <path class="line-arrow-right5 stroke1 fill1"
+        d="M20 57.5306L20 43.3673C20 42.8151 20.4477 42.3673 21 42.3673L48.9538 42.3673C49.5061 42.3673 49.9538 41.9196 49.9538 41.3673L49.9538 29.0184C49.9538 28.603 50.431 28.3687 50.7596 28.6227L78.4776 50.0452C78.7398 50.2479 78.7359 50.6449 78.4698 50.8424L50.7518 71.408C50.4218 71.6528 49.9538 71.4173 49.9538 71.0064L49.9538 59.5306C49.9538 58.9783 49.5061 58.5306 48.9538 58.5306L21 58.5306C20.4477 58.5306 20 58.0829 20 57.5306Z"
+        fill="#03A9F4" stroke="#000" stroke-width="2px" style="animation-duration: 1.6s;"></path>
+</svg>

@@ -36,12 +36,18 @@ const items = [
 const activeItem = computed(() => {
   return items.find((item) => item.to === route.path) || items[0];
 });
+
+const showSidebar = computed(() => {
+  // Hide sidebar if on /users/profile/:id
+  return !(route.name === "users-profile-id");
+});
 </script>
 
 <template>
   <div class="flex h-screen">
     <!-- Sidebar -->
     <div
+      v-if="showSidebar"
       class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex-shrink-0"
     >
       <div class="p-6">
@@ -71,7 +77,8 @@ const activeItem = computed(() => {
               :name="item.icon"
               class="w-5 h-5 transition-colors duration-200"
               :class="{
-                'text-fuchsia-600 dark:text-fuchsia-400': activeItem?.id === item.id,
+                'text-fuchsia-600 dark:text-fuchsia-400':
+                  activeItem?.id === item.id,
                 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300':
                   activeItem?.id !== item.id,
               }"

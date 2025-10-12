@@ -1,0 +1,168 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style="width: 150px; height: 150px;">
+    <style>
+        .line-happy1 {
+            animation: line-happy1-face 3s linear infinite;
+            transform-origin: 71px 94px;
+        }
+
+        @keyframes line-happy1-face {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            10% {
+                transform: rotate(0deg);
+            }
+
+            30% {
+                transform: rotate(-10deg);
+            }
+
+            60% {
+                transform: rotate(-10deg);
+            }
+
+            90% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .line-happy1-a {
+            animation: line-happy1-a 3s infinite;
+        }
+
+        .line-happy1-b {
+            animation: line-happy1-b 3s infinite;
+        }
+
+        .line-happy1-c {
+            animation: line-happy1-c 3s infinite;
+        }
+
+        @keyframes line-happy1-a {
+            0% {
+                opacity: 0;
+            }
+
+            20% {
+                transform: translate3d(0, 0, 0);
+                opacity: 0;
+            }
+
+            60% {
+                opacity: .8;
+            }
+
+            70% {
+                transform: translate3d(0, -4px, 0);
+                opacity: .8;
+            }
+
+            90% {
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate3d(0, -4px, 0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes line-happy1-b {
+            0% {
+                opacity: 0;
+            }
+
+            20% {
+                transform: translate3d(0, 0, 0);
+                opacity: 0;
+            }
+
+            60% {
+                opacity: .8;
+            }
+
+            70% {
+                transform: translate3d(2px, -2px, 0);
+                opacity: .8;
+            }
+
+            90% {
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate3d(2px, -2px, 0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes line-happy1-c {
+            0% {
+                opacity: 0;
+            }
+
+            20% {
+                transform: translate3d(0, 0, 0);
+                opacity: 0;
+            }
+
+            60% {
+                opacity: .8;
+            }
+
+            70% {
+                transform: translate3d(-2px, -2px, 0);
+                opacity: .8;
+            }
+
+            90% {
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate3d(-2px, -2px, 0);
+                opacity: 0;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .line-happy1,
+            .line-happy1-a,
+            .line-happy1-b,
+            .line-happy1-c {
+                animation: none;
+            }
+        }
+    </style>
+    <circle class="stroke1 fill1" cx="30.5" cy="69.5" r="24.5" fill="#fff" stroke="rgba(178,42,240,1)"
+        stroke-width="2px" style="animation-duration: 3s;"></circle>
+    <circle class="stroke1 fill1" cx="22" cy="64" r="1" fill="#fff" stroke="rgba(178,42,240,1)" stroke-width="2px"
+        style="animation-duration: 3s;"></circle>
+    <circle class="stroke1 fill1" cx="38" cy="64" r="1" fill="#fff" stroke="rgba(178,42,240,1)" stroke-width="2px"
+        style="animation-duration: 3s;"></circle>
+    <path class="stroke1" d="M24 74C24 74 25 80 30.5 80C36 80 37 74 37 74" stroke="rgba(178,42,240,1)"
+        stroke-width="2px" style="animation-duration: 3s;"></path>
+    <g class="line-happy1" style="animation-duration: 3s;">
+        <circle class="stroke2 fill2" cx="69.5" cy="69.5" r="24.5" fill="#fff" stroke="rgba(248,149,91,1)"
+            stroke-width="2px"></circle>
+        <path class="stroke2" d="M64 74C64 74 65 80 70.5 80C76 80 77 74 77 74" stroke="rgba(248,149,91,1)"
+            stroke-width="2px"></path>
+        <path class="stroke2" d="M65 67C65 67 64.5385 64 62 64C59.4615 64 59 67 59 67" stroke="rgba(248,149,91,1)"
+            stroke-width="2px"></path>
+        <path class="stroke2" d="M81 67C81 67 80.5385 64 78 64C75.4615 64 75 67 75 67" stroke="rgba(248,149,91,1)"
+            stroke-width="2px"></path>
+    </g>
+    <path class="line-happy1-a stroke2" d="M50.5 35.5V26" stroke="rgba(178,42,240,1)" stroke-width="2px"
+        style="animation-duration: 3s;"></path>
+    <path class="line-happy1-b stroke2" d="M61.5 39.5L66.5 34.5" stroke="rgba(178,42,240,1)" stroke-width="2px"
+        style="animation-duration: 3s;"></path>
+    <path class="line-happy1-c stroke2" d="M34.5 34.5L39.5 39.5" stroke="rgba(178,42,240,1)" stroke-width="2px"
+        style="animation-duration: 3s;"></path>
+</svg>

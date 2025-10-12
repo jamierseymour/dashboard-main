@@ -19,7 +19,9 @@ const stats = ref({
 });
 
 // Fetch bookings for venues owned by the current user (vendor view)
-const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<BookingWithDetails[] | null>(
+const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<
+  BookingWithDetails[] | null
+>(
   "vendor-bookings",
   async () => {
     // Wait for auth to be ready
@@ -30,7 +32,8 @@ const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<Booking
     try {
       const { data, error } = await client
         .from("bookings")
-        .select(`
+        .select(
+          `
           *,
           venue:venues!venue_id (
             id,
@@ -39,7 +42,8 @@ const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<Booking
             photos,
             address
           )
-        `)
+        `,
+        )
         .eq("venue_owner_id", auth.user.id)
         .order("created_at", { ascending: false });
 
@@ -53,13 +57,13 @@ const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<Booking
         const userIds = [...new Set(data.map((b: any) => b.user_id))];
 
         const { data: guestsData, error: guestsError } = await client
-          .from("profiles")
-          .select("id, email, name, avatar_url")
-          .in("id", userIds);
+          .from("users")
+          .select("user_id, email, name, avatar_url")
+          .in("user_id", userIds);
 
         if (!guestsError && guestsData) {
           // Map guests to bookings
-          const guestsMap = new Map(guestsData.map((g: any) => [g.id, g]));
+          const guestsMap = new Map(guestsData.map((g: any) => [g.user_id, g]));
 
           return data.map((booking: any) => ({
             ...booking,
@@ -69,8 +73,7 @@ const { data: vendorBookingsData, status: loadingStatus } = useAsyncData<Booking
       }
 
       return (data as BookingWithDetails[]) || null;
-    }
-    catch (err) {
+    } catch (err) {
       console.error("Unexpected error fetching bookings:", err);
       return null;
     }
@@ -100,9 +103,11 @@ watchEffect(() => {
           b.booking_status !== "cancelled" &&
           b.booking_status !== "declined",
       ).length,
-      completed: currentBookings.filter((b) => b.booking_status === "completed").length,
+      completed: currentBookings.filter((b) => b.booking_status === "completed")
+        .length,
       cancelled: currentBookings.filter(
-        (b) => b.booking_status === "cancelled" || b.booking_status === "declined",
+        (b) =>
+          b.booking_status === "cancelled" || b.booking_status === "declined",
       ).length,
       revenue: currentBookings
         .filter((b) => b.booking_status === "completed")
@@ -189,6 +194,95 @@ const formatDate = (dateString: string) => {
     day: "numeric",
   });
 };
+
+// Modal state
+const selectedBooking = ref<BookingWithDetails | null>(null);
+const isModalOpen = ref(false);
+
+// Open booking details modal
+const viewBooking = (booking: BookingWithDetails) => {
+  selectedBooking.value = booking;
+  isModalOpen.value = true;
+};
+
+// Close modal
+const closeModal = () => {
+  isModalOpen.value = false;
+  setTimeout(() => {
+    selectedBooking.value = null;
+  }, 300);
+};
+
+// Accept booking
+const acceptBooking = async (bookingId: string) => {
+  try {
+    const { error } = await (client
+      .from("bookings")
+      .update({
+        booking_status: "confirmed",
+        confirmed_at: new Date().toISOString(),
+      })
+      .eq("id", bookingId) as any);
+
+    if (error) throw error;
+
+    // Refresh data
+    await refreshNuxtData("vendor-bookings");
+    closeModal();
+
+    // Show success toast
+    const toast = useToast();
+    toast.add({
+      title: "Booking accepted",
+      description: "The booking has been confirmed successfully.",
+      color: "success",
+    });
+  } catch (error) {
+    console.error("Error accepting booking:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Error",
+      description: "Failed to accept booking. Please try again.",
+      color: "error",
+    });
+  }
+};
+
+// Decline booking
+const declineBooking = async (bookingId: string) => {
+  try {
+    const { error } = await (client
+      .from("bookings")
+      .update({
+        booking_status: "declined",
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: "host",
+      })
+      .eq("id", bookingId) as any);
+
+    if (error) throw error;
+
+    // Refresh data
+    await refreshNuxtData("vendor-bookings");
+    closeModal();
+
+    // Show success toast
+    const toast = useToast();
+    toast.add({
+      title: "Booking declined",
+      description: "The booking has been declined.",
+      color: "success",
+    });
+  } catch (error) {
+    console.error("Error declining booking:", error);
+    const toast = useToast();
+    toast.add({
+      title: "Error",
+      description: "Failed to decline booking. Please try again.",
+      color: "error",
+    });
+  }
+};
 </script>
 
 <template>
@@ -205,7 +299,6 @@ const formatDate = (dateString: string) => {
       </div>
       <UButton color="primary" icon="i-heroicons-plus"> New Booking </UButton>
     </div>
-
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -392,13 +485,13 @@ const formatDate = (dateString: string) => {
                   <div
                     class="text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    {{ booking.venue?.venue_name || 'N/A' }}
+                    {{ booking.venue?.venue_name || "N/A" }}
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ booking.guest?.name || 'Guest' }}
+                    {{ booking.guest?.name || "Guest" }}
                   </div>
                   <div class="text-xs text-gray-400 dark:text-gray-500">
-                    {{ booking.guest?.email || 'N/A' }}
+                    {{ booking.guest?.email || "N/A" }}
                   </div>
                 </div>
               </td>
@@ -408,7 +501,8 @@ const formatDate = (dateString: string) => {
                     {{ booking.number_of_guests }} guests
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ booking.number_of_nights }} {{ booking.number_of_nights === 1 ? 'night' : 'nights' }}
+                    {{ booking.number_of_nights }}
+                    {{ booking.number_of_nights === 1 ? "night" : "nights" }}
                   </div>
                   <div
                     v-if="booking.accommodation_needed > 0"
@@ -456,15 +550,21 @@ const formatDate = (dateString: string) => {
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex space-x-2">
-                  <UButton size="sm" variant="ghost" icon="i-heroicons-eye">
+                  <UButton
+                    size="sm"
+                    variant="ghost"
+                    icon="i-heroicons-eye"
+                    @click="viewBooking(booking)"
+                  >
                     View
                   </UButton>
                   <UButton
-                    v-if="booking.booking_status === 'pending'"
+                    v-if="booking.booking_status === 'pending' && booking.id"
                     size="sm"
                     variant="soft"
                     icon="i-heroicons-check"
                     color="success"
+                    @click="acceptBooking(booking.id)"
                   >
                     Accept
                   </UButton>
@@ -475,5 +575,14 @@ const formatDate = (dateString: string) => {
         </table>
       </div>
     </UCard>
+
+    <!-- Booking Details Modal -->
+    <VendorBookingDetailsModal
+      :booking="selectedBooking"
+      :is-open="isModalOpen"
+      @close="closeModal"
+      @accept="acceptBooking"
+      @decline="declineBooking"
+    />
   </div>
 </template>

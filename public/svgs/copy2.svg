@@ -1,0 +1,81 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style="width: 150px; height: 150px;">
+    <style>
+        .line-copy2-1 {
+            animation: line-copy2-1 3s infinite;
+        }
+
+        @keyframes line-copy2-1 {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            20% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            50% {
+                transform: translate3d(10px, -10px, 0);
+            }
+
+            70% {
+                transform: translate3d(10px, -10px, 0);
+            }
+
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        .line-copy2-2 {
+            animation: line-copy2-2 3s infinite;
+        }
+
+        @keyframes line-copy2-2 {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            20% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            50% {
+                transform: translate3d(5px, -5px, 0);
+            }
+
+            70% {
+                transform: translate3d(5px, -5px, 0);
+            }
+
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .line-copy2-1,
+            .line-copy2-2 {
+                animation: none;
+            }
+        }
+    </style>
+    <rect class="stroke1 fill1" x="15" y="20" width="58" height="72" rx="4" fill="#fff" stroke="rgba(133,167,128,1)"
+        stroke-width="2px" style="animation-duration: 3s;"></rect>
+    <rect class="line-copy2-2 stroke1 fill1" x="15" y="20" width="58" height="72" rx="4" fill="#fff"
+        stroke="rgba(133,167,128,1)" stroke-width="2px" style="animation-duration: 3s;"></rect>
+    <g class="line-copy2-1" style="animation-duration: 3s;">
+        <rect class="stroke1 fill1" x="15" y="20" width="58" height="72" rx="4" fill="#fff" stroke="rgba(133,167,128,1)"
+            stroke-width="2px" style="animation-duration: 3s;"></rect>
+        <rect class="stroke2 fill2" q="" x="23" y="28" width="20" height="20" rx="4" fill="#fff"
+            stroke="rgba(132,63,146,1)" stroke-width="2px"></rect>
+        <path class="stroke2" d="M25 60.6L27.2857 63L33 57" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M37 60L58 60" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M25 70.6L27.2857 73L33 67" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M37 70L58 70" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M47 29H65" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M47 38H65" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+        <path class="stroke2" d="M47 47H65" stroke="rgba(132,63,146,1)" stroke-width="2px"></path>
+    </g>
+</svg>

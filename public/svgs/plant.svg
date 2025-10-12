@@ -1,0 +1,19 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 150px; height: 150px;"><style>
+     .line-plant1-pot {animation:line-plant1-pot 4s -2.5s infinite; stroke-dasharray: 140; stroke-dashoffset: 140;}
+     .line-plant1-plant {animation:line-plant1-plant 4s -2.5s infinite; stroke-dasharray: 140; stroke-dashoffset: 140;}
+     @keyframes line-plant1-pot {
+         20%{stroke-dashoffset: 140;}
+         60%{stroke-dashoffset: 0;}
+         100%{stroke-dashoffset: 0;}
+     }
+     @keyframes line-plant1-plant {
+         45%{stroke-dashoffset: 140;}
+         90%{stroke-dashoffset: 0;}
+         100%{stroke-dashoffset: 0;}
+     }
+     @media (prefers-reduced-motion: reduce) {
+         .line-plant1-pot, .line-plant1-plant {
+             animation: none;
+         }
+     }
+    </style><g class="line-plant1-plant" style="animation-duration: 4s;"><path class="fill2" d="M63.5 23.5C59 28 51.5 27 51.5 27C51.5 27 51 20 54.5 16.5C57.2593 13.7407 64.0585 11.9137 66.8128 11.264C67.427 11.1191 67.9896 11.5855 67.9385 12.2144C67.7428 14.6249 66.9242 20.0758 63.5 23.5Z" fill="#fff" stroke-width="2px"></path><path class="stroke2" d="M51.5 27C51.5 27 59 28 63.5 23.5C66.9242 20.0758 67.7428 14.6249 67.9385 12.2144C67.9896 11.5855 67.427 11.1191 66.8128 11.264C64.0585 11.9137 57.2593 13.7407 54.5 16.5C51 20 51.5 27 51.5 27ZM51.5 27L59.5 19" stroke="#000" stroke-width="2px"></path><path class="fill2" d="M38 23.5C44 29 50 27 50 27C50 27 52 21.5 47 16.5C42.9582 12.4581 36.6292 11.3569 34.352 11.0832C33.8618 11.0243 33.4296 11.3553 33.3849 11.847C33.2007 13.8731 33.2597 19.1547 38 23.5Z" fill="#fff" stroke-width="2px"></path><path class="stroke2" d="M50 27C50 27 44 29 38 23.5C33.2597 19.1547 33.2007 13.8731 33.3849 11.847C33.4296 11.3553 33.8618 11.0243 34.352 11.0832C36.6292 11.3569 42.9582 12.4581 47 16.5C52 21.5 50 27 50 27ZM50 27L44 21" stroke="#000" stroke-width="2px"></path><path class="stroke2" d="M51 24V51.5" stroke="#000" stroke-width="2px"></path></g><g class="line-plant1-pot" style="animation-duration: 4s;"><path class="fill1" d="M67.5 50.5L66.5256 87.5263C66.5114 88.0682 66.068 88.5 65.526 88.5H34.474C33.932 88.5 33.4886 88.0682 33.4744 87.5263L32.5 50.5H30C29.4477 50.5 29 50.0523 29 49.5V44.5C29 43.9477 29.4477 43.5 30 43.5H70C70.5523 43.5 71 43.9477 71 44.5V49.5C71 50.0523 70.5523 50.5 70 50.5H67.5Z" fill="rgba(104,177,110,1)" stroke-width="2px"></path><path class="stroke1" d="M67.5 50.5L66.5256 87.5263C66.5114 88.0682 66.068 88.5 65.526 88.5H34.474C33.932 88.5 33.4886 88.0682 33.4744 87.5263L32.5 50.5M67.5 50.5H70C70.5523 50.5 71 50.0523 71 49.5V44.5C71 43.9477 70.5523 43.5 70 43.5H30C29.4477 43.5 29 43.9477 29 44.5V49.5C29 50.0523 29.4477 50.5 30 50.5H32.5M67.5 50.5H32.5" stroke="#000" stroke-width="2px"></path><path class="stroke1" d="M37.5 84H48.5" stroke="#000" stroke-width="2px"></path></g></svg>

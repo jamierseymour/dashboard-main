@@ -351,13 +351,39 @@ export const useAuth = defineStore("auth", () => {
   // Sign out
   async function signOut() {
     try {
+      // Try to sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.warn("Supabase signOut error (will clear local state anyway):", error);
+      }
+    } catch (error) {
+      // Log the error but don't throw - we still want to clear local state
+      console.warn("Error signing out from Supabase (will clear local state anyway):", error);
+    } finally {
+      // ALWAYS clear local state, even if Supabase signOut fails
+      // This ensures users can logout even if their account was deleted
       state.user = null;
       state.loggedIn = false;
       state.profile = null;
-    } catch (error) {
-      console.error("Error signing out:", error);
+      state.hydrated = false; // Reset hydration to allow re-initialization
+
+      // Force clear any lingering Supabase session data from localStorage
+      try {
+        // Clear all Supabase auth keys from localStorage
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('sb-')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      } catch (storageError) {
+        console.warn("Error clearing localStorage:", storageError);
+      }
+
+      // Navigate to home page
+      navigateTo('/');
     }
   }
 

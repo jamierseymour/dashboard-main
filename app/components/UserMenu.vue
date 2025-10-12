@@ -74,9 +74,8 @@ const user = computed(() => {
 
 // Handle logout
 const handleLogout = async () => {
+  // signOut now handles navigation and error cleanup internally
   await auth.signOut();
-  // Navigate to home page after logout
-  await navigateTo("/");
 };
 
 const items = computed<DropdownMenuItem[][]>(() => [

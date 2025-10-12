@@ -653,13 +653,19 @@ const formatDate = (dateString: string) => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                      <UButton size="sm" variant="ghost" icon="i-heroicons-eye">
+                      <UButton
+                        size="sm"
+                        class="cursor-pointer"
+                        variant="ghost"
+                        icon="i-heroicons-eye"
+                      >
                         View
                       </UButton>
                       <UButton
                         v-if="booking.status === 'pending'"
                         size="sm"
                         variant="soft"
+                        class="!cursor-pointer"
                         icon="i-heroicons-check"
                         color="success"
                       >

@@ -59,9 +59,9 @@ const toasterProps: ToasterProps = {
   <UApp :toaster="toasterProps">
     <NuxtLoadingIndicator />
 
-    <NuxtLayout>
-      <AuthModal v-if="auth.modal" />
+    <AuthModal />
 
+    <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
   </UApp>

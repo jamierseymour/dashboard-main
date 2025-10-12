@@ -1,0 +1,43 @@
+<svg width="50px" height="50px" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+    style="width: 50px; height: 50px;">
+    <style>
+        .line-gondola1 {
+            animation: line-gondola1-move 6s infinite linear;
+        }
+
+        @keyframes line-gondola1-move {
+            0% {
+                transform: translate3d(-120px, 0, 0);
+            }
+
+            100% {
+                transform: translate3d(120px, 0, 0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .line-gondola1 {
+                animation: none;
+            }
+        }
+    </style>
+    <g class="line-gondola1" style="animation-duration: 6s;">
+        <rect class="stroke1 fill1" x="45" y="2" width="7" height="30" fill="#B22AF0" stroke="#B22AF0"
+            stroke-width="2px" style="animation-duration: 6s;"></rect>
+        <path class="stroke1 fill1" d="M39 8H58C60.7614 8 63 10.2386 63 13V18H34V13C34 10.2386 36.2386 8 39 8Z"
+            fill="#fff" stroke="#B22AF0" stroke-width="2px" style="animation-duration: 6s;"></path>
+        <circle class="stroke2 fill2" cx="63" cy="18" r="4" fill="#fff" stroke="#F8955B" stroke-width="2px"></circle>
+        <circle class="stroke2 fill2" cx="34" cy="18" r="4" fill="#fff" stroke="#F8955B" stroke-width="2px"></circle>
+        <rect class="stroke2 fill2" x="36" y="32" width="25" height="5" rx="1" fill="#B22AF0" stroke="#B22AF0"
+            stroke-width="2px"></rect>
+        <rect class="stroke1 fill1" x="18" y="37" width="61" height="47" rx="3" fill="#B22AF0" stroke="#B22AF0"
+            stroke-width="2px" style="animation-duration: 6s;"></rect>
+        <rect class="stroke2 fill2" x="24" y="47" width="22" height="18" rx="1" fill="#fff" stroke="#000"
+            stroke-width="2px"></rect>
+        <rect class="stroke2 fill2" x="51" y="47" width="22" height="18" rx="1" fill="#fff" stroke="#000"
+            stroke-width="2px"></rect>
+        <path class="stroke1" d="M18 70H79" stroke="#F8955B" stroke-width="2px" style="animation-duration: 6s;"></path>
+        <path class="stroke1" d="M18 43H79" stroke="#F8955B" stroke-width="2px" style="animation-duration: 6s;"></path>
+    </g>
+    <path class="stroke1" d="M100 1.5H0" stroke="#F8955B" stroke-width="2px" style="animation-duration: 6s;"></path>
+</svg>
