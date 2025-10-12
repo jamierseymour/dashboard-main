@@ -18,7 +18,8 @@ const userBookings = ref([
     amount: 45000,
     deposit_paid: 15000,
     created_at: "2025-01-10",
-    venue_image: "https://images.unsplash.com/photo-1519167758481-83f29da8dd8f?w=400",
+    venue_image:
+      "https://images.unsplash.com/photo-1519167758481-83f29da8dd8f?w=400",
   },
   {
     id: 2,
@@ -34,7 +35,8 @@ const userBookings = ref([
     amount: 18000,
     deposit_paid: 6000,
     created_at: "2025-01-12",
-    service_image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400",
+    service_image:
+      "https://images.unsplash.com/photo-1555244162-803834f70033?w=400",
   },
   {
     id: 3,
@@ -51,7 +53,8 @@ const userBookings = ref([
     amount: 12000,
     deposit_paid: 0,
     created_at: "2025-02-05",
-    venue_image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
+    venue_image:
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
   },
   {
     id: 4,
@@ -67,7 +70,8 @@ const userBookings = ref([
     amount: 8500,
     deposit_paid: 0,
     created_at: "2025-02-01",
-    service_image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400",
+    service_image:
+      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400",
   },
   {
     id: 5,
@@ -84,10 +88,44 @@ const userBookings = ref([
     amount: 5500,
     deposit_paid: 5500,
     created_at: "2025-01-15",
-    venue_image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400",
+    venue_image:
+      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400",
   },
 ]);
 
+const {
+  data: bookings,
+  error,
+  refresh,
+} = await useAsyncData<IVenue[] | null>(
+  "user-bookings",
+  async () => {
+    // Wait for auth to be ready
+    if (!auth.user?.id) {
+      return null;
+    }
+
+    const { data, error } = await client
+      .from("bookings")
+      .select("*")
+      .eq("user_id", auth.user.id);
+
+    if (error) {
+      console.error("Error fetching user venues:", error);
+      return null;
+    }
+
+    return data || null;
+  },
+  {
+    // Only fetch when we have a user
+    default: () => null,
+    // Refresh when auth state changes
+    watch: [() => auth.user?.id],
+  },
+);
+
+console.log("bookings", bookings.value);
 // Filter by type
 const activeType = ref("all");
 const filteredBookings = computed(() => {
@@ -105,7 +143,7 @@ const activeStatus = ref("all");
 const finalFilteredBookings = computed(() => {
   if (activeStatus.value === "upcoming") {
     return filteredBookings.value.filter(
-      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled"
+      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled",
     );
   }
   if (activeStatus.value === "completed") {
@@ -150,7 +188,7 @@ const getPaymentStatusColor = (status: string) => {
 
 // Format payment status
 const formatPaymentStatus = (status: string) => {
-  return status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+  return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
 // Format currency
@@ -187,7 +225,9 @@ const formatDate = (dateString: string) => {
       <!-- Type Filter -->
       <UCard>
         <div class="flex items-center space-x-4">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Type:</span
+          >
           <UButton
             :variant="activeType === 'all' ? 'solid' : 'ghost'"
             :color="activeType === 'all' ? 'primary' : 'neutral'"
@@ -220,7 +260,9 @@ const formatDate = (dateString: string) => {
       <!-- Status Filter -->
       <UCard>
         <div class="flex items-center space-x-4">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Status:</span
+          >
           <UButton
             :variant="activeStatus === 'all' ? 'solid' : 'ghost'"
             :color="activeStatus === 'all' ? 'primary' : 'neutral'"
@@ -268,8 +310,16 @@ const formatDate = (dateString: string) => {
           <!-- Image -->
           <div class="md:w-64 h-48 md:h-auto flex-shrink-0">
             <img
-              :src="booking.type === 'venue' ? booking.venue_image : booking.service_image"
-              :alt="booking.type === 'venue' ? booking.venue_name : booking.service_name"
+              :src="
+                booking.type === 'venue'
+                  ? booking.venue_image
+                  : booking.service_image
+              "
+              :alt="
+                booking.type === 'venue'
+                  ? booking.venue_name
+                  : booking.service_name
+              "
               class="w-full h-full object-cover"
             />
           </div>
@@ -283,7 +333,7 @@ const formatDate = (dateString: string) => {
                     :color="booking.type === 'venue' ? 'blue' : 'purple'"
                     variant="subtle"
                   >
-                    {{ booking.type === 'venue' ? 'Venue' : 'Service' }}
+                    {{ booking.type === "venue" ? "Venue" : "Service" }}
                   </UBadge>
                   <UBadge
                     :color="getStatusColor(booking.status)"
@@ -299,13 +349,22 @@ const formatDate = (dateString: string) => {
                     {{ formatPaymentStatus(booking.payment_status) }}
                   </UBadge>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                  {{ booking.type === 'venue' ? booking.venue_name : booking.service_name }}
+                <h3
+                  class="text-xl font-semibold text-gray-900 dark:text-white mb-1"
+                >
+                  {{
+                    booking.type === "venue"
+                      ? booking.venue_name
+                      : booking.service_name
+                  }}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   by {{ booking.vendor_name }}
                 </p>
-                <p v-if="booking.type === 'service'" class="text-sm text-gray-500 dark:text-gray-500 mb-2">
+                <p
+                  v-if="booking.type === 'service'"
+                  class="text-sm text-gray-500 dark:text-gray-500 mb-2"
+                >
                   {{ booking.service_type }}
                 </p>
               </div>
@@ -313,7 +372,10 @@ const formatDate = (dateString: string) => {
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
                   {{ formatCurrency(booking.amount) }}
                 </div>
-                <div v-if="booking.deposit_paid > 0" class="text-sm text-gray-500 dark:text-gray-400">
+                <div
+                  v-if="booking.deposit_paid > 0"
+                  class="text-sm text-gray-500 dark:text-gray-400"
+                >
                   Deposit: {{ formatCurrency(booking.deposit_paid) }}
                 </div>
               </div>
@@ -321,7 +383,9 @@ const formatDate = (dateString: string) => {
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">
+                <div
+                  class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
+                >
                   Event Type
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -329,7 +393,9 @@ const formatDate = (dateString: string) => {
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">
+                <div
+                  class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
+                >
                   Event Date
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -337,7 +403,9 @@ const formatDate = (dateString: string) => {
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">
+                <div
+                  class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
+                >
                   Guests
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -345,7 +413,9 @@ const formatDate = (dateString: string) => {
                 </div>
               </div>
               <div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1">
+                <div
+                  class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
+                >
                   Booked On
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -358,13 +428,31 @@ const formatDate = (dateString: string) => {
               <UButton size="sm" variant="solid" color="primary">
                 View Details
               </UButton>
-              <UButton v-if="booking.status === 'pending'" size="sm" variant="soft" color="error">
+              <UButton
+                v-if="booking.status === 'pending'"
+                size="sm"
+                variant="soft"
+                color="error"
+              >
                 Cancel Request
               </UButton>
-              <UButton v-if="booking.status === 'confirmed'" size="sm" variant="soft" color="neutral">
+              <UButton
+                v-if="booking.status === 'confirmed'"
+                size="sm"
+                variant="soft"
+                color="neutral"
+              >
                 Contact Vendor
               </UButton>
-              <UButton v-if="booking.payment_status !== 'paid' && booking.status === 'confirmed'" size="sm" variant="soft" color="success">
+              <UButton
+                v-if="
+                  booking.payment_status !== 'paid' &&
+                  booking.status === 'confirmed'
+                "
+                size="sm"
+                variant="soft"
+                color="success"
+              >
                 Complete Payment
               </UButton>
             </div>
@@ -387,9 +475,7 @@ const formatDate = (dateString: string) => {
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           You don't have any bookings matching the selected filters.
         </p>
-        <UButton color="primary" to="/venues">
-          Browse Venues
-        </UButton>
+        <UButton color="primary" to="/venues"> Browse Venues </UButton>
       </div>
     </div>
   </div>

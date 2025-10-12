@@ -80,7 +80,7 @@ async function submitRequest() {
     }
 
     // Wait a moment for user state to update
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (!user.value) {
       toast.add({
@@ -102,7 +102,10 @@ async function submitRequest() {
     return;
   }
 
-  if (guests.value < (venue.value.min_capacity || 1) || guests.value > (venue.value.max_capacity || 100)) {
+  if (
+    guests.value < (venue.value.min_capacity || 1) ||
+    guests.value > (venue.value.max_capacity || 100)
+  ) {
     toast.add({
       title: "Invalid guest count",
       description: `Guest count must be between ${venue.value.min_capacity} and ${venue.value.max_capacity}`,
@@ -137,6 +140,8 @@ async function submitRequest() {
       payment_status: "unpaid",
     };
 
+    console.log("bookingDat", bookingData);
+
     const { error } = await client
       .from("bookings")
       .insert(bookingData as any)
@@ -160,7 +165,8 @@ async function submitRequest() {
     console.error("Error submitting booking request:", error);
     toast.add({
       title: "Booking failed",
-      description: error.message || "Failed to submit booking request. Please try again.",
+      description:
+        error.message || "Failed to submit booking request. Please try again.",
       color: "error",
     });
   } finally {
@@ -185,7 +191,7 @@ const dateRangeText = computed(() => {
 
 // Prevent invalid characters in number inputs
 function preventInvalidChars(event: KeyboardEvent) {
-  const invalidChars = ['e', 'E', '+', '-'];
+  const invalidChars = ["e", "E", "+", "-"];
   if (invalidChars.includes(event.key)) {
     event.preventDefault();
   }
@@ -198,19 +204,19 @@ function preventInvalidChars(event: KeyboardEvent) {
     <AuthModal />
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Back Button -->
-      <div class="mb-6">
+
+      <!-- Header -->
+      <div class="mb-8 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Request to book</h1>
+
         <UButton
           icon="i-heroicons-arrow-left"
           color="neutral"
-          variant="solid"
+          variant="outline"
           :to="`/venues/${route.params.id}`"
           label="Back to venue"
+          class="rounded-full"
         />
-      </div>
-
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Request to book</h1>
       </div>
 
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -346,7 +352,7 @@ function preventInvalidChars(event: KeyboardEvent) {
         </div>
 
         <!-- Right Column - Venue Summary -->
-        <div class="lg:sticky lg:top-24 h-fit">
+        <div class="lg:sticky lg:top-12 h-fit">
           <UCard>
             <div class="space-y-6">
               <!-- Venue Info -->
@@ -369,7 +375,7 @@ function preventInvalidChars(event: KeyboardEvent) {
                 </div>
               </div>
 
-              <UDivider />
+              <USeparator />
 
               <!-- Selected Details -->
               <div class="space-y-3">
@@ -391,7 +397,7 @@ function preventInvalidChars(event: KeyboardEvent) {
                 </div>
               </div>
 
-              <UDivider />
+              <USeparator />
 
               <!-- Price Breakdown -->
               <div class="space-y-3">
@@ -408,7 +414,7 @@ function preventInvalidChars(event: KeyboardEvent) {
                 </div>
               </div>
 
-              <UDivider />
+              <USeparator />
 
               <!-- Total -->
               <div class="flex justify-between">

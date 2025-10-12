@@ -36,7 +36,8 @@ const sampleVenueBookings = [
     amount: 45000,
     deposit_paid: 15000,
     created_at: "2025-01-10",
-    message_to_host: "Looking forward to hosting our special day at your beautiful venue!",
+    message_to_host:
+      "Looking forward to hosting our special day at your beautiful venue!",
   },
   {
     id: 2,
@@ -54,7 +55,8 @@ const sampleVenueBookings = [
     amount: 12000,
     deposit_paid: 0,
     created_at: "2025-02-05",
-    message_to_host: "Need venue for annual company retreat. Do you provide catering?",
+    message_to_host:
+      "Need venue for annual company retreat. Do you provide catering?",
   },
   {
     id: 3,
@@ -145,7 +147,8 @@ const sampleServiceBookings = [
     amount: 8500,
     deposit_paid: 0,
     created_at: "2025-02-01",
-    message_to_host: "Need photographer for 6 hours with edited photos delivered within 2 weeks",
+    message_to_host:
+      "Need photographer for 6 hours with edited photos delivered within 2 weeks",
   },
   {
     id: 103,
@@ -179,7 +182,8 @@ const sampleServiceBookings = [
     amount: 6500,
     deposit_paid: 2500,
     created_at: "2025-02-10",
-    message_to_host: "Looking for elegant floral arrangements with a vintage theme",
+    message_to_host:
+      "Looking for elegant floral arrangements with a vintage theme",
   },
   {
     id: 105,
@@ -200,6 +204,8 @@ const sampleServiceBookings = [
   },
 ];
 
+console.log("data", data);
+
 // Initialize data
 onMounted(() => {
   loadBookings();
@@ -207,7 +213,10 @@ onMounted(() => {
 
 // Booking type tabs (venue vs service)
 const bookingType = ref("venue");
-const allBookings = computed(() => [...sampleVenueBookings, ...sampleServiceBookings]);
+const allBookings = computed(() => [
+  ...sampleVenueBookings,
+  ...sampleServiceBookings,
+]);
 
 const loadBookings = async () => {
   loading.value = true;
@@ -233,10 +242,15 @@ const loadBookings = async () => {
     stats.value = {
       total: currentBookings.length,
       upcoming: currentBookings.filter(
-        (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled" && b.status !== "declined"
+        (b) =>
+          new Date(b.event_date) > new Date() &&
+          b.status !== "cancelled" &&
+          b.status !== "declined",
       ).length,
       completed: currentBookings.filter((b) => b.status === "completed").length,
-      cancelled: currentBookings.filter((b) => b.status === "cancelled" || b.status === "declined").length,
+      cancelled: currentBookings.filter(
+        (b) => b.status === "cancelled" || b.status === "declined",
+      ).length,
       revenue: currentBookings
         .filter((b) => b.status === "completed")
         .reduce((sum, b) => sum + b.amount, 0),
@@ -258,7 +272,10 @@ const activeTab = ref("all");
 const filteredBookings = computed(() => {
   if (activeTab.value === "upcoming") {
     return bookings.value.filter(
-      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled" && b.status !== "declined"
+      (b) =>
+        new Date(b.event_date) > new Date() &&
+        b.status !== "cancelled" &&
+        b.status !== "declined",
     );
   }
   if (activeTab.value === "completed") {
@@ -306,7 +323,7 @@ const getPaymentStatusColor = (status: string) => {
 
 // Format payment status
 const formatPaymentStatus = (status: string) => {
-  return status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+  return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
 // Format currency
@@ -348,7 +365,9 @@ const formatDate = (dateString: string) => {
         <!-- Booking Type Tabs -->
         <UCard>
           <div class="flex items-center space-x-4">
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >View:</span
+            >
             <UButton
               :variant="bookingType === 'venue' ? 'solid' : 'ghost'"
               :color="bookingType === 'venue' ? 'primary' : 'neutral'"
@@ -477,10 +496,10 @@ const formatDate = (dateString: string) => {
                   activeTab === "all"
                     ? "All Bookings"
                     : activeTab === "upcoming"
-                    ? "Upcoming Bookings"
-                    : activeTab === "pending"
-                    ? "Pending Bookings"
-                    : "Completed Bookings"
+                      ? "Upcoming Bookings"
+                      : activeTab === "pending"
+                        ? "Pending Bookings"
+                        : "Completed Bookings"
                 }}
               </h3>
               <span class="text-sm text-gray-500"
@@ -518,7 +537,8 @@ const formatDate = (dateString: string) => {
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                   >
-                    {{ bookingType === 'venue' ? 'Venue' : 'Service' }} & Customer
+                    {{ bookingType === "venue" ? "Venue" : "Service" }} &
+                    Customer
                   </th>
                   <th
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -565,7 +585,11 @@ const formatDate = (dateString: string) => {
                       <div
                         class="text-sm font-medium text-gray-900 dark:text-white"
                       >
-                        {{ bookingType === 'venue' ? (booking as any).venue_name : (booking as any).service_name }}
+                        {{
+                          bookingType === "venue"
+                            ? (booking as any).venue_name
+                            : (booking as any).service_name
+                        }}
                       </div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">
                         {{ booking.customer_name }}
@@ -580,7 +604,10 @@ const formatDate = (dateString: string) => {
                       <div class="text-sm text-gray-900 dark:text-white">
                         {{ booking.event_type }}
                       </div>
-                      <div v-if="bookingType === 'service'" class="text-xs text-gray-500 dark:text-gray-400">
+                      <div
+                        v-if="bookingType === 'service'"
+                        class="text-xs text-gray-500 dark:text-gray-400"
+                      >
                         {{ (booking as any).service_type }}
                       </div>
                       <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -604,13 +631,19 @@ const formatDate = (dateString: string) => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <UBadge
-                      :color="getPaymentStatusColor((booking as any).payment_status)"
+                      :color="
+                        getPaymentStatusColor((booking as any).payment_status)
+                      "
                       variant="subtle"
                     >
                       {{ formatPaymentStatus((booking as any).payment_status) }}
                     </UBadge>
-                    <div v-if="(booking as any).deposit_paid > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Deposit: {{ formatCurrency((booking as any).deposit_paid) }}
+                    <div
+                      v-if="(booking as any).deposit_paid > 0"
+                      class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                    >
+                      Deposit:
+                      {{ formatCurrency((booking as any).deposit_paid) }}
                     </div>
                   </td>
                   <td

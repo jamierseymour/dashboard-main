@@ -57,11 +57,12 @@ const register = async () => {
       color: "success",
     });
 
+    auth.modal = false;
     console.log("route no?", route.query.redirect);
     if (route.query.redirect) {
       emits("redirect", route.query.redirect);
     } else {
-      navigateTo("/");
+      // navigateTo("/");
     }
 
     // Reset form
