@@ -41,7 +41,7 @@ const activeNavItem = computed(() => {
 // Get avatar URL with fallback
 const avatarUrl = computed(() => {
   return (
-    auth.profile?.picUrl ||
+    
     auth.profile?.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       auth.profile?.name || auth.user?.email || "User"

@@ -39,7 +39,6 @@ const user = computed(() => {
       name: auth.profile.name || auth.user?.email || "User",
       avatar: {
         src:
-          auth.profile.picUrl ||
           auth.profile.avatar_url ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
             auth.profile.name || "U"

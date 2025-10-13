@@ -52,7 +52,6 @@ const formatDate = (dateString: string) => {
 const avatarUrl = computed(() => {
   if (!userProfile.value) return "";
   return (
-    userProfile.value.picUrl ||
     userProfile.value.avatar_url ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       userProfile.value.name || "User",

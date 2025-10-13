@@ -36,9 +36,9 @@ const profile = reactive<ProfileSchema>({
   bio: "",
 });
 
-// Computed property for avatar URL that checks both picUrl and avatar_url
+// Computed property for avatar URL
 const avatarUrl = computed(() => {
-  return auth.profile?.picUrl || auth.profile?.avatar_url || "";
+  return auth.profile?.avatar_url || "";
 });
 
 // Watch for changes in the auth store and update the local profile

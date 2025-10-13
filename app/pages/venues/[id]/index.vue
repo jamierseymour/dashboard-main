@@ -55,6 +55,11 @@ interface IVenue {
   selected_province: string;
   venue_name: string;
   created_at?: Date;
+  structured_address?: {
+    city?: string;
+    state_province?: string;
+    [key: string]: any;
+  };
 }
 
 const { data: venue } = useAsyncData<IVenue | null>("venue", async () => {
@@ -100,7 +105,29 @@ const { data: venue } = useAsyncData<IVenue | null>("venue", async () => {
   } as IVenue;
 });
 
-console.log(venue);
+// Fetch host profile data
+const { data: hostProfile } = useAsyncData(
+  "host-profile",
+  async () => {
+    if (!venue.value?.user_id) return null;
+
+    const { data, error } = await client
+      .from("users")
+      .select("*")
+      .eq("user_id", venue.value.user_id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching host profile:", error);
+      return null;
+    }
+
+    return data;
+  },
+  {
+    watch: [venue],
+  },
+);
 
 // Parse event types for display as badges
 const parsedEventTypes = computed(() => {
@@ -146,10 +173,177 @@ const logoSrc = computed(() => {
 const isOwner = computed(() => {
   return auth.user?.id && venue.value?.user_id === auth.user.id;
 });
+
+// Extract province (administrative_area_level_1) for display
+const cityName = computed(() => {
+  // First, try to get state_province from structured_address (this is administrative_area_level_1)
+  if (venue.value?.structured_address) {
+    const structuredAddress = venue.value.structured_address;
+
+    // Try to extract from address_components
+    if (
+      structuredAddress.address_components &&
+      Array.isArray(structuredAddress.address_components)
+    ) {
+      const stateComponent = structuredAddress.address_components.find(
+        (component: any) =>
+          component.types &&
+          component.types.includes("administrative_area_level_1"),
+      );
+      if (stateComponent?.longText) {
+        return stateComponent.longText;
+      }
+    }
+
+    // Try state_province field
+    if (structuredAddress.state_province) {
+      const stateProvince = structuredAddress.state_province;
+
+      // If it's an object, try to extract the value
+      if (typeof stateProvince === "object" && stateProvince !== null) {
+        return (
+          (stateProvince as any).label || (stateProvince as any).value || ""
+        );
+      }
+
+      // If it's a string, return it directly
+      if (typeof stateProvince === "string") {
+        return stateProvince;
+      }
+    }
+  }
+
+  // Fallback: try selected_province if it exists
+  if (venue.value?.selected_province) {
+    const selectedProvince = venue.value.selected_province;
+
+    if (typeof selectedProvince === "string") {
+      try {
+        const parsed = JSON.parse(selectedProvince);
+        return parsed?.label || parsed?.value || selectedProvince;
+      } catch {
+        return selectedProvince;
+      }
+    }
+
+    if (typeof selectedProvince === "object" && selectedProvince !== null) {
+      return (
+        (selectedProvince as any)?.label ||
+        (selectedProvince as any)?.value ||
+        ""
+      );
+    }
+  }
+
+  return "";
+});
+
+// Handle share functionality
+const isLiked = ref(false);
+
+const handleShare = async () => {
+  if (import.meta.client) {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: venue.value?.venue_name || "Venue",
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log("Sharing failed:", err);
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        console.log("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+      }
+    }
+  }
+};
+
+// Get map coordinates from structured_address
+const mapCoordinates = computed(() => {
+  console.log('🗺️ Map Debug - Full venue data:', venue.value);
+
+  if (!venue.value) {
+    console.log('❌ No venue data');
+    return null;
+  }
+
+  console.log('🔍 Structured address:', venue.value.structured_address);
+
+  const lat = venue.value.structured_address?.latitude;
+  const lng = venue.value.structured_address?.longitude;
+
+  console.log('📍 Coordinates:', { lat, lng });
+
+  if (lat && lng && typeof lat === 'number' && typeof lng === 'number') {
+    console.log('✅ Valid coordinates found:', { latitude: lat, longitude: lng });
+    return { latitude: lat, longitude: lng };
+  }
+
+  console.log('❌ No valid coordinates found');
+  return null;
+});
 </script>
 
 <template>
   <div class="bg-white">
+    <!-- Header Section with Venue Name and Actions -->
+    <div class="px-4 py-4 sm:px-6 lg:px-8">
+      <div class="w-full max-w-6xl mx-auto">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center gap-3 flex-1">
+            <h1 class="text-3xl font-bold text-gray-900">
+              {{ venue?.venue_name }}
+              <span v-if="cityName" class="text-gray-600"
+                >in {{ cityName }}</span
+              >
+            </h1>
+            <!-- Edit Button for Owner -->
+            <UButton
+              v-if="isOwner"
+              icon="i-heroicons-pencil-square"
+              color="primary"
+              :to="`/venues/edit/${venue?.id}`"
+              label="Edit"
+              size="sm"
+            />
+          </div>
+          <div class="flex items-center space-x-2 ml-4">
+            <!-- Share Button -->
+            <button
+              @click="handleShare"
+              class="flex items-center cursor-pointer space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Icon name="lucide:share-2" size="16" />
+              <span class="hidden sm:inline">Share</span>
+            </button>
+            <!-- Wishlist Button -->
+            <button
+              @click="isLiked = !isLiked"
+              :class="[
+                'flex items-center space-x-2 px-4 py-2 rounded-lg cursor-pointer transition-colors',
+                isLiked
+                  ? 'border-red-500 bg-red-50 text-red-600'
+                  : 'border-gray-300 hover:bg-gray-100',
+              ]"
+            >
+              <Icon
+                name="lucide:heart"
+                size="16"
+                :class="isLiked ? 'fill-current' : ''"
+              />
+              <span class="hidden sm:inline">Save</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Masonry Gallery -->
     <div class="px-4 py-6 sm:px-6 lg:px-8">
       <Masonry
@@ -160,24 +354,25 @@ const isOwner = computed(() => {
       />
     </div>
 
-    <!-- Edit Button for Owner -->
-    <div v-if="isOwner" class="flex justify-end px-4 sm:px-6 lg:px-8">
-      <UButton
-        icon="i-heroicons-pencil-square"
-        color="primary"
-        :to="`/venues/edit/${venue?.id}`"
-        label="Edit Venue"
-      />
-    </div>
-
     <!-- Event Types Badges -->
-    <div class="flex w-full items-center justify-center flex-wrap mt-4 mb-6">
-      <UBadge
-        class="font-bold rounded-full mr-2 mb-2 text-amber-300"
-        v-for="(badge, index) in parsedEventTypes"
-        :key="index"
-        >{{ badge.label }}</UBadge
-      >
+    <div
+      v-if="parsedEventTypes && parsedEventTypes.length > 0"
+      class="px-4 sm:px-6 lg:px-8"
+    >
+      <div class="w-full max-w-6xl mx-auto">
+        <div class="flex items-center gap-2 flex-wrap">
+          <UBadge
+            v-for="(badge, index) in parsedEventTypes"
+            :key="index"
+            color="primary"
+            variant="subtle"
+            size="md"
+            class="px-3 py-1"
+          >
+            {{ badge?.label || badge }}
+          </UBadge>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -193,7 +388,7 @@ const isOwner = computed(() => {
         <!-- Sticky Booking Form -->
         <div class="lg:row-span-3 lg:mt-0">
           <div class="sticky top-24">
-            <VenueBookingForm :venue="venue as any" />
+            <VenueBookingForm :venue="venue" />
           </div>
         </div>
 
@@ -256,6 +451,32 @@ const isOwner = computed(() => {
               Maximum: {{ venue.max_capacity ?? "N/A" }}
             </p>
           </div>
+
+          <!-- Host Profile Section -->
+          <VenueHostProfile
+            v-if="hostProfile"
+            :host="hostProfile"
+            :location="cityName"
+            :rating="5.0"
+            :review-count="7"
+            :response-rate="100"
+            response-time="within an hour"
+            :is-verified="true"
+            @message-host="() => {}"
+          />
+
+          <!-- Map Section -->
+          <VenueMap
+            v-if="mapCoordinates"
+            :latitude="mapCoordinates.latitude"
+            :longitude="mapCoordinates.longitude"
+            :address="venue.structured_address?.formatted_address || venue.address"
+            :city="venue.structured_address?.city || ''"
+            :province="venue.structured_address?.state_province || cityName"
+            :venue-name="venue.venue_name"
+            :show-details="true"
+            :zoom="14"
+          />
 
           <BookingInfo />
         </div>

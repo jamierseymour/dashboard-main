@@ -64,11 +64,11 @@
 </template>
 
 <script setup>
-import Watch7 from "@/public/svgs/Watch7.vue";
-import Payment20 from "@/public/svgs/Payment20.vue";
-import Calendar7 from "@/public/svgs/Calendar7.vue";
-import Lock4 from "@/public/svgs/Lock4.vue";
-import Browsing2 from "@/public/svgs/Browsing2.vue";
+import Watch7 from "@/components/svgs/Watch7.vue";
+import Payment20 from "@/components/svgs/Payment20.vue";
+import Calendar7 from "@/components/svgs/Calendar7.vue";
+import Lock4 from "@/components/svgs/Lock4.vue";
+import Browsing2 from "@/components/svgs/Browsing2.vue";
 
 const rentalInfo = [
   {
