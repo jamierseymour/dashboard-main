@@ -554,6 +554,7 @@ const declineBooking = async (bookingId: string) => {
                     size="sm"
                     variant="ghost"
                     icon="i-heroicons-eye"
+                    class="cursor-pointer"
                     @click="viewBooking(booking)"
                   >
                     View
@@ -564,6 +565,7 @@ const declineBooking = async (bookingId: string) => {
                     variant="soft"
                     icon="i-heroicons-check"
                     color="success"
+                    class="cursor-pointer"
                     @click="acceptBooking(booking.id)"
                   >
                     Accept

@@ -66,4 +66,14 @@ export default defineNuxtConfig({
       cookieRedirect: false,
     },
   },
+
+  runtimeConfig: {
+    // Private keys (server-side only)
+    paystackSecretKey: process.env.PAYSTACK_SECRET_KEY || "",
+
+    // Public keys (exposed to client)
+    public: {
+      paystackPublicKey: process.env.NUXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_a4dac53fcfd9ab64946bafbb665827c0b146a079",
+    },
+  },
 });

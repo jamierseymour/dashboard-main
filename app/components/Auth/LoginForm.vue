@@ -112,7 +112,7 @@ const signInWithFacebook = async () => {
       icon="i-lucide-alert-triangle"
       class="mb-4"
     >
-      <p class="text-red-800 dark:text-red-200">{{ authError }}</p>
+      <p class="text-red-900 dark:text-red-50 font-medium">{{ authError }}</p>
     </UAlert>
 
     <!-- Divider -->

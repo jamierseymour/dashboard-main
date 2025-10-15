@@ -1,139 +1,71 @@
 <script setup lang="ts">
+import type { BookingWithDetails } from "~/types/booking";
+
 const auth = useAuth();
+const client = useSupabaseClient();
 
-// Sample user bookings (as a customer)
-const userBookings = ref([
-  {
-    id: 1,
-    type: "venue",
-    venue_name: "Garden Palace",
-    vendor_name: "Elite Venues Ltd",
-    event_date: "2025-03-15",
-    check_in_date: "2025-03-15",
-    check_out_date: "2025-03-16",
-    event_type: "Wedding",
-    status: "confirmed",
-    payment_status: "deposit_paid",
-    guests: 150,
-    amount: 45000,
-    deposit_paid: 15000,
-    created_at: "2025-01-10",
-    venue_image:
-      "https://images.unsplash.com/photo-1519167758481-83f29da8dd8f?w=400",
-  },
-  {
-    id: 2,
-    type: "service",
-    service_name: "Elite Catering Services",
-    service_type: "Catering",
-    vendor_name: "Gourmet Caterers",
-    event_date: "2025-03-22",
-    event_type: "Wedding Reception",
-    status: "confirmed",
-    payment_status: "deposit_paid",
-    guests: 120,
-    amount: 18000,
-    deposit_paid: 6000,
-    created_at: "2025-01-12",
-    service_image:
-      "https://images.unsplash.com/photo-1555244162-803834f70033?w=400",
-  },
-  {
-    id: 3,
-    type: "venue",
-    venue_name: "City Conference Center",
-    vendor_name: "Corporate Venues Inc",
-    event_date: "2025-04-20",
-    check_in_date: "2025-04-20",
-    check_out_date: "2025-04-20",
-    event_type: "Corporate Event",
-    status: "pending",
-    payment_status: "unpaid",
-    guests: 75,
-    amount: 12000,
-    deposit_paid: 0,
-    created_at: "2025-02-05",
-    venue_image:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
-  },
-  {
-    id: 4,
-    type: "service",
-    service_name: "Premier Photography",
-    service_type: "Photography",
-    vendor_name: "Photo Masters",
-    event_date: "2025-04-15",
-    event_type: "Corporate Event",
-    status: "pending",
-    payment_status: "unpaid",
-    guests: 80,
-    amount: 8500,
-    deposit_paid: 0,
-    created_at: "2025-02-01",
-    service_image:
-      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400",
-  },
-  {
-    id: 5,
-    type: "venue",
-    venue_name: "Sunset Lounge",
-    vendor_name: "Beachside Properties",
-    event_date: "2025-02-08",
-    check_in_date: "2025-02-08",
-    check_out_date: "2025-02-08",
-    event_type: "Birthday Party",
-    status: "completed",
-    payment_status: "paid",
-    guests: 30,
-    amount: 5500,
-    deposit_paid: 5500,
-    created_at: "2025-01-15",
-    venue_image:
-      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400",
-  },
-]);
-
-const {
-  data: bookings,
-  error,
-  refresh,
-} = await useAsyncData<IVenue[] | null>(
+// Fetch user's bookings from database
+const { data: bookingsData, status: loadingStatus } = useAsyncData<
+  BookingWithDetails[] | null
+>(
   "user-bookings",
   async () => {
+    console.log('📋 Fetching user bookings...');
     // Wait for auth to be ready
     if (!auth.user?.id) {
+      console.log('❌ No user ID');
       return null;
     }
 
-    const { data, error } = await client
-      .from("bookings")
-      .select("*")
-      .eq("user_id", auth.user.id);
+    try {
+      const { data, error } = await client
+        .from("bookings")
+        .select(
+          `
+          *,
+          venue:venues!venue_id (
+            id,
+            venue_name,
+            company_name,
+            photos,
+            address
+          )
+        `,
+        )
+        .eq("user_id", auth.user.id)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching user venues:", error);
+      if (error) {
+        console.error("Error fetching user bookings:", error);
+        return null;
+      }
+
+      console.log('✅ Fetched bookings:', data);
+      return (data as BookingWithDetails[]) || null;
+    } catch (err) {
+      console.error("Unexpected error fetching bookings:", err);
       return null;
     }
-
-    return data || null;
   },
   {
-    // Only fetch when we have a user
     default: () => null,
-    // Refresh when auth state changes
+    lazy: true,
+    server: false,
     watch: [() => auth.user?.id],
   },
 );
 
-console.log("bookings", bookings.value);
+// Compute bookings array from fetched data
+const userBookings = computed(() => bookingsData.value || []);
+
 // Filter by type
 const activeType = ref("all");
 const filteredBookings = computed(() => {
   if (activeType.value === "venue") {
-    return userBookings.value.filter((b) => b.type === "venue");
+    return userBookings.value.filter((b) => b.venue_id);
   }
   if (activeType.value === "service") {
-    return userBookings.value.filter((b) => b.type === "service");
+    return userBookings.value.filter((b) => b.service_id);
   }
   return userBookings.value;
 });
@@ -143,14 +75,18 @@ const activeStatus = ref("all");
 const finalFilteredBookings = computed(() => {
   if (activeStatus.value === "upcoming") {
     return filteredBookings.value.filter(
-      (b) => new Date(b.event_date) > new Date() && b.status !== "cancelled",
+      (b) =>
+        new Date(b.check_in_date) > new Date() &&
+        b.booking_status !== "cancelled",
     );
   }
   if (activeStatus.value === "completed") {
-    return filteredBookings.value.filter((b) => b.status === "completed");
+    return filteredBookings.value.filter(
+      (b) => b.booking_status === "completed",
+    );
   }
   if (activeStatus.value === "pending") {
-    return filteredBookings.value.filter((b) => b.status === "pending");
+    return filteredBookings.value.filter((b) => b.booking_status === "pending");
   }
   return filteredBookings.value;
 });
@@ -207,6 +143,30 @@ const formatDate = (dateString: string) => {
     day: "numeric",
   });
 };
+
+// Payment handlers
+const handlePaymentSuccess = async (bookingId: string) => {
+  console.log("✅ Payment successful for booking:", bookingId);
+
+  // Refresh bookings data
+  await refreshNuxtData("user-bookings");
+
+  useToast().add({
+    title: "Payment Successful!",
+    description: "Your booking payment has been confirmed.",
+    color: "success",
+  });
+};
+
+const handlePaymentError = (error: any) => {
+  console.error("❌ Payment error:", error);
+
+  useToast().add({
+    title: "Payment Failed",
+    description: "There was an issue processing your payment. Please try again.",
+    color: "error",
+  });
+};
 </script>
 
 <template>
@@ -232,6 +192,7 @@ const formatDate = (dateString: string) => {
             :variant="activeType === 'all' ? 'solid' : 'ghost'"
             :color="activeType === 'all' ? 'primary' : 'neutral'"
             size="sm"
+            class="cursor-pointer"
             @click="activeType = 'all'"
           >
             All
@@ -241,6 +202,7 @@ const formatDate = (dateString: string) => {
             :color="activeType === 'venue' ? 'primary' : 'neutral'"
             icon="i-heroicons-building-office"
             size="sm"
+            class="cursor-pointer"
             @click="activeType = 'venue'"
           >
             Venues
@@ -250,6 +212,7 @@ const formatDate = (dateString: string) => {
             :color="activeType === 'service' ? 'primary' : 'neutral'"
             icon="i-heroicons-sparkles"
             size="sm"
+            class="cursor-pointer"
             @click="activeType = 'service'"
           >
             Services
@@ -267,6 +230,7 @@ const formatDate = (dateString: string) => {
             :variant="activeStatus === 'all' ? 'solid' : 'ghost'"
             :color="activeStatus === 'all' ? 'primary' : 'neutral'"
             size="sm"
+            class="cursor-pointer"
             @click="activeStatus = 'all'"
           >
             All
@@ -275,6 +239,7 @@ const formatDate = (dateString: string) => {
             :variant="activeStatus === 'upcoming' ? 'solid' : 'ghost'"
             :color="activeStatus === 'upcoming' ? 'primary' : 'neutral'"
             size="sm"
+            class="cursor-pointer"
             @click="activeStatus = 'upcoming'"
           >
             Upcoming
@@ -283,6 +248,7 @@ const formatDate = (dateString: string) => {
             :variant="activeStatus === 'pending' ? 'solid' : 'ghost'"
             :color="activeStatus === 'pending' ? 'primary' : 'neutral'"
             size="sm"
+            class="cursor-pointer"
             @click="activeStatus = 'pending'"
           >
             Pending
@@ -291,6 +257,7 @@ const formatDate = (dateString: string) => {
             :variant="activeStatus === 'completed' ? 'solid' : 'ghost'"
             :color="activeStatus === 'completed' ? 'primary' : 'neutral'"
             size="sm"
+            class="cursor-pointer"
             @click="activeStatus = 'completed'"
           >
             Completed
@@ -299,8 +266,13 @@ const formatDate = (dateString: string) => {
       </UCard>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="loadingStatus === 'pending'" class="flex justify-center py-12">
+      <UIcon name="i-heroicons-arrow-path" class="animate-spin h-8 w-8" />
+    </div>
+
     <!-- Bookings List -->
-    <div class="space-y-4">
+    <div v-else class="space-y-4">
       <div
         v-for="booking in finalFilteredBookings"
         :key="booking.id"
@@ -310,16 +282,8 @@ const formatDate = (dateString: string) => {
           <!-- Image -->
           <div class="md:w-64 h-48 md:h-auto flex-shrink-0">
             <img
-              :src="
-                booking.type === 'venue'
-                  ? booking.venue_image
-                  : booking.service_image
-              "
-              :alt="
-                booking.type === 'venue'
-                  ? booking.venue_name
-                  : booking.service_name
-              "
+              :src="booking.venue?.photos?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f29da8dd8f?w=400'"
+              :alt="booking.venue?.venue_name || 'Venue'"
               class="w-full h-full object-cover"
             />
           </div>
@@ -329,18 +293,15 @@ const formatDate = (dateString: string) => {
             <div class="flex justify-between items-start mb-4">
               <div>
                 <div class="flex items-center gap-2 mb-2">
-                  <UBadge
-                    :color="booking.type === 'venue' ? 'blue' : 'purple'"
-                    variant="subtle"
-                  >
-                    {{ booking.type === "venue" ? "Venue" : "Service" }}
+                  <UBadge color="blue" variant="subtle">
+                    {{ booking.venue_id ? "Venue" : "Service" }}
                   </UBadge>
                   <UBadge
-                    :color="getStatusColor(booking.status)"
+                    :color="getStatusColor(booking.booking_status)"
                     variant="subtle"
                     class="capitalize"
                   >
-                    {{ booking.status }}
+                    {{ booking.booking_status }}
                   </UBadge>
                   <UBadge
                     :color="getPaymentStatusColor(booking.payment_status)"
@@ -352,31 +313,18 @@ const formatDate = (dateString: string) => {
                 <h3
                   class="text-xl font-semibold text-gray-900 dark:text-white mb-1"
                 >
-                  {{
-                    booking.type === "venue"
-                      ? booking.venue_name
-                      : booking.service_name
-                  }}
+                  {{ booking.venue?.venue_name || "Venue" }}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  by {{ booking.vendor_name }}
-                </p>
-                <p
-                  v-if="booking.type === 'service'"
-                  class="text-sm text-gray-500 dark:text-gray-500 mb-2"
-                >
-                  {{ booking.service_type }}
+                  {{ booking.venue?.company_name || "N/A" }}
                 </p>
               </div>
               <div class="text-right">
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {{ formatCurrency(booking.amount) }}
+                  {{ formatCurrency(Number(booking.total_amount)) }}
                 </div>
-                <div
-                  v-if="booking.deposit_paid > 0"
-                  class="text-sm text-gray-500 dark:text-gray-400"
-                >
-                  Deposit: {{ formatCurrency(booking.deposit_paid) }}
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  Subtotal: {{ formatCurrency(Number(booking.subtotal)) }}
                 </div>
               </div>
             </div>
@@ -386,20 +334,20 @@ const formatDate = (dateString: string) => {
                 <div
                   class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
                 >
-                  Event Type
+                  Check-in
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ booking.event_type }}
+                  {{ formatDate(booking.check_in_date) }}
                 </div>
               </div>
               <div>
                 <div
                   class="text-xs text-gray-500 dark:text-gray-400 uppercase mb-1"
                 >
-                  Event Date
+                  Check-out
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ formatDate(booking.event_date) }}
+                  {{ formatDate(booking.check_out_date) }}
                 </div>
               </div>
               <div>
@@ -409,7 +357,7 @@ const formatDate = (dateString: string) => {
                   Guests
                 </div>
                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ booking.guests }} people
+                  {{ booking.number_of_guests }} people
                 </div>
               </div>
               <div>
@@ -425,36 +373,50 @@ const formatDate = (dateString: string) => {
             </div>
 
             <div class="flex gap-2">
-              <UButton size="sm" variant="solid" color="primary">
-                View Details
+              <UButton size="sm" variant="solid" color="primary" class="cursor-pointer" :to="`/venues/${booking.venue_id}`">
+                View Venue
               </UButton>
               <UButton
-                v-if="booking.status === 'pending'"
+                v-if="booking.booking_status === 'pending'"
                 size="sm"
                 variant="soft"
                 color="error"
+                class="cursor-pointer"
               >
                 Cancel Request
               </UButton>
               <UButton
-                v-if="booking.status === 'confirmed'"
+                v-if="booking.booking_status === 'confirmed'"
                 size="sm"
                 variant="soft"
                 color="neutral"
+                class="cursor-pointer"
               >
-                Contact Vendor
+                Contact Host
               </UButton>
-              <UButton
+              <!-- Payment Button -->
+              <div
                 v-if="
                   booking.payment_status !== 'paid' &&
-                  booking.status === 'confirmed'
+                  booking.booking_status === 'confirmed' &&
+                  auth.user?.email
                 "
-                size="sm"
-                variant="soft"
-                color="success"
+                class="flex-1 max-w-xs"
               >
-                Complete Payment
-              </UButton>
+                <PaymentPaystackButton
+                  :amount="Number(booking.total_amount)"
+                  :email="auth.user.email"
+                  :booking-id="booking.id"
+                  :metadata="{
+                    venue_id: booking.venue_id,
+                    venue_name: booking.venue?.venue_name,
+                    check_in: booking.check_in_date,
+                    check_out: booking.check_out_date,
+                  }"
+                  @success="handlePaymentSuccess(booking.id)"
+                  @error="handlePaymentError"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -475,7 +437,7 @@ const formatDate = (dateString: string) => {
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           You don't have any bookings matching the selected filters.
         </p>
-        <UButton color="primary" to="/venues"> Browse Venues </UButton>
+        <UButton color="primary" to="/venues" class="cursor-pointer"> Browse Venues </UButton>
       </div>
     </div>
   </div>
