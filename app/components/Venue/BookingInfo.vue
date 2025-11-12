@@ -2,7 +2,7 @@
   <div class="mt-6">
     <hr class="border-gray-200 mt-6" />
 
-    <div class="text-2xl font-semibold mt-6">Rental Information</div>
+    <div class="text-2xl font-semibold mt-6">Booking Information</div>
 
     <!-- Desktop Grid -->
     <div class="mt-6 hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -73,23 +73,23 @@ import Browsing2 from "@/components/svgs/Browsing2.vue";
 const rentalInfo = [
   {
     icon: Watch7,
-    text: "Lenders typically confirm the request within 48 hours.",
+    text: "Venue hosts typically confirm booking requests within 48 hours.",
   },
   {
     icon: Payment20,
-    text: "You will be charged only once the lender has accepted your request.",
+    text: "Payment is only processed once the venue host has confirmed your booking.",
   },
   {
     icon: Calendar7,
-    text: "Free cancellation up until 48 hours before the rental.",
+    text: "Free cancellation available up to 48 hours before your event date.",
   },
   {
     icon: Lock4,
-    text: "Money back guarantee within 24 hours of collection if you don't receive what's promised.",
+    text: "Full refund guaranteed if the venue doesn't match the listing description.",
   },
   {
     icon: Browsing2,
-    text: "Information about the lender will be provided once the request is accepted.",
+    text: "Host contact details and venue access information provided after booking confirmation.",
   },
 ];
 

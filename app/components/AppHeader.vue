@@ -147,7 +147,7 @@ const hostButton = computed(() => {
 <template>
   <!-- Custom Header with centered navigation -->
   <header
-    class="h-20 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+    class="h-20 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50"
   >
     <div class="w-full px-4 sm:px-6 lg:px-8 h-full">
       <!-- Desktop Header -->

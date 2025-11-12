@@ -223,10 +223,22 @@ const scrollToCategory = (categoryId: string) => {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 };
+
+// Lock scroll when component mounts
+onMounted(() => {
+  document.body.style.overflow = 'hidden';
+});
+
+// Unlock scroll when component unmounts
+onUnmounted(() => {
+  document.body.style.overflow = '';
+});
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <!-- Blurred Content -->
+    <div class="blur-md pointer-events-none select-none">
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -334,6 +346,30 @@ const scrollToCategory = (categoryId: string) => {
             </div>
           </UCard>
         </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Coming Soon Overlay -->
+    <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-12 max-w-md mx-4 text-center">
+        <div class="mb-6">
+          <UIcon name="i-heroicons-rocket-launch" class="w-20 h-20 mx-auto text-purple-600 dark:text-purple-400" />
+        </div>
+        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          Coming Soon
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+          We're working hard to bring you the best wedding service providers. Stay tuned!
+        </p>
+        <UButton
+          to="/"
+          size="lg"
+          color="primary"
+          icon="i-heroicons-arrow-left"
+        >
+          Back to Home
+        </UButton>
       </div>
     </div>
   </div>

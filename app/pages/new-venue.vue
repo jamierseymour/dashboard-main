@@ -155,7 +155,6 @@ const SubmitVenue = async () => {
     // @ts-ignore - Supabase type configuration issue
     const { error } = await supabase.from("venues").insert([
       {
-        id: tempVenueId.value,
         venue_name: formData.value.venueName,
         company_name: formData.value.companyName,
         description: formData.value.description,
