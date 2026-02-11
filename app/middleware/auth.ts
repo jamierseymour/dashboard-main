@@ -6,11 +6,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
   console.log('🔒 Auth hydrated:', auth.hydrated);
   console.log('🔒 Auth loggedIn:', auth.loggedIn);
 
-  // Initialize auth if not hydrated
+  // Initialize auth if not hydrated (with timeout to prevent hanging)
   if (!auth.hydrated) {
     console.log('⏳ Auth not hydrated, initializing...');
-    await auth.init();
-    console.log('✅ Auth initialized. LoggedIn:', auth.loggedIn);
+    try {
+      // Add timeout to prevent hanging
+      await Promise.race([
+        auth.init(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth initialization timeout')), 5000)
+        )
+      ]);
+      console.log('✅ Auth initialized. LoggedIn:', auth.loggedIn);
+    } catch (error) {
+      console.error('❌ Auth initialization failed:', error);
+      // If init fails, redirect to home instead of hanging
+      return navigateTo('/');
+    }
   }
 
   // Check if user is authenticated

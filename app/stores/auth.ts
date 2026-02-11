@@ -10,8 +10,8 @@ type ProfileData = {
   username?: string;
   avatar_url?: string;
   bio?: string;
-  is_vendor?: boolean;
-  is_service_provider?: boolean;
+  event_updates?: boolean;
+  terms_accepted?: boolean;
 };
 
 interface IAuth {
@@ -93,9 +93,9 @@ export const useAuth = defineStore("auth", () => {
     try {
       const { data, error } = await (supabase.from("users") as any)
         .select(
-          "user_id, name, email, created_at, avatar_url, bio, is_vendor, is_service_provider",
+          "id, name, email, created_at, avatar_url, bio, event_updates, terms_accepted",
         )
-        .eq("user_id", state.user.id)
+        .eq("id", state.user.id)
         .single();
 
       if (error) {
@@ -122,7 +122,7 @@ export const useAuth = defineStore("auth", () => {
     try {
       const { error } = await (supabase.from("users") as any)
         .update(profileData)
-        .eq("user_id", state.user.id);
+        .eq("id", state.user.id);
 
       if (error) throw error;
 
@@ -260,13 +260,7 @@ export const useAuth = defineStore("auth", () => {
     if (!state.user?.id) return;
 
     try {
-      const { error } = await (supabase.from("users") as any)
-        .update({ is_vendor: true })
-        .eq("user_id", state.user.id);
-
-      if (error) throw error;
-
-      // Refresh profile data to get updated is_vendor status
+      // Just refresh profile - vendor status not needed for now
       await fetchUserProfile();
     } catch (error) {
       console.error("Error updating vendor status:", error);
@@ -308,15 +302,13 @@ export const useAuth = defineStore("auth", () => {
       try {
         const { error: profileError } = await (
           supabase.from("users") as any
-        ).upsert({
-          // id: authData.user.id,
-          user_id: authData.user.id, // Use user_id for foreign key
+        ).insert({
+          id: authData.user.id,
           name: userData.name,
           email: userData.email,
           event_updates: userData.eventUpdates,
           terms_accepted: userData.termsAccepted,
           bio: "",
-          is_service_provider: false,
         });
 
         if (profileError) {
@@ -364,7 +356,7 @@ export const useAuth = defineStore("auth", () => {
       state.user = null;
       state.loggedIn = false;
       state.profile = null;
-      state.hydrated = false; // Reset hydration to allow re-initialization
+      // Keep hydrated = true to avoid re-initialization delays on next navigation
 
       // Force clear any lingering Supabase session data from localStorage
       try {

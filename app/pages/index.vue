@@ -19,7 +19,8 @@ interface IVenue {
 }
 
 // Use `useAsyncData` to fetch data with optimization
-const { data, error } = await useAsyncData<IVenue[] | null>(
+// IMPORTANT: Don't await here to prevent blocking page navigation
+const { data, error } = useAsyncData<IVenue[] | null>(
   "venues",
   async () => {
     const { data, error } = await client

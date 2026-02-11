@@ -270,6 +270,48 @@ const goToPrevStep = () => {
 const hasNext = computed(() => currentStep.value < steps.length - 1);
 const hasPrev = computed(() => currentStep.value > 0);
 
+// Validation for each step
+const isCurrentStepValid = computed(() => {
+  switch (currentStep.value) {
+    case 0: // Venue Category
+      return !!formData.value.venueCategory;
+
+    case 1: // Venue Type
+      return !!formData.value.venueType;
+
+    case 2: // Event Types
+      return formData.value.eventTypes && formData.value.eventTypes.length > 0;
+
+    case 3: // Venue Details
+      return !!(
+        formData.value.venueName &&
+        formData.value.companyName &&
+        formData.value.description &&
+        formData.value.minCapacity &&
+        formData.value.maxCapacity &&
+        formData.value.price
+      );
+
+    case 4: // Location
+      return !!(
+        formData.value.address &&
+        formData.value.selectedProvince
+      );
+
+    case 5: // Booking Requirements
+      return true; // All fields are optional in this step
+
+    case 6: // Extras and Amenities
+      return true; // All fields are optional in this step
+
+    case 7: // Photos
+      return formData.value.photos && formData.value.photos.length > 0;
+
+    default:
+      return true;
+  }
+});
+
 // Calculate progress percentage
 const progressPercentage = computed(() => {
   return ((currentStep.value + 1) / steps.length) * 100;
@@ -476,7 +518,7 @@ provide("clearDraft", clearDraft);
           <UButton
             v-if="hasNext"
             trailing-icon="i-lucide-arrow-right"
-            class="cursor-pointer"
+            :disabled="!isCurrentStepValid"
             size="lg"
             @click="goToNextStep"
           >
@@ -486,9 +528,8 @@ provide("clearDraft", clearDraft);
           <UButton
             v-else
             trailing-icon="i-lucide-check"
-            class="cursor-pointer"
             size="lg"
-            :disabled="isSubmitting"
+            :disabled="isSubmitting || !isCurrentStepValid"
             @click="checkAuthAndSubmit()"
           >
             <span v-if="isSubmitting">Submitting...</span>
