@@ -64,32 +64,32 @@
 </template>
 
 <script setup>
-import Watch7 from "@/components/svgs/Watch7.vue";
-import Payment20 from "@/components/svgs/Payment20.vue";
+import Browsing2 from "@/components/svgs/Browsing2.vue";
 import Calendar7 from "@/components/svgs/Calendar7.vue";
 import Lock4 from "@/components/svgs/Lock4.vue";
-import Browsing2 from "@/components/svgs/Browsing2.vue";
+import Payment20 from "@/components/svgs/Payment20.vue";
+import Watch7 from "@/components/svgs/Watch7.vue";
 
 const rentalInfo = [
   {
     icon: Watch7,
-    text: "Venue hosts typically confirm booking requests within 48 hours.",
-  },
-  {
-    icon: Payment20,
-    text: "Payment is only processed once the venue host has confirmed your booking.",
+    text: "Venue hosts typically respond to viewing requests within 24 hours.",
   },
   {
     icon: Calendar7,
-    text: "Free cancellation available up to 48 hours before your event date.",
-  },
-  {
-    icon: Lock4,
-    text: "Full refund guaranteed if the venue doesn't match the listing description.",
+    text: "Choose a preferred date and the host will confirm or propose an alternative time.",
   },
   {
     icon: Browsing2,
-    text: "Host contact details and venue access information provided after booking confirmation.",
+    text: "Host contact details are provided once your viewing is confirmed.",
+  },
+  {
+    icon: Lock4,
+    text: "Viewings are completely free — no payment or commitment required.",
+  },
+  {
+    icon: Payment20,
+    text: "Compare multiple venues before deciding — it's the best way to find your perfect match.",
   },
 ];
 

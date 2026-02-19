@@ -1,97 +1,107 @@
 <script setup lang="ts">
-import VenueFilterBar from "~/components/Venue/VenueFilterBar.vue";
+import { useEventSearch } from '~/composables/useEventSearch'
 
-// Explicitly set layout for performance
 definePageMeta({
   layout: "default",
-});
+})
 
-const client = useSupabaseClient();
+const client = useSupabaseClient()
+const { state: searchState, estimateCostRange, formatEstimate } = useEventSearch()
 
-// Define the IVenue interface
 interface IVenue {
-  id: bigint;
-  event_types: string[]; // This is an array of event types
-  photos: string[];
-  venue_name: string;
-  max_capacity: number | null;
-  city: string | null;
+  id: bigint
+  event_types: string[]
+  photos: string[]
+  venue_name: string
+  max_capacity: number | null
+  min_capacity: number | null
+  city: string | null
+  price: number | null
+  selected_province: string | null
 }
 
-// Use `useAsyncData` to fetch data with optimization
-const { data, error } = await useAsyncData<IVenue[] | null>(
+const { data } = useAsyncData<IVenue[] | null>(
   "venues",
   async () => {
     const { data, error } = await client
       .from("venues")
-      .select("id, event_types, photos, venue_name, max_capacity, city")
-      .limit(12) // Limit initial load to 12 venues for performance
-      .order("id", { ascending: false }); // Show newest first
+      .select("id, event_types, photos, venue_name, max_capacity, min_capacity, city, price, selected_province")
+      .limit(24)
+      .order("id", { ascending: false })
 
     if (error) {
-      console.error("Error fetching venues:", error);
-      return null; // Return null in case of error
+      console.error("Error fetching venues:", error)
+      return null
     }
 
-    return data || null; // Ensure we return `null` if data is undefined
+    return data || null
   },
   {
-    default: () => [], // Provide default value to prevent hydration mismatch
+    default: () => [],
   }
-);
+)
 
-// Create a `computed` property for safer access to `data`
-const venues = computed(() => data.value || []);
+const venues = computed(() => data.value || [])
 
-// Search form data
-const venueType = ref("");
-const guestCount = ref("");
-const eventDate = ref("");
-
-// Active filter for venue types
-const activeEventTypeFilter = ref<string | null>(null);
-
-// Computed property for filtered venues
+// Filter venues based on qualification criteria
 const filteredVenues = computed(() => {
-  if (!activeEventTypeFilter.value) {
-    return venues.value;
+  let result = venues.value
+
+  const city = searchState.city
+  if (city) {
+    result = result.filter(venue => {
+      const venueCity = venue.city || ''
+      const venueProvince = getProvinceLabel(venue.selected_province)
+      return (
+        venueCity.toLowerCase().includes(city.toLowerCase()) ||
+        venueProvince.toLowerCase().includes(city.toLowerCase())
+      )
+    })
   }
 
-  // Filter venues by the selected event type
-  // Check if the venue's event_types array includes the selected filter
-  return venues.value.filter(
-    (venue) =>
-      venue.event_types &&
-      venue.event_types.some(
-        (eventType) =>
-          eventType.toLowerCase() === activeEventTypeFilter.value!.toLowerCase()
-      )
-  );
-});
+  const guestCount = searchState.guestCount
+  if (guestCount) {
+    result = result.filter(venue =>
+      !venue.max_capacity || venue.max_capacity >= guestCount
+    )
+  }
 
-const filterVenues = (eventType: string | null) => {
-  activeEventTypeFilter.value = eventType;
-};
+  return result
+})
 
-// Venue type options
-const venueTypes = [
-  { value: "", label: "Any type" },
-  { value: "restaurant", label: "Restaurant" },
-  { value: "bar", label: "Bar" },
-  { value: "club", label: "Club" },
-  { value: "event_space", label: "Event Space" },
-];
+function getProvinceLabel(province: string | null | undefined): string {
+  if (!province) return ''
+  try {
+    const parsed = typeof province === 'string' ? JSON.parse(province) : province
+    return parsed?.label || parsed?.value || String(province)
+  }
+  catch {
+    return String(province)
+  }
+}
 
-// Handle search submission (placeholder for now)
-const handleSearch = () => {
-  // Will implement actual search functionality later
-};
+function getEstimate(venue: IVenue): string | null {
+  if (!searchState.guestCount || !venue.price) return null
+  const range = estimateCostRange(venue.price, searchState.guestCount)
+  if (!range) return null
+  return formatEstimate(range.low, range.high)
+}
+
+const showQualificationForm = ref(!searchState.hasSearched)
+
+function handleSearch() {
+  showQualificationForm.value = false
+}
+
+function resetSearch() {
+  showQualificationForm.value = true
+}
 </script>
 
 <template>
   <div>
-    <!-- Hero Section with Background Image -->
-    <div class="relative w-full h-[500px]">
+    <!-- Hero Section -->
+    <div class="relative w-full min-h-[500px]">
       <!-- Background Image -->
       <div class="absolute inset-0 w-full h-full">
         <img
@@ -99,102 +109,62 @@ const handleSearch = () => {
           alt="Venue Search Hero"
           class="w-full h-full object-cover"
         />
-
-        <!-- Dark Blue Overlay with Gradient -->
-        <div
-          class="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-blue-900/30 to-transparent"
-        />
-
-        <!-- Improved White Fade Overlay - covers more of the image -->
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent"
-        />
+        <div class="absolute inset-0 bg-gradient-to-b from-blue-900/50 via-blue-900/30 to-transparent" />
+        <div class="absolute inset-0 bg-gradient-to-t from-white via-white/30 to-transparent" />
       </div>
 
       <!-- Hero Content -->
-      <div
-        class="relative z-10 flex flex-col items-center justify-center h-full px-4 text-white"
-      >
-        <h1 class="text-5xl font-bold text-center mt-12 mb-8 text-shadow">
-          plan less, party more
+      <div class="relative z-10 flex flex-col items-center justify-center min-h-[500px] px-4 pt-8 pb-16 text-white">
+        <h1 class="text-5xl font-bold text-center mt-8 mb-3 text-shadow">
+          Find your perfect wedding venue
         </h1>
-        <p class="text-2xl font-medium text-center mb-12 text-shadow">
-          book now, don't stress — we've got you covered
+        <p class="text-xl font-medium text-center mb-8 text-shadow">
+          Browse, compare, and book a free viewing — no payment required
         </p>
 
-        <!-- Search Bar - Reduced Transparency -->
-        <!-- <div
-          class="w-full max-w-4xl bg-[#032334]/65 backdrop-blur-sm rounded-full p-2 shadow-lg"
+        <!-- Qualification Form -->
+        <VenueLeadQualificationForm
+          v-if="showQualificationForm"
+          @search="handleSearch"
+        />
+
+        <!-- Active search summary (after searching) -->
+        <div
+          v-else
+          class="w-full max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl px-6 py-4 flex flex-wrap items-center gap-3"
         >
-          <form
-            class="flex flex-col md:flex-row items-center"
-            @submit.prevent="handleSearch"
+          <div class="flex flex-wrap gap-2 flex-1 text-sm text-gray-700">
+            <span v-if="searchState.weddingDate" class="bg-purple-50 text-purple-700 rounded-full px-3 py-1 font-medium">
+              {{ new Date(searchState.weddingDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) }}
+            </span>
+            <span v-if="searchState.guestCount" class="bg-purple-50 text-purple-700 rounded-full px-3 py-1 font-medium">
+              {{ searchState.guestCount }} guests
+            </span>
+            <span v-if="searchState.budgetRange" class="bg-purple-50 text-purple-700 rounded-full px-3 py-1 font-medium">
+              {{ searchState.budgetRange.replace(/_/g, ' ').replace('under', 'Under').replace('plus', '+').replace('k', 'k ').trim() }}
+            </span>
+            <span v-if="searchState.city" class="bg-purple-50 text-purple-700 rounded-full px-3 py-1 font-medium">
+              {{ searchState.city }}
+            </span>
+          </div>
+          <button
+            class="text-sm text-purple-600 hover:text-purple-800 font-medium underline cursor-pointer whitespace-nowrap"
+            @click="resetSearch"
           >
-            <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
-              <label class="block text-sm text-blue-200 mb-1"
-                >I'm looking for</label
-              >
-              <select
-                v-model="venueType"
-                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
-              >
-                <option
-                  v-for="type in venueTypes"
-                  :key="type.value"
-                  :value="type.value"
-                  class="bg-navy-800 text-white"
-                >
-                  {{ type.label }}
-                </option>
-              </select>
-            </div>
-
-            <div class="flex-1 px-4 py-2 md:border-r border-blue-700">
-              <label class="block text-sm text-blue-200 mb-1"
-                >Number of guests</label
-              >
-              <input
-                v-model="guestCount"
-                type="number"
-                placeholder="How many people?"
-                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
-              />
-            </div>
-
-            <div class="flex-1 px-4 py-2">
-              <label class="block text-sm text-blue-200 mb-1">Date</label>
-              <input
-                v-model="eventDate"
-                type="date"
-                class="w-full bg-transparent text-white border-none focus:outline-none text-lg"
-              />
-            </div>
-
-            <div class="px-4 py-2">
-              <button
-                type="submit"
-                class="bg-white hover:bg-gray-100 text-mulberry font-bold py-3 px-8 rounded-full transition-colors"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div> -->
-
-        <div class="container mx-auto p-4 max-w-[1228px]">
-          <VenueFilterBar @filter-change="filterVenues" />
+            Edit search
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Venues Grid (Existing Content) -->
+    <!-- Venues Grid -->
     <div class="container mx-auto px-6 lg:px-10 xl:px-20 mt-8 max-w-[1920px]">
-      <!-- Display filtered venues count -->
-      <div v-if="activeEventTypeFilter" class="mb-6">
+      <!-- Results summary -->
+      <div v-if="searchState.hasSearched" class="mb-6 flex items-center justify-between">
         <p class="text-gray-600">
-          Showing {{ filteredVenues.length }} venues for "{{
-            activeEventTypeFilter
-          }}"
+          <span class="font-semibold text-gray-900">{{ filteredVenues.length }}</span>
+          {{ filteredVenues.length === 1 ? 'venue' : 'venues' }} match your criteria
+          <span v-if="searchState.city"> in <strong>{{ searchState.city }}</strong></span>
         </p>
       </div>
 
@@ -211,23 +181,18 @@ const handleSearch = () => {
           <!-- Image -->
           <div class="relative w-full aspect-square mb-3 rounded-xl overflow-hidden">
             <NuxtImg
-              :src="
-                venue.photos && venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'
-              "
+              :src="venue.photos && venue.photos.length > 0 ? venue.photos[0] : '/default.jpg'"
               alt="Venue Image"
               class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
             />
           </div>
 
-          <!-- Venue Info Below Image -->
+          <!-- Venue Info -->
           <div>
-            <!-- Venue Name - Bold -->
             <h3 class="font-semibold text-[15px] text-gray-900 mb-1 truncate">
               {{ venue.venue_name }}
             </h3>
-
-            <!-- Capacity and City - Justified Between -->
-            <div class="flex justify-between items-start text-gray-600 text-[15px] gap-2">
+            <div class="flex justify-between items-start text-gray-600 text-[13px] gap-2">
               <span v-if="venue.max_capacity" class="flex-shrink-0">
                 Up to {{ venue.max_capacity }} pax
               </span>
@@ -236,44 +201,39 @@ const handleSearch = () => {
                 {{ venue.city }}
               </span>
             </div>
+            <!-- Estimated cost when guest count known -->
+            <div
+              v-if="searchState.guestCount && getEstimate(venue)"
+              class="mt-1 text-[12px] text-purple-700 font-medium"
+            >
+              {{ getEstimate(venue) }} for {{ searchState.guestCount }} guests
+            </div>
           </div>
         </NuxtLink>
       </div>
-      <div v-else-if="activeEventTypeFilter" class="text-center py-12">
-        <p class="text-gray-600 text-lg">
-          No venues found for "{{ activeEventTypeFilter }}"
+
+      <div v-else-if="searchState.hasSearched" class="text-center py-12">
+        <p class="text-gray-600 text-lg mb-4">
+          No venues found matching your criteria.
         </p>
-        <button
-          @click="filterVenues(null)"
-          class="mt-4 text-mulberry hover:underline"
-        >
-          Show all venues
+        <button class="text-purple-600 hover:underline cursor-pointer" @click="resetSearch">
+          Adjust your search
         </button>
       </div>
-      <div v-else class="text-center">
-        Loading venues or no venues available...
+
+      <div v-else-if="!searchState.hasSearched && venues.length > 0" class="text-center py-12">
+        <p class="text-gray-500 text-lg">Fill in your event details above to find matching venues.</p>
+      </div>
+
+      <div v-else class="text-center py-12">
+        Loading venues...
       </div>
     </div>
   </div>
 </template>
 
 <style>
-/* Add custom styles */
-.bg-navy-800 {
-  background-color: #1a365d;
-}
-
-.text-mulberry {
-  color: #c0397a; /* Mulberry color - adjust the hex code as needed */
-}
-
-/* Text shadow for better readability against the gradient */
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* Fix date input appearance in different browsers */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
 }
 </style>

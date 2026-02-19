@@ -1,214 +1,147 @@
 <script setup lang="ts">
-import type { DateRange } from "@nuxt/ui";
+import { BUDGET_RANGES, useEventSearch } from '~/composables/useEventSearch'
 
-const route = useRoute();
-const router = useRouter();
-const client = useSupabaseClient();
-const user = useSupabaseUser();
-const toast = useToast();
-const auth = useAuth();
+const route = useRoute()
+const router = useRouter()
+const client = useSupabaseClient()
+const user = useSupabaseUser()
+const toast = useToast()
+const auth = useAuth()
+const { state: searchState } = useEventSearch()
 
 interface IVenue {
-  id: number;
-  venue_name: string;
-  company_name: string;
-  price: number;
-  min_capacity: number;
-  max_capacity: number;
-  minimum_hours: number;
-  notice_required: number;
-  user_id: string;
-  photos: string[];
-  cancellation_policy: {
-    refundableDays: number;
-    nonRefundableDays: number;
-    partialRefundDays: number;
-    partialRefundPercentage: number;
-  };
+  id: number
+  venue_name: string
+  company_name: string
+  min_capacity: number
+  max_capacity: number
+  notice_required: number
+  user_id: string
+  photos: string[]
 }
 
-// Fetch venue data
 const { data: venue } = useAsyncData<IVenue | null>("venue", async () => {
-  const id = route.params.id;
-  const { data } = await client.from("venues").select().eq("id", id);
+  const id = route.params.id
+  const { data } = await client.from("venues").select().eq("id", id)
 
   if (!data || data.length === 0) {
-    throw createError({ statusCode: 404, statusMessage: "Venue not found" });
+    throw createError({ statusCode: 404, statusMessage: "Venue not found" })
   }
 
-  return data[0] as IVenue;
-});
+  return data[0] as IVenue
+})
 
 // Form state
-const dates = ref<DateRange>();
-const guests = ref(1);
-const accommodation = ref(0);
-const message = ref("");
+const preferredViewingDate = ref('')
+const guests = ref(searchState.guestCount || 1)
+const message = ref('')
 
-// Computed values
-const nightsCount = computed(() => {
-  if (!dates.value?.start || !dates.value?.end) return 0;
-  const start = new Date(dates.value.start);
-  const end = new Date(dates.value.end);
-  return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-});
+const isSubmitting = ref(false)
 
-const subtotal = computed(() => {
-  if (!venue.value) return 0;
-  return nightsCount.value * venue.value.price;
-});
+const budgetLabel = computed(() => {
+  if (!searchState.budgetRange) return null
+  return BUDGET_RANGES.find(b => b.value === searchState.budgetRange)?.label || null
+})
 
-const serviceFee = computed(() => {
-  return Math.round(subtotal.value * 0.12); // 12% service fee
-});
-
-const total = computed(() => {
-  return subtotal.value + serviceFee.value;
-});
-
-// Form submission
-const isSubmitting = ref(false);
+function preventInvalidChars(event: KeyboardEvent) {
+  const invalidChars = ["e", "E", "+", "-"]
+  if (invalidChars.includes(event.key)) {
+    event.preventDefault()
+  }
+}
 
 async function submitRequest() {
-  // Check if user is authenticated, if not show auth modal
   if (!user.value) {
-    const authenticated = await auth.waitForAuth();
+    const authenticated = await auth.waitForAuth()
 
-    if (!authenticated) {
-      // User closed modal without logging in
-      return;
-    }
+    if (!authenticated) return
 
-    // Wait a moment for user state to update
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     if (!user.value) {
       toast.add({
         title: "Authentication required",
-        description: "Please log in to make a booking request",
+        description: "Please log in to request a viewing",
         color: "error",
-      });
-      return;
+      })
+      return
     }
   }
 
-  // Validation
-  if (!venue.value || !dates.value?.start || !dates.value?.end) {
+  if (!venue.value || !preferredViewingDate.value) {
     toast.add({
       title: "Missing information",
-      description: "Please select dates for your booking",
+      description: "Please select a preferred viewing date",
       color: "warning",
-    });
-    return;
+    })
+    return
   }
 
-  if (
-    guests.value < (venue.value.min_capacity || 1) ||
-    guests.value > (venue.value.max_capacity || 100)
-  ) {
-    toast.add({
-      title: "Invalid guest count",
-      description: `Guest count must be between ${venue.value.min_capacity} and ${venue.value.max_capacity}`,
-      color: "warning",
-    });
-    return;
-  }
-
-  isSubmitting.value = true;
+  isSubmitting.value = true
 
   try {
-    // Format dates as ISO strings
-    const checkInDate = new Date(dates.value.start).toISOString().split("T")[0];
-    const checkOutDate = new Date(dates.value.end).toISOString().split("T")[0];
+    const viewingDate = new Date(preferredViewingDate.value).toISOString().split("T")[0]
+    const eventDate = searchState.weddingDate
+      ? new Date(searchState.weddingDate).toISOString().split("T")[0]
+      : viewingDate
 
-    // Create booking request
-    const bookingData = {
+    const requestData = {
       venue_id: venue.value.id,
       user_id: user.value.id,
       venue_owner_id: venue.value.user_id,
-      check_in_date: checkInDate,
-      check_out_date: checkOutDate,
+      check_in_date: viewingDate,
+      check_out_date: eventDate,
       number_of_guests: guests.value,
-      accommodation_needed: accommodation.value,
+      accommodation_needed: searchState.accommodationRequired ? guests.value : 0,
       message_to_host: message.value || null,
-      price_per_night: venue.value.price,
-      number_of_nights: nightsCount.value,
-      subtotal: subtotal.value,
-      service_fee: serviceFee.value,
-      total_amount: total.value,
+      price_per_night: 0,
+      number_of_nights: 0,
+      subtotal: 0,
+      service_fee: 0,
+      total_amount: 0,
       booking_status: "pending",
       payment_status: "unpaid",
-    };
-
-    console.log("bookingDat", bookingData);
+    }
 
     const { error } = await client
       .from("bookings")
-      .insert(bookingData as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(requestData as any)
       .select()
-      .single();
+      .single()
 
-    if (error) {
-      console.error("Booking error:", error);
-      throw error;
-    }
+    if (error) throw error
 
     toast.add({
-      title: "Booking request sent!",
-      description: "The venue owner will review your request",
+      title: "Viewing request sent!",
+      description: "The venue host will be in touch to confirm a time.",
       color: "success",
-    });
+    })
 
-    // Navigate to bookings page or back to venue
-    router.push(`/venues/${venue.value.id}?booking=success`);
-  } catch (error: any) {
-    console.error("Error submitting booking request:", error);
-    toast.add({
-      title: "Booking failed",
-      description:
-        error.message || "Failed to submit booking request. Please try again.",
-      color: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
+    router.push(`/venues/${venue.value.id}?viewing=requested`)
   }
-}
-
-// Format date range
-const dateRangeText = computed(() => {
-  if (!dates.value?.start || !dates.value?.end) return "Select dates";
-  const start = new Date(dates.value.start);
-  const end = new Date(dates.value.end);
-  return `${start.toLocaleDateString("en-ZA", {
-    month: "short",
-    day: "numeric",
-  })} - ${end.toLocaleDateString("en-ZA", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}`;
-});
-
-// Prevent invalid characters in number inputs
-function preventInvalidChars(event: KeyboardEvent) {
-  const invalidChars = ["e", "E", "+", "-"];
-  if (invalidChars.includes(event.key)) {
-    event.preventDefault();
+  catch (error: unknown) {
+    console.error("Error submitting viewing request:", error)
+    const message = error instanceof Error ? error.message : "Failed to submit your viewing request. Please try again."
+    toast.add({
+      title: "Request failed",
+      description: message,
+      color: "error",
+    })
+  }
+  finally {
+    isSubmitting.value = false
   }
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Auth Modal -->
     <AuthModal />
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Back Button -->
-
       <!-- Header -->
       <div class="mb-8 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Request to book</h1>
-
+        <h1 class="text-3xl font-bold text-gray-900">Book a Viewing</h1>
         <UButton
           icon="i-heroicons-arrow-left"
           color="neutral"
@@ -220,64 +153,83 @@ function preventInvalidChars(event: KeyboardEvent) {
       </div>
 
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <!-- Left Column - Booking Form -->
+        <!-- Left Column -->
         <div class="space-y-6">
-          <!-- Step 1: Booking Details -->
+          <!-- Step 1: Viewing Details -->
           <UCard>
             <template #header>
-              <h2 class="text-xl font-semibold">1. Your booking details</h2>
+              <h2 class="text-xl font-semibold">1. Viewing details</h2>
             </template>
 
             <div class="space-y-6">
-              <!-- Date Picker -->
-              <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2"
-                  >Dates</label
-                >
-                <div class="cursor-pointer">
-                  <UCalendar range v-model="dates" />
-                </div>
-              </div>
-
-              <!-- Guests Input -->
+              <!-- Preferred Viewing Date -->
               <div>
                 <label class="block text-sm font-medium text-gray-900 mb-2">
-                  Guests
+                  Preferred viewing date
+                </label>
+                <input
+                  v-model="preferredViewingDate"
+                  type="date"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  The host may propose an alternative time if needed.
+                </p>
+              </div>
+
+              <!-- Guest Count -->
+              <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Expected guest count
                 </label>
                 <UInput
                   v-model.number="guests"
                   type="number"
                   :min="venue?.min_capacity || 1"
-                  :max="venue?.max_capacity || 100"
+                  :max="venue?.max_capacity || 1000"
                   size="xl"
                   placeholder="Number of guests"
                   class="[&_input::-webkit-outer-spin-button]:appearance-none [&_input::-webkit-inner-spin-button]:appearance-none [&_input]:[-moz-appearance:textfield]"
                   @keydown="preventInvalidChars"
                 />
-                <p class="mt-1 text-xs text-gray-500">
-                  Min: {{ venue?.min_capacity || 1 }}, Max:
-                  {{ venue?.max_capacity || 100 }}
+                <p v-if="venue?.max_capacity" class="mt-1 text-xs text-gray-500">
+                  This venue fits up to {{ venue.max_capacity }} guests
                 </p>
               </div>
+            </div>
+          </UCard>
 
-              <!-- Accommodation Input -->
-              <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">
-                  Accommodation needed
-                </label>
-                <UInput
-                  v-model.number="accommodation"
-                  type="number"
-                  :min="0"
-                  :max="guests"
-                  size="xl"
-                  placeholder="Number of people needing accommodation"
-                  class="[&_input::-webkit-outer-spin-button]:appearance-none [&_input::-webkit-inner-spin-button]:appearance-none [&_input]:[-moz-appearance:textfield]"
-                  @keydown="preventInvalidChars"
-                />
-                <p class="mt-1 text-xs text-gray-500">
-                  Maximum: {{ guests }} (number of guests)
-                </p>
+          <!-- Your Event Summary (pre-filled from search) -->
+          <UCard v-if="searchState.hasSearched">
+            <template #header>
+              <h2 class="text-xl font-semibold">Your event details</h2>
+            </template>
+            <div class="space-y-3 text-sm">
+              <div v-if="searchState.weddingDate" class="flex justify-between">
+                <span class="text-gray-600">Wedding date</span>
+                <span class="font-medium">
+                  {{ new Date(searchState.weddingDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' }) }}
+                </span>
+              </div>
+              <div v-if="searchState.guestCount" class="flex justify-between">
+                <span class="text-gray-600">Guest count</span>
+                <span class="font-medium">{{ searchState.guestCount }} guests</span>
+              </div>
+              <div v-if="budgetLabel" class="flex justify-between">
+                <span class="text-gray-600">Budget</span>
+                <span class="font-medium">{{ budgetLabel }}</span>
+              </div>
+              <div v-if="searchState.city" class="flex justify-between">
+                <span class="text-gray-600">Location</span>
+                <span class="font-medium">{{ searchState.city }}</span>
+              </div>
+              <div v-if="searchState.accommodationRequired" class="flex justify-between">
+                <span class="text-gray-600">Accommodation</span>
+                <span class="font-medium">Required</span>
+              </div>
+              <div v-if="searchState.stylePreferences.length > 0" class="flex justify-between items-start">
+                <span class="text-gray-600">Style</span>
+                <span class="font-medium text-right">{{ searchState.stylePreferences.join(', ') }}</span>
               </div>
             </div>
           </UCard>
@@ -286,49 +238,38 @@ function preventInvalidChars(event: KeyboardEvent) {
           <UCard>
             <template #header>
               <h2 class="text-xl font-semibold">
-                2. Message to host (optional)
+                2. Message to host <span class="text-sm font-normal text-gray-500">(optional)</span>
               </h2>
             </template>
 
             <div class="rounded-lg border border-gray-300 p-4">
               <textarea
                 v-model="message"
-                placeholder="Tell the host about your event, special requirements, or any questions you have..."
-                rows="6"
+                placeholder="Tell the host about your vision, any specific questions, or what you'd like to see during the viewing..."
+                rows="5"
                 class="w-full border-0 focus:outline-none focus:ring-0 resize-none"
               />
             </div>
           </UCard>
 
-          <!-- Step 3: Review -->
+          <!-- Step 3: What happens next -->
           <UCard>
             <template #header>
-              <h2 class="text-xl font-semibold">3. Review your request</h2>
+              <h2 class="text-xl font-semibold">3. What happens next</h2>
             </template>
 
-            <div class="space-y-4">
-              <!-- Cancellation Policy -->
-              <div
-                v-if="venue?.cancellation_policy"
-                class="rounded-lg bg-gray-50 p-4"
-              >
-                <h3 class="font-semibold text-gray-900 mb-2">
-                  Cancellation policy
-                </h3>
-                <p class="text-sm text-gray-600">
-                  Cancel within
-                  {{ venue.cancellation_policy.refundableDays }} hours for a
-                  full refund. Cancel at least
-                  {{ venue.cancellation_policy.partialRefundDays }} days before
-                  for a {{ venue.cancellation_policy.partialRefundPercentage }}%
-                  refund.
-                </p>
+            <div class="space-y-3 text-sm text-gray-600">
+              <div class="flex items-start gap-3">
+                <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">1</div>
+                <p>The host reviews your request and responds within <strong>24–48 hours</strong>.</p>
               </div>
-
-              <!-- Terms -->
-              <div class="text-xs text-gray-500">
-                By selecting the button below, I agree to the Host's House
-                Rules, Ground rules for guests, and the cancellation policy.
+              <div class="flex items-start gap-3">
+                <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">2</div>
+                <p>Once confirmed, you receive the <strong>host's contact details</strong> to coordinate the viewing.</p>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">3</div>
+                <p>Visit the venue, ask questions, and decide if it's the right fit — <strong>completely free</strong>.</p>
               </div>
             </div>
           </UCard>
@@ -340,88 +281,59 @@ function preventInvalidChars(event: KeyboardEvent) {
             color="primary"
             class="cursor-pointer"
             :loading="isSubmitting"
-            :disabled="!dates?.start || !dates?.end || isSubmitting"
+            :disabled="!preferredViewingDate || isSubmitting"
             @click="submitRequest"
           >
-            Request to book
+            Request a Viewing
           </UButton>
-
-          <p class="text-center text-sm text-gray-600">
-            You won't be charged to request
-          </p>
         </div>
 
         <!-- Right Column - Venue Summary -->
-        <div class="lg:sticky lg:top-12 h-fit">
+        <div class="lg:sticky lg:top-12 h-fit space-y-4">
           <UCard>
-            <div class="space-y-6">
+            <div class="space-y-5">
               <!-- Venue Info -->
               <div class="flex gap-4">
                 <NuxtImg
                   v-if="venue?.photos?.[0]"
                   :src="venue.photos[0]"
                   alt="Venue"
-                  class="h-24 w-24 rounded-lg object-cover"
+                  class="h-24 w-24 rounded-lg object-cover flex-shrink-0"
                   width="96"
                   height="96"
                 />
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900">
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 truncate">
                     {{ venue?.venue_name }}
                   </h3>
                   <p class="text-sm text-gray-600">
                     {{ venue?.company_name }}
+                  </p>
+                  <p v-if="venue?.max_capacity" class="text-sm text-gray-500 mt-1">
+                    Up to {{ venue.max_capacity }} guests
                   </p>
                 </div>
               </div>
 
               <USeparator />
 
-              <!-- Selected Details -->
-              <div class="space-y-3">
-                <div class="flex justify-between">
-                  <span class="text-sm font-medium text-gray-900">Dates</span>
-                  <span class="text-sm text-gray-600">{{ dateRangeText }}</span>
+              <!-- Event Summary -->
+              <div v-if="searchState.hasSearched" class="space-y-2">
+                <h4 class="text-sm font-semibold text-gray-900">Your event</h4>
+                <div v-if="searchState.weddingDate" class="flex justify-between text-sm">
+                  <span class="text-gray-500">Wedding date</span>
+                  <span class="font-medium">
+                    {{ new Date(searchState.weddingDate).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) }}
+                  </span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-sm font-medium text-gray-900">Guests</span>
-                  <span class="text-sm text-gray-600">{{ guests }} guests</span>
+                <div v-if="searchState.guestCount" class="flex justify-between text-sm">
+                  <span class="text-gray-500">Guests</span>
+                  <span class="font-medium">{{ searchState.guestCount }}</span>
                 </div>
-                <div v-if="accommodation > 0" class="flex justify-between">
-                  <span class="text-sm font-medium text-gray-900"
-                    >Accommodation</span
-                  >
-                  <span class="text-sm text-gray-600"
-                    >{{ accommodation }} people</span
-                  >
+                <div v-if="budgetLabel" class="flex justify-between text-sm">
+                  <span class="text-gray-500">Budget</span>
+                  <span class="font-medium">{{ budgetLabel }}</span>
                 </div>
-              </div>
-
-              <USeparator />
-
-              <!-- Price Breakdown -->
-              <div class="space-y-3">
-                <h3 class="font-semibold text-gray-900">Price details</h3>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600"
-                    >R{{ venue?.price }} x {{ nightsCount }} nights</span
-                  >
-                  <span class="text-gray-900">R{{ subtotal }} ZAR</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-gray-600">Service fee</span>
-                  <span class="text-gray-900">R{{ serviceFee }} ZAR</span>
-                </div>
-              </div>
-
-              <USeparator />
-
-              <!-- Total -->
-              <div class="flex justify-between">
-                <span class="font-semibold text-gray-900">Total ZAR</span>
-                <span class="font-semibold text-gray-900"
-                  >R{{ total }} ZAR</span
-                >
               </div>
 
               <!-- Notice -->
@@ -434,9 +346,13 @@ function preventInvalidChars(event: KeyboardEvent) {
                   class="h-5 w-5 flex-shrink-0 text-purple-600"
                 />
                 <p class="text-xs text-purple-900">
-                  This venue requires {{ venue.notice_required }} days advance
-                  notice for bookings.
+                  This venue requires {{ venue.notice_required }} days advance notice for viewings.
                 </p>
+              </div>
+
+              <div class="rounded-lg bg-green-50 p-3 text-center">
+                <p class="text-sm font-semibold text-green-800">Viewings are completely free</p>
+                <p class="text-xs text-green-600 mt-1">No payment or commitment required</p>
               </div>
             </div>
           </UCard>
