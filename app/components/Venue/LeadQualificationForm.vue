@@ -50,11 +50,7 @@ function handleSearch() {
       <!-- Wedding Date -->
       <div>
         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Wedding date</label>
-        <input
-          v-model="weddingDate"
-          type="date"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        />
+        <FormDateInput v-model="weddingDate" placeholder="Select date" />
       </div>
 
       <!-- Guest Count -->
@@ -72,29 +68,25 @@ function handleSearch() {
       <!-- Budget Range -->
       <div>
         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Budget range</label>
-        <select
+        <USelect
           v-model="budgetRange"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-        >
-          <option value="">Any budget</option>
-          <option v-for="opt in budgetOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
+          :items="budgetOptions"
+          placeholder="Any budget"
+          value-key="value"
+          class="w-full"
+        />
       </div>
 
       <!-- City / Province -->
       <div>
         <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">City / Province</label>
-        <select
+        <USelect
           v-model="city"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-        >
-          <option value="">Any location</option>
-          <option v-for="opt in cityOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
+          :items="cityOptions"
+          placeholder="Any location"
+          value-key="value"
+          class="w-full"
+        />
       </div>
 
       <!-- Accommodation -->

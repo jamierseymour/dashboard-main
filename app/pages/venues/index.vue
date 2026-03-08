@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventSearch } from '~/composables/useEventSearch'
+import { BUDGET_RANGES, useEventSearch } from '~/composables/useEventSearch'
 
 definePageMeta({
   layout: "default",
@@ -18,6 +18,11 @@ interface IVenue {
   city: string | null
   price: number | null
   selected_province: string | null
+  accommodation_available: boolean | null
+  style_tags: string[] | null
+  catering_price_per_head: number | null
+  venue_category: string | null
+  venue_type: string | null
 }
 
 const { data } = useAsyncData<IVenue[] | null>(
@@ -25,7 +30,7 @@ const { data } = useAsyncData<IVenue[] | null>(
   async () => {
     const { data, error } = await client
       .from("venues")
-      .select("id, event_types, photos, venue_name, max_capacity, min_capacity, city, price, selected_province")
+      .select("id, event_types, photos, venue_name, max_capacity, min_capacity, city, price, selected_province, accommodation_available, style_tags, catering_price_per_head, venue_category, venue_type")
       .limit(24)
       .order("id", { ascending: false })
 
@@ -66,6 +71,27 @@ const filteredVenues = computed(() => {
     )
   }
 
+  if (searchState.accommodationRequired) {
+    result = result.filter(venue => venue.accommodation_available === true)
+  }
+
+  if (searchState.stylePreferences.length > 0) {
+    result = result.filter(venue =>
+      venue.style_tags?.some(tag => searchState.stylePreferences.includes(tag))
+    )
+  }
+
+  if (searchState.budgetRange) {
+    const range = BUDGET_RANGES.find(b => b.value === searchState.budgetRange)
+    if (range) {
+      result = result.filter((venue) => {
+        const est = estimateCostRange(venue.price ?? 0, searchState.guestCount, venue.catering_price_per_head)
+        if (!est) return true
+        return est.low <= range.max && est.high >= range.min
+      })
+    }
+  }
+
   return result
 })
 
@@ -82,7 +108,7 @@ function getProvinceLabel(province: string | null | undefined): string {
 
 function getEstimate(venue: IVenue): string | null {
   if (!searchState.guestCount || !venue.price) return null
-  const range = estimateCostRange(venue.price, searchState.guestCount)
+  const range = estimateCostRange(venue.price, searchState.guestCount, venue.catering_price_per_head)
   if (!range) return null
   return formatEstimate(range.low, range.high)
 }

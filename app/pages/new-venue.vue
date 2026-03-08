@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { VenueFormData } from "@/types/venue";
-import VenueCategoryStep from "@/components/Venue/VenueCategoryStep.vue";
 import VenueTypeStep from "@/components/Venue/VenueTypeStep.vue";
-import EventTypesStep from "@/components/Venue/EventTypesStep.vue";
 import DetailsStep from "@/components/Venue/DetailsStep.vue";
 import LocationStep from "@/components/Venue/LocationStep.vue";
 import MediaStep from "@/components/Venue/MediaStep.vue";
 import ExtrasStep from "@/components/Venue/ExtrasStep.vue";
 import BookingRequirements from "@/components/Venue/BookingReqsStep.vue";
-import AuthModal from "@/components/Auth/AuthModal.vue"; // Import your auth modal
+import AuthModal from "@/components/Auth/AuthModal.vue";
 import { useAuth } from "~/stores/auth";
 import { v4 as uuidv4 } from "uuid";
 
@@ -22,7 +20,7 @@ const supabase = useSupabaseClient();
 const auth = useAuth();
 
 const formData = ref<VenueFormData>({
-  venueCategory: null,
+  venueCategory: "wedding",
   venueType: null,
   photos: [],
   description: "",
@@ -31,12 +29,19 @@ const formData = ref<VenueFormData>({
   maxCapacity: "",
   companyName: "",
   price: "",
-  selectedProvince: null,
+  selectedProvince: "Western Cape",
   provinces: null,
   eventTypes: [],
-  address: "",
+  address: "De Grendel Wine Estate, Plattekloof Rd, Panorama, Cape Town, 7500",
   minimumHours: "",
   noticeRequired: "",
+  logo: "",
+  accommodationAvailable: false,
+  cateringPricePerHead: "",
+  cateringInHouse: false,
+  cateringExternalAllowed: true,
+  minimumSpend: "",
+  corkageFee: "",
   // Initialize cancellationPolicy with default values
   cancellationPolicy: {
     refundableDays: "",
@@ -61,7 +66,7 @@ const formData = ref<VenueFormData>({
     lighting: false,
     projector: false,
     microphone: false,
-    airConditioning: false, // Corrected typo
+    airConditioning: false,
     heating: false,
     danceFloor: false,
     outdoorSpace: false,
@@ -69,6 +74,21 @@ const formData = ref<VenueFormData>({
     tables: "",
     chairs: "",
     customAmenities: [],
+  },
+  // Hardcoded location — replace with real address later
+  structuredAddress: {
+    address_line_1: "Plattekloof Rd",
+    address_line_2: "",
+    city: "Cape Town",
+    state_province: "Western Cape",
+    postal_code: "7500",
+    country: "South Africa",
+    latitude: -33.8524,
+    longitude: 18.5657,
+    google_place_id: "",
+    formatted_address: "De Grendel Wine Estate, Plattekloof Rd, Panorama, Cape Town, 7500",
+    address_components: [],
+    place_types: [],
   },
 });
 
@@ -80,48 +100,36 @@ const pendingSubmission = ref(false);
 const steps = [
   {
     id: 0,
-    title: "Venue Category",
-    description: "Is this a wedding venue or a general venue?",
-    icon: "i-lucide-tag",
-  },
-  {
-    id: 1,
     title: "Venue Type",
-    description: "What type of venue is this?",
+    description: "What type of wedding venue is this?",
     icon: "i-lucide-layers",
   },
   {
-    id: 2,
-    title: "Event Types",
-    description: "What types of events can your venue host?",
-    icon: "i-lucide-calendar-range",
-  },
-  {
-    id: 3,
+    id: 1,
     title: "Venue Details",
     description: "Basic information about your venue",
     icon: "i-lucide-building",
   },
   {
-    id: 4,
+    id: 2,
     title: "Location",
     description: "Where is your venue located",
     icon: "i-lucide-map-pin",
   },
   {
-    id: 5,
+    id: 3,
     title: "Booking Requirements",
     description: "Nitty Gritty Details for booking your venue",
     icon: "i-lucide-check-circle",
   },
   {
-    id: 6,
+    id: 4,
     title: "Extras and Amenities",
     description: "Additional amenities and services",
     icon: "i-lucide-sparkles",
   },
   {
-    id: 7,
+    id: 5,
     title: "Photos",
     description: "Upload photos of your venue",
     icon: "i-lucide-camera",
@@ -144,6 +152,22 @@ const checkAuthAndSubmit = async () => {
   // User is authenticated, proceed with submission
   await SubmitVenue();
 };
+
+function venueTypeToStyleTags(type: string | null): string[] {
+  const map: Record<string, string[]> = {
+    "Garden Venue": ["Garden"],
+    "Beach Venue": ["Beach"],
+    "Farm Venue": ["Rustic", "Country"],
+    "Country Venue": ["Country", "Rustic"],
+    "Forest Venue": ["Rustic"],
+    "Bushveld Venue": ["Bushveld"],
+    "Wine Farm Venue": ["Vineyard"],
+    "City Venue": ["Modern"],
+    "Barn": ["Barn", "Rustic"],
+    "Warehouse": ["Industrial"],
+  };
+  return type ? (map[type] ?? []) : [];
+}
 
 const SubmitVenue = async () => {
   if (isSubmitting.value) return;
@@ -218,6 +242,24 @@ const SubmitVenue = async () => {
           chairs: parseInt(formData.value.amenities?.chairs.toString()) || 0,
           custom_amenities: formData.value.amenities?.customAmenities ?? [],
         },
+        // Venue classification
+        venue_category: formData.value.venueCategory,
+        venue_type: formData.value.venueType,
+        style_tags: venueTypeToStyleTags(formData.value.venueType),
+        // Accommodation
+        accommodation_available: formData.value.accommodationAvailable ?? false,
+        // Catering
+        catering_price_per_head: parseFloat(formData.value.cateringPricePerHead?.toString() ?? "") || null,
+        catering_in_house: formData.value.cateringInHouse ?? false,
+        catering_external_allowed: formData.value.cateringExternalAllowed ?? true,
+        // Optional pricing structures (collected by form, previously dropped)
+        day_based_pricing: formData.value.dayBasedPricing ?? null,
+        exclusive_package: formData.value.exclusivePackage ?? null,
+        // Pricing extras
+        minimum_spend: parseFloat(formData.value.minimumSpend?.toString() ?? "") || null,
+        corkage_fee: parseFloat(formData.value.corkageFee?.toString() ?? "") || null,
+        // Branding
+        logo: formData.value.logo || null,
       },
     ]);
 
@@ -273,38 +315,27 @@ const hasPrev = computed(() => currentStep.value > 0);
 // Validation for each step
 const isCurrentStepValid = computed(() => {
   switch (currentStep.value) {
-    case 0: // Venue Category
-      return !!formData.value.venueCategory;
-
-    case 1: // Venue Type
+    case 0: // Venue Type
       return !!formData.value.venueType;
 
-    case 2: // Event Types
-      return formData.value.eventTypes && formData.value.eventTypes.length > 0;
-
-    case 3: // Venue Details
+    case 1: // Venue Details
       return !!(
         formData.value.venueName &&
-        formData.value.companyName &&
         formData.value.description &&
         formData.value.minCapacity &&
-        formData.value.maxCapacity &&
-        formData.value.price
+        formData.value.maxCapacity
       );
 
-    case 4: // Location
-      return !!(
-        formData.value.address &&
-        formData.value.selectedProvince
-      );
+    case 2: // Location — hardcoded, always passes
+      return true;
 
-    case 5: // Booking Requirements
-      return true; // All fields are optional in this step
+    case 3: // Booking Requirements
+      return true;
 
-    case 6: // Extras and Amenities
-      return true; // All fields are optional in this step
+    case 4: // Extras and Amenities
+      return true;
 
-    case 7: // Photos
+    case 5: // Photos
       return formData.value.photos && formData.value.photos.length > 0;
 
     default:
@@ -443,52 +474,39 @@ provide("clearDraft", clearDraft);
 
       <!-- Step Content -->
       <div class="max-w-7xl mx-auto">
-        <VenueCategoryStep
+        <VenueTypeStep
           v-if="currentStep === 0"
           :form-data="formData"
           @update:form-data="formData = $event"
           @next="goToNextStep"
         />
 
-        <VenueTypeStep
-          v-if="currentStep === 1"
-          :form-data="formData"
-          @update:form-data="formData = $event"
-          @next="goToNextStep"
-        />
-
-        <EventTypesStep
-          v-if="currentStep === 2"
-          :form-data="formData"
-          @update:form-data="formData = $event"
-        />
-
         <DetailsStep
-          v-if="currentStep === 3"
+          v-if="currentStep === 1"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
 
         <LocationStep
-          v-if="currentStep === 4"
+          v-if="currentStep === 2"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
 
         <BookingRequirements
-          v-if="currentStep === 5"
+          v-if="currentStep === 3"
           :form-data="formData"
           @update:form-data="(newData) => (formData = newData)"
         />
 
         <ExtrasStep
-          v-if="currentStep === 6"
+          v-if="currentStep === 4"
           :form-data="formData"
           @update:form-data="formData = $event"
         />
 
         <MediaStep
-          v-if="currentStep === 7"
+          v-if="currentStep === 5"
           :form-data="formData"
           :id="tempVenueId"
           @update:form-data="formData = $event"

@@ -26,16 +26,45 @@ const emit = defineEmits(["update:images"]);
 
 const auth = useAuth();
 const supabase = useSupabaseClient();
+const toast = useToast();
 const images = ref([]);
 const isDragging = ref(false);
 const isDragOver = ref(false);
 const draggedIndex = ref(null);
 const dragOverIndex = ref(null);
 const isUploading = ref(false);
-const uploadProgress = ref(0);
 const uploadQueue = ref([]);
 const currentUploadIndex = ref(0);
 const totalUploads = ref(0);
+
+// Compress and resize an image file before upload.
+// Reduces large camera photos (often 10MB+) to a few hundred KB.
+function compressImage(file, maxWidth = 1920, quality = 0.82) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" })),
+          "image/jpeg",
+          quality,
+        );
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // Touch support variables
 const touchStartIndex = ref(null);
@@ -83,9 +112,7 @@ const processUploadQueue = async () => {
     uploadQueue.value.length === 0 ||
     currentUploadIndex.value >= uploadQueue.value.length
   ) {
-    console.log("✅ Upload queue completed");
     isUploading.value = false;
-    uploadProgress.value = 0;
     uploadQueue.value = [];
     currentUploadIndex.value = 0;
     totalUploads.value = 0;
@@ -95,88 +122,55 @@ const processUploadQueue = async () => {
   const currentItem = uploadQueue.value[currentUploadIndex.value];
   const { file, imageId } = currentItem;
 
-  console.log(
-    `📤 Uploading ${currentUploadIndex.value + 1}/${totalUploads.value}: ${file.name}`
-  );
-
   try {
-    // Generate a unique filename to avoid collisions
-    const fileExt = file.name.split(".").pop();
-    let filePath;
+    // Compress before upload — converts large camera shots to ~200–500 KB JPEG
+    const compressed = await compressImage(file);
 
-    // Build path with proper slashes
+    // Sanitise filename: strip spaces and special chars, force .jpg extension
+    const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_").replace(/\.[^.]+$/, ".jpg")}`;
     const basePath = props.folderPath ? `${props.folderPath}/` : "";
+    const filePath = auth.user?.id
+      ? `${basePath}${auth.user.id}/${props.id}/${safeName}`
+      : `${basePath}${props.id}/${safeName}`;
 
-    if (auth.user?.id) {
-      filePath = `${basePath}${auth.user.id}/${props.id}/${Date.now()}-${file.name}`;
-    } else {
-      filePath = `${basePath}${props.id}/${Date.now()}-${file.name}`;
-    }
-
-    console.log("📁 Upload path:", filePath);
-
-    // Upload the file to Supabase Storage with timeout
-    const uploadPromise = supabase.storage
+    const { error } = await supabase.storage
       .from(props.bucketName)
-      .upload(filePath, file, {
+      .upload(filePath, compressed, {
         cacheControl: "3600",
         upsert: false,
+        contentType: "image/jpeg",
       });
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Upload timeout after 30 seconds")), 30000)
-    );
+    if (error) throw error;
 
-    const { data, error } = await Promise.race([uploadPromise, timeoutPromise]);
-
-    console.log("📦 Upload response:", { data, error });
-
-    if (error) {
-      console.error("💥 Upload error:", error);
-      throw error;
-    }
-
-    console.log("✅ Upload successful");
-
-    // Get the public URL
     const { data: urlData } = supabase.storage
       .from(props.bucketName)
       .getPublicUrl(filePath);
 
-    // Update the image object with the CDN URL
     const imageIndex = images.value.findIndex((img) => img.id === imageId);
-
     if (imageIndex !== -1) {
       images.value[imageIndex].cdnUrl = urlData.publicUrl;
       images.value[imageIndex].path = filePath;
-
-      // Force reactivity update by creating a new array reference
       images.value = [...images.value];
-
-      // Emit updated images immediately after successful upload
-      const imageUrls = images.value.map((img) => img.cdnUrl).filter((url) => url);
-      console.log("✅ CDN URL:", urlData.publicUrl);
+      const imageUrls = images.value.map((img) => img.cdnUrl).filter(Boolean);
       emit("update:images", imageUrls);
     }
-  } catch (error) {
-    console.error("💥 Upload failed:", error.message);
-
-    // Remove the failed image from the array
+  } catch (err) {
+    console.error("💥 Upload failed:", err?.message ?? err);
+    toast.add({
+      title: "Photo upload failed",
+      description: err?.message ?? "Check your internet connection and try again.",
+      color: "error",
+    });
+    // Remove the failed placeholder
     const imageIndex = images.value.findIndex((img) => img.id === imageId);
     if (imageIndex !== -1) {
       images.value.splice(imageIndex, 1);
-      // Force reactivity update
       images.value = [...images.value];
     }
   }
 
-  // Update progress
   currentUploadIndex.value++;
-  uploadProgress.value = Math.floor(
-    (currentUploadIndex.value / totalUploads.value) * 100,
-  );
-
-  // Process next item in queue
   await processUploadQueue();
 };
 
@@ -197,7 +191,6 @@ const handleFileUpload = async (event) => {
   console.log(`📁 Uploading ${filesToProcess.length} file(s)...`);
 
   isUploading.value = true;
-  uploadProgress.value = 0;
   uploadQueue.value = [];
   currentUploadIndex.value = 0;
 
@@ -459,14 +452,9 @@ const moveImage = (fromIndex, toIndex) => {
     </div>
 
     <div v-if="isUploading" class="mb-4">
-      <div class="w-full bg-gray-200 rounded-full h-2.5">
-        <div
-          class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-          :style="{ width: `${uploadProgress}%` }"
-        ></div>
-      </div>
-      <p class="text-center text-sm text-gray-600 mt-1">
-        Uploading images... {{ uploadProgress }}%
+      <UProgress animation="carousel" color="primary" />
+      <p class="text-center text-sm text-gray-500 mt-2">
+        Compressing &amp; uploading photo {{ currentUploadIndex + 1 }} of {{ totalUploads }}…
       </p>
     </div>
 

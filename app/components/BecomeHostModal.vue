@@ -79,7 +79,7 @@ const handleServiceClick = () => {
       </div>
 
       <!-- Sign Up as Service Provider Option -->
-      <div
+      <!-- <div
         class="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 p-6 cursor-pointer transition-all duration-200 hover:border-primary-500 hover:shadow-md"
         @click="handleServiceClick"
       >
@@ -111,7 +111,7 @@ const handleServiceClick = () => {
             />
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </UiModal>
 </template>

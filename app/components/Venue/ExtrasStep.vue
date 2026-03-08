@@ -120,6 +120,19 @@ const removeCustomAmenity = (index: number) => {
         Select all amenities available at your venue
       </p>
 
+      <!-- Accommodation -->
+      <div class="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+        <div>
+          <p class="font-medium text-sm">On-site Accommodation</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Guests can sleep at or adjacent to the venue</p>
+        </div>
+        <USwitch
+          v-model="form.accommodationAvailable"
+          color="primary"
+          class="cursor-pointer"
+        />
+      </div>
+
       <!-- Amenities section -->
       <div class="grid grid-cols-2 gap-4">
         <UCheckbox v-model="amenities.wifi" label="WiFi" />

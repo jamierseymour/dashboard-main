@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { logoSvg } from "~/assets/OyeIcons";
-
 const columns = [
   // {
   //   label: "Resources",
@@ -69,11 +67,10 @@ function onSubmit() {
   <div class="relative h-px mt-6 bg-gray-200 dark:bg-gray-800">
     <div class="absolute inset-0 flex items-center justify-center">
       <div class="bg-white dark:bg-gray-900 px-3">
-        <UIcon
+        <NuxtImg
           src="/logos/logo-no-text.svg"
           alt="Logo"
-          :path="logoSvg"
-          class="w-24 h-24 mt-2 -mx-2"
+          class="w-16 h-16 mt-2 -mx-2"
         />
       </div>
     </div>

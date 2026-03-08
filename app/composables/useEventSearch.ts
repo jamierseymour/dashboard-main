@@ -9,6 +9,11 @@ export interface EventSearchState {
   stylePreferences: string[]
   accommodationRequired: boolean
   hasSearched: boolean
+  // Lead qualification
+  hasQualified: boolean
+  leadName: string | null
+  leadEmail: string | null
+  leadPhone: string | null
 }
 
 const state = reactive<EventSearchState>({
@@ -19,6 +24,10 @@ const state = reactive<EventSearchState>({
   stylePreferences: [],
   accommodationRequired: false,
   hasSearched: false,
+  hasQualified: false,
+  leadName: null,
+  leadEmail: null,
+  leadPhone: null,
 })
 
 export const BUDGET_RANGES = [
@@ -66,19 +75,38 @@ export function useEventSearch() {
       stylePreferences: [],
       accommodationRequired: false,
       hasSearched: false,
+      hasQualified: false,
+      leadName: null,
+      leadEmail: null,
+      leadPhone: null,
     })
   }
 
-  // Estimated cost range for a venue based on guest count
-  // Uses venue base price as a proxy for venue hire
-  function estimateCostRange(venuePrice: number, guestCount: number | null): { low: number, high: number } | null {
+  function qualifyLead(name: string, email: string, phone: string) {
+    Object.assign(state, {
+      hasQualified: true,
+      leadName: name,
+      leadEmail: email,
+      leadPhone: phone || null,
+    })
+  }
+
+  // Estimated cost range for a venue based on guest count.
+  // If the venue has a known catering_price_per_head, use it for a precise figure.
+  // Otherwise fall back to the typical SA range (R600–R900 per head).
+  function estimateCostRange(
+    venuePrice: number,
+    guestCount: number | null,
+    cateringPricePerHead?: number | null,
+  ): { low: number, high: number } | null {
     if (!guestCount || !venuePrice) return null
-    // Venue hire + catering estimate (R600–R900 per head typical SA range)
-    const cateringLow = guestCount * 600
-    const cateringHigh = guestCount * 900
+    if (cateringPricePerHead) {
+      const catering = guestCount * cateringPricePerHead
+      return { low: venuePrice + catering, high: venuePrice + catering }
+    }
     return {
-      low: venuePrice + cateringLow,
-      high: venuePrice + cateringHigh,
+      low: venuePrice + guestCount * 600,
+      high: venuePrice + guestCount * 900,
     }
   }
 
@@ -95,6 +123,7 @@ export function useEventSearch() {
     state: readonly(state),
     setSearch,
     clearSearch,
+    qualifyLead,
     estimateCostRange,
     formatEstimate,
     BUDGET_RANGES,

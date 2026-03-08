@@ -4,7 +4,16 @@
       "Bash(pnpm update:*)",
       "Bash(pnpm run:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(npm show:*)",
+      "Bash(pnpm install)",
+      "Bash(python3:*)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(xargs cat:*)",
+      "Bash(python -c:*)",
+      "Bash(# Check the Nuxt version''s vite plugin for path handling grep -r \"\"buildAssetsDir\\\\|assetsURL\\\\|@fs\"\" \"\"c:\\\\GITHUB\\\\dashboard-main\\\\dashboard-main\\\\node_modules\\\\.pnpm\\\\nuxt@4.3.1_@parcel+watcher@_abd0e1228c4b41c9e01067da26470459\\\\node_modules\\\\nuxt\\\\dist\\\\core\\\\nitro.js\"\")"
     ],
     "deny": [],
     "ask": []

@@ -11,15 +11,12 @@ const emit = defineEmits<{
 
 const eventTypes = [
   { id: "Wedding", icon: "i-lucide-heart", label: "Wedding" },
-  { id: "Conference", icon: "i-lucide-presentation", label: "Conference" },
-  { id: "Corporate Event", icon: "i-lucide-briefcase", label: "Corporate Event" },
+  { id: "Engagement Party", icon: "i-lucide-ring", label: "Engagement Party" },
+  { id: "Kitchen Tea", icon: "i-lucide-coffee", label: "Kitchen Tea / Bridal Shower" },
+  { id: "Anniversary", icon: "i-lucide-sparkles", label: "Anniversary" },
   { id: "Birthday", icon: "i-lucide-cake", label: "Birthday" },
-  { id: "Concert", icon: "i-lucide-music", label: "Concert" },
-  { id: "Exhibition", icon: "i-lucide-gallery-horizontal", label: "Exhibition" },
-  { id: "Workshop", icon: "i-lucide-wrench", label: "Workshop" },
-  { id: "Social", icon: "i-lucide-users", label: "Social" },
-  { id: "Private Party", icon: "i-lucide-party-popper", label: "Private Party" },
-  { id: "Team Building", icon: "i-lucide-handshake", label: "Team Building" },
+  { id: "Matric Farewell", icon: "i-lucide-graduation-cap", label: "Matric Farewell" },
+  { id: "Social", icon: "i-lucide-users", label: "Social Gathering" },
   { id: "Other", icon: "i-lucide-more-horizontal", label: "Other" },
 ] as const;
 

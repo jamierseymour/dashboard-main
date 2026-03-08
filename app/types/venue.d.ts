@@ -197,16 +197,12 @@ export type GeneralVenueType =
 
 export type EventType =
   | "Wedding"
-  | "Conference"
-  | "Corporate Event"
+  | "Engagement Party"
+  | "Kitchen Tea"
+  | "Anniversary"
   | "Birthday"
-  | "Corporate"
-  | "Concert"
-  | "Exhibition"
-  | "Workshop"
+  | "Matric Farewell"
   | "Social"
-  | "Private Party"
-  | "Team Building"
   | "Other";
 
 export type Province =
@@ -234,7 +230,7 @@ export interface VenueFormData {
   provinces: Province | null;
   eventTypes: EventType[];
   address: string;
-  structuredAddress?: StructuredAddress; // New structured address data
+  structuredAddress?: StructuredAddress;
   seasonalPricing: SeasonalPricing;
   dayBasedPricing?: DayBasedPricing;
   exclusivePackage?: ExclusivePackage;
@@ -242,6 +238,14 @@ export interface VenueFormData {
   noticeRequired: string | number; // days
   cancellationPolicy: CancellationPolicy;
   amenities: VenueAmenities;
+  // Accommodation & catering (used for search filtering and cost estimation)
+  accommodationAvailable?: boolean;
+  cateringPricePerHead?: string | number;
+  cateringInHouse?: boolean;
+  cateringExternalAllowed?: boolean;
+  minimumSpend?: string | number;
+  corkageFee?: string | number;
+  logo?: string;
 }
 
 export interface Venue {

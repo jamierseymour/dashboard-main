@@ -238,6 +238,13 @@ const cityName = computed(() => {
   return "";
 });
 
+// Lead modal for message-host
+const showMessageModal = ref(false)
+
+function handleMessageHost() {
+  showMessageModal.value = true
+}
+
 // Handle share functionality
 const isLiked = ref(false);
 
@@ -462,7 +469,7 @@ const mapCoordinates = computed(() => {
             :response-rate="100"
             response-time="within an hour"
             :is-verified="true"
-            @message-host="() => {}"
+            @message-host="handleMessageHost"
           />
 
           <!-- Map Section -->
@@ -482,5 +489,11 @@ const mapCoordinates = computed(() => {
         </div>
       </div>
     </div>
+
+    <!-- Lead capture modal for message-host -->
+    <VenueLeadModal
+      v-model:open="showMessageModal"
+      action="message-host"
+    />
   </div>
 </template>

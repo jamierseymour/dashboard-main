@@ -148,19 +148,96 @@ const exclusivePackageEnabled = computed({
       <!-- Pricing Section -->
       <div class="flex flex-col gap-3">
         <h3 class="text-lg font-semibold">Pricing</h3>
-        <div class="flex flex-col w-full">
-          <label class="text-sm mb-1">Base Price</label>
-          <UInput
-            v-model="form.price"
-            color="primary"
-            variant="outline"
-            placeholder="e.g. 10000"
-            type="number"
-          >
-            <template #leading>
-              <span class="text-gray-500 dark:text-gray-400 text-xs">R</span>
-            </template>
-          </UInput>
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col w-full">
+            <label class="text-sm mb-1">Venue hire fee</label>
+            <UInput
+              v-model="form.price"
+              color="primary"
+              variant="outline"
+              placeholder="e.g. 10000"
+              type="number"
+            >
+              <template #leading>
+                <span class="text-gray-500 dark:text-gray-400 text-xs">R</span>
+              </template>
+            </UInput>
+            <span class="text-xs text-gray-400 mt-1">Base fee to hire the venue (excluding catering)</span>
+          </div>
+          <div class="flex flex-col w-full">
+            <label class="text-sm mb-1">Minimum spend <span class="text-gray-400 font-normal">(optional)</span></label>
+            <UInput
+              v-model="form.minimumSpend"
+              color="primary"
+              variant="outline"
+              placeholder="e.g. 50000"
+              type="number"
+            >
+              <template #leading>
+                <span class="text-gray-500 dark:text-gray-400 text-xs">R</span>
+              </template>
+            </UInput>
+            <span class="text-xs text-gray-400 mt-1">Minimum total spend required across hire fee + catering</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catering Section -->
+      <div class="flex flex-col gap-3">
+        <h3 class="text-lg font-semibold">Catering</h3>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+            <div>
+              <p class="text-sm font-medium">In-house catering available</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Your venue provides catering as part of the package</p>
+            </div>
+            <USwitch
+              v-model="form.cateringInHouse"
+              color="primary"
+              class="cursor-pointer"
+            />
+          </div>
+          <div class="flex flex-col w-full">
+            <label class="text-sm mb-1">Per-head catering cost <span class="text-gray-400 font-normal">(optional)</span></label>
+            <UInput
+              v-model="form.cateringPricePerHead"
+              color="primary"
+              variant="outline"
+              placeholder="e.g. 750"
+              type="number"
+            >
+              <template #leading>
+                <span class="text-gray-500 dark:text-gray-400 text-xs">R</span>
+              </template>
+            </UInput>
+            <span class="text-xs text-gray-400 mt-1">Price charged per guest for catering</span>
+          </div>
+          <div class="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+            <div>
+              <p class="text-sm font-medium">External caterers allowed</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Couples may bring their own catering supplier</p>
+            </div>
+            <USwitch
+              v-model="form.cateringExternalAllowed"
+              color="primary"
+              class="cursor-pointer"
+            />
+          </div>
+          <div class="flex flex-col w-full">
+            <label class="text-sm mb-1">Corkage fee <span class="text-gray-400 font-normal">(optional)</span></label>
+            <UInput
+              v-model="form.corkageFee"
+              color="primary"
+              variant="outline"
+              placeholder="e.g. 150"
+              type="number"
+            >
+              <template #leading>
+                <span class="text-gray-500 dark:text-gray-400 text-xs">R</span>
+              </template>
+            </UInput>
+            <span class="text-xs text-gray-400 mt-1">Fee charged per bottle when guests bring their own beverages</span>
+          </div>
         </div>
       </div>
 

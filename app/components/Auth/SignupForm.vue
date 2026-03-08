@@ -135,7 +135,7 @@ const signInWithFacebook = async () => {
     <!-- Error message display -->
     <UAlert
       v-if="errorMsg"
-      color="red"
+      color="error"
       variant="soft"
       icon="i-heroicons-exclamation-triangle"
       class="mb-4"

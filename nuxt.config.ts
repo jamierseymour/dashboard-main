@@ -7,10 +7,9 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "@nuxt/image",
     "@pinia/nuxt",
-    "@nuxtjs/web-vitals",
     "@sentry/nuxt/module",
   ],
-  ssr: true,
+  ssr: false,
   devtools: {
     enabled: true,
   },
@@ -40,11 +39,7 @@ export default defineNuxtConfig({
     },
   },
 
-  future: {
-    compatibilityVersion: 4,
-  },
-
-  compatibilityDate: "2024-07-11",
+  compatibilityDate: "2025-11-01",
 
   eslint: {
     config: {

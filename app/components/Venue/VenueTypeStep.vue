@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { VenueFormData, WeddingVenueType, GeneralVenueType } from "~/types/venue";
+import type { VenueFormData, WeddingVenueType } from "~/types/venue";
 
 const props = defineProps<{
   formData: VenueFormData;
@@ -10,7 +10,7 @@ const emit = defineEmits<{
   "next": [];
 }>();
 
-const weddingVenueTypes = [
+const venueTypes = [
   { id: "Garden Venue", icon: "i-lucide-flower-2", label: "Garden Venue" },
   { id: "Bushveld Venue", icon: "i-lucide-trees", label: "Bushveld Venue" },
   { id: "Country Venue", icon: "i-lucide-home", label: "Country Venue" },
@@ -21,34 +21,12 @@ const weddingVenueTypes = [
   { id: "Wine Farm Venue", icon: "i-lucide-grape", label: "Wine Farm Venue" },
 ] as const;
 
-const generalVenueTypes = [
-  { id: "House", icon: "i-lucide-home", label: "House" },
-  { id: "Bar", icon: "i-lucide-beer", label: "Bar" },
-  { id: "Garage", icon: "i-lucide-warehouse", label: "Garage" },
-  { id: "Warehouse", icon: "i-lucide-package", label: "Warehouse" },
-  { id: "Cabin", icon: "i-lucide-mountain", label: "Cabin" },
-  { id: "Movie Theater", icon: "i-lucide-film", label: "Movie Theater" },
-  { id: "Mansion", icon: "i-lucide-castle", label: "Mansion" },
-  { id: "Community Center", icon: "i-lucide-users", label: "Community Center" },
-  { id: "Castle", icon: "i-lucide-landmark", label: "Castle" },
-  { id: "Basketball Court", icon: "i-lucide-circle-dot", label: "Basketball Court" },
-  { id: "Commercial Kitchen", icon: "i-lucide-chef-hat", label: "Commercial Kitchen" },
-  { id: "Barn", icon: "i-lucide-barn", label: "Barn" },
-] as const;
-
-const venueTypes = computed(() => {
-  return props.formData.venueCategory === "wedding"
-    ? weddingVenueTypes
-    : generalVenueTypes;
-});
-
-const selectType = (type: WeddingVenueType | GeneralVenueType) => {
+const selectType = (type: WeddingVenueType) => {
   emit("update:formData", {
     ...props.formData,
     venueType: type,
   });
 
-  // Auto-advance to next step after a brief delay for visual feedback
   setTimeout(() => {
     emit("next");
   }, 300);

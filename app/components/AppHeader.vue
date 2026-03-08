@@ -46,12 +46,12 @@ const centerNavItems = ref([
     to: "/services",
     description: "Browse event services",
   },
-  {
-    label: "Create Event",
-    icon: "i-heroicons-plus-circle",
-    to: "/events/create",
-    description: "Plan your event",
-  },
+  // {
+  //   label: "Create Event",
+  //   icon: "i-heroicons-plus-circle",
+  //   to: "/events/create",
+  //   description: "Plan your event",
+  // },
 ]);
 
 console.log("auth", auth);
@@ -116,7 +116,7 @@ const hostButton = computed(() => {
       };
     } else {
       return {
-        label: "Become a Host",
+        label: "list your venue",
         icon: "i-heroicons-home",
         action: () => (showBecomeHostModal.value = true),
         variant: "solid" as const,
