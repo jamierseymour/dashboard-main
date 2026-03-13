@@ -99,11 +99,16 @@ export const useAuth = defineStore("auth", () => {
         .single();
 
       if (error) {
-        // Check if it's a "table doesn't exist" error
         if (error.code === "42P01") {
-          console.warn(
-            "Users table doesn't exist yet. Create it in Supabase to enable profile features.",
-          );
+          console.warn("Users table doesn't exist yet.");
+          return;
+        }
+        if (error.code === "PGRST116") {
+          // No profile row yet — not an error, just no data
+          return;
+        }
+        if (error.code === "22P02") {
+          console.warn("Users table id column type mismatch — run fix_users_table.sql in Supabase.");
           return;
         }
         throw error;
@@ -298,26 +303,21 @@ export const useAuth = defineStore("auth", () => {
         throw new Error("User registration failed");
       }
 
-      // Step 2: Create user profile in users table
+      // Step 2: Update fields the trigger doesn't set (event_updates, terms_accepted)
+      // The trigger already inserted the row, so we just update the extra fields
       try {
         const { error: profileError } = await (
           supabase.from("users") as any
-        ).insert({
-          id: authData.user.id,
-          name: userData.name,
-          email: userData.email,
+        ).update({
           event_updates: userData.eventUpdates,
           terms_accepted: userData.termsAccepted,
-          bio: "",
-        });
+        }).eq("id", authData.user.id);
 
         if (profileError) {
-          console.warn("Profile creation failed:", profileError);
-          // Don't throw here - auth user was created successfully
+          console.warn("Profile update failed:", profileError);
         }
       } catch (profileError) {
-        console.warn("Users table might not exist:", profileError);
-        // Continue - the trigger should handle profile creation
+        console.warn("Could not update profile extra fields:", profileError);
       }
 
       // Step 3: Update auth state
@@ -373,8 +373,6 @@ export const useAuth = defineStore("auth", () => {
         console.warn("Error clearing localStorage:", storageError);
       }
 
-      // Navigate to home page
-      navigateTo('/');
     }
   }
 

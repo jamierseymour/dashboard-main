@@ -71,10 +71,12 @@ const user = computed(() => {
   };
 });
 
+const router = useRouter();
+
 // Handle logout
 const handleLogout = async () => {
-  // signOut now handles navigation and error cleanup internally
   await auth.signOut();
+  router.push('/');
 };
 
 const items = computed<DropdownMenuItem[][]>(() => [

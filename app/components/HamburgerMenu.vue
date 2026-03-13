@@ -147,9 +147,11 @@ const menuItems = computed(() => {
   return sections;
 });
 
+const router = useRouter();
+
 const logout = async () => {
-  // signOut now handles navigation and error cleanup internally
   await auth.signOut();
+  router.push('/');
 };
 
 const handleItemClick = (item: any) => {
