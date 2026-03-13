@@ -205,7 +205,7 @@ const removeCustomAmenity = (index: number) => {
             class="mr-2 mb-2"
           >
             {{ amenity }}
-            <button class="ml-1 text-xs" @click="removeCustomAmenity(index)">
+            <button class="ml-1 text-xs cursor-pointer" @click="removeCustomAmenity(index)">
               ×
             </button>
           </UBadge>

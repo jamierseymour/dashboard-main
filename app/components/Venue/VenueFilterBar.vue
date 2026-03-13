@@ -149,7 +149,7 @@ onUnmounted(() => {
       <div class="flex items-center justify-between mb-6 px-4">
         <button
           v-if="activeFilter"
-          class="text-sm text-mulberry hover:text-mulberry-dark transition-colors duration-200 hover:underline"
+          class="text-sm text-mulberry hover:text-mulberry-dark transition-colors duration-200 hover:underline cursor-pointer"
           @click="toggleFilter(activeFilter)"
         >
           Clear Filter
@@ -162,7 +162,7 @@ onUnmounted(() => {
         <button
           v-if="canGoPrevious"
           @click="goToPrevious"
-          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200"
+          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200 cursor-pointer"
         >
           <UIcon
             name="i-heroicons-chevron-left"
@@ -174,7 +174,7 @@ onUnmounted(() => {
         <button
           v-if="canGoNext"
           @click="goToNext"
-          class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200"
+          class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 transition-all duration-200 cursor-pointer"
         >
           <UIcon
             name="i-heroicons-chevron-right"
@@ -234,7 +234,7 @@ onUnmounted(() => {
             :key="page"
             @click="currentIndex = page - 1"
             :class="[
-              'w-2 h-2 rounded-full transition-all duration-200',
+              'w-2 h-2 rounded-full transition-all duration-200 cursor-pointer',
               currentIndex === page - 1
                 ? 'bg-mulberry'
                 : 'bg-gray-300 hover:bg-gray-400',

@@ -6,7 +6,7 @@
       <!-- Close button -->
       <button
         @click="$emit('close')"
-        class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
+        class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10 p-2 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
         aria-label="Close gallery"
       >
         <Icon name="lucide:x" size="32" />
@@ -23,14 +23,14 @@
       <template v-if="images.length > 1">
         <button
           @click="$emit('prev')"
-          class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-3 rounded-full hover:bg-white hover:bg-opacity-20"
+          class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-3 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
           aria-label="Previous image"
         >
           <Icon name="lucide:chevron-left" size="48" />
         </button>
         <button
           @click="$emit('next')"
-          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-3 rounded-full hover:bg-white hover:bg-opacity-20"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-3 rounded-full hover:bg-white hover:bg-opacity-20 cursor-pointer"
           aria-label="Next image"
         >
           <Icon name="lucide:chevron-right" size="48" />
@@ -69,7 +69,7 @@
             :key="index"
             @click="$emit('select', index)"
             :class="[
-              'w-16 h-16 rounded overflow-hidden transition-all duration-200',
+              'w-16 h-16 rounded overflow-hidden transition-all duration-200 cursor-pointer',
               index === selectedIndex
                 ? 'ring-2 ring-white scale-110'
                 : 'opacity-70 hover:opacity-100',

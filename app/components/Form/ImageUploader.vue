@@ -586,7 +586,7 @@ const moveImage = (fromIndex, toIndex) => {
             <button
               v-if="index > 0"
               @click="moveImage(index, index - 1)"
-              class="p-1 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all duration-200"
+              class="p-1 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all duration-200 cursor-pointer"
               title="Move left"
             >
               <svg
@@ -607,7 +607,7 @@ const moveImage = (fromIndex, toIndex) => {
             <button
               v-if="index < images.length - 1"
               @click="moveImage(index, index + 1)"
-              class="p-1 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all duration-200"
+              class="p-1 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all duration-200 cursor-pointer"
               title="Move right"
             >
               <svg

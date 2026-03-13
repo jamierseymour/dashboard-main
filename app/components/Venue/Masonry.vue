@@ -238,7 +238,7 @@ definePageMeta({
           <button
             v-if="displayImages.length > 1"
             @click.stop="openLightbox(0)"
-            class="absolute bottom-4 right-4 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-lg flex items-center space-x-2 z-10"
+            class="absolute bottom-4 right-4 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors shadow-lg flex items-center space-x-2 z-10 cursor-pointer"
           >
             <Icon name="lucide:grid-3x3" size="16" />
             <span class="font-medium"

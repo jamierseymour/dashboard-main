@@ -35,13 +35,13 @@
 
         <!-- Navigation Arrows -->
         <button
-          class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow"
+          class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow cursor-pointer"
           @click="prevSlide"
         >
           ‹
         </button>
         <button
-          class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow"
+          class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow cursor-pointer"
           @click="nextSlide"
         >
           ›
